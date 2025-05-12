@@ -8,6 +8,7 @@ export const colors = {
     primary: "#101926",
     secondary: "#4B5563",
     tertiary: "#667085",
+    link: "#375F88",
   },
   ui: {
     border: "#75A0C4",
@@ -15,6 +16,8 @@ export const colors = {
     background: "#E6EEF5",
     white: "#FFFFFF",
     darkBlue: "#2A5580",
+    grey: "#9CA3AF",
+    lightGrey: "#E5E7EB",
   },
   status: {
     success: "#43A047",

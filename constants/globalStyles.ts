@@ -8,6 +8,11 @@ export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+    padding: spacing.lg,
+  },
+  scrollContainer: {
+    flex: 1,
+    width: "100%",
     paddingHorizontal: spacing.lg,
   },
   title: {
