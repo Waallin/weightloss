@@ -1,11 +1,572 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Animated,
+  ScrollView,
+  Keyboard,
+  TouchableWithoutFeedback,
+  KeyboardAvoidingView,
+  Platform,
+  Modal,
+  FlatList,
+  Linking,
+} from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { globalStyles } from "../../constants/globalStyles";
+import { colors } from "../../constants/colors";
+import { spacing } from "../../constants/spacing";
+import { AntDesign, Feather } from "@expo/vector-icons";
+import ProfileInputRowTitle from "./components/ProfileInputRowTitle";
+import ProfileInputRow from "./components/ProfileInputRow";
+import PrimaryButton from "../../components/PrimaryButton";
+import SwitchInputRow from "./components/SwitchInputRow";
+import DropdownRow from "./components/DropdownRow";
+
+const sections = [
+  {
+    id: 1,
+    title: "Personal",
+  },
+  {
+    id: 2,
+    title: "Boating",
+  },
+  {
+    id: 3,
+    title: "Preferences",
+  },
+];
+
+const measurementUnits = [
+  {
+    id: 1,
+    title: "Metric",
+  },
+  {
+    id: 2,
+    title: "Imperial",
+  },
+];
+
+const languages = [
+  {
+    id: 1,
+    title: "English",
+  },
+  {
+    id: 2,
+    title: "Spanish",
+  },
+  {
+    id: 3,
+    title: "French",
+  },
+];
 
 const CreateProfileScreen = () => {
+  const [procent, setProcent] = useState(0);
+  const [selectedSection, setSelectedSection] = useState(sections[0]);
+  const animatedWidth = useRef(new Animated.Value(0)).current;
+  const animatedProcent = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [step, setStep] = useState(1);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [experienceLevel, setExperienceLevel] = useState("");
+  const [boatingLicense, setBoatingLicense] = useState("");
+  const [certifications, setCertifications] = useState("");
+  const [preferredWater, setPreferredWater] = useState("");
+  const [notifications, setNotifications] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
+
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
+  const [selectedMeasurementUnit, setSelectedMeasurementUnit] = useState(
+    measurementUnits[0]
+  );
+
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalData, setModalData] = useState<any[]>([]);
+  const [currentDropdownType, setCurrentDropdownType] = useState<
+    "language" | "measurement" | null
+  >(null);
+
+  useEffect(() => {
+    animatedWidth.setValue(0);
+    animateUnderline();
+  }, [selectedSection]);
+
+  const animateUnderline = () => {
+    Animated.spring(animatedWidth, {
+      toValue: 1,
+      useNativeDriver: false,
+      tension: 40,
+      friction: 8,
+    }).start();
+  };
+
+  const renderSection = () => {
+    return (
+      <View
+        style={{
+          marginTop: spacing.md,
+          flexDirection: "row",
+          gap: spacing.md,
+        }}
+      >
+        {sections.map((section, index) => (
+          <TouchableOpacity
+            key={index}
+            onPress={() => {
+              setSelectedSection(section);
+              setStep(section.id);
+              setProcent((section.id - 1) * 33);
+              Animated.spring(animatedProcent, {
+                toValue: (section.id - 1) * 33,
+                useNativeDriver: false,
+                tension: 40,
+                friction: 8,
+              }).start();
+            }}
+          >
+            <View style={{ marginTop: spacing.md }}>
+              <Text
+                style={{
+                  ...globalStyles.subTitle,
+                  color: colors.text.secondary,
+                  fontWeight: "bold",
+                }}
+              >
+                {section.title}
+              </Text>
+              <Animated.View
+                style={{
+                  height: 3,
+                  backgroundColor:
+                    selectedSection.id === section.id
+                      ? colors.ui.darkBlue
+                      : "transparent",
+                  marginTop: spacing.sm,
+                  borderRadius: spacing.sm,
+                  transform: [
+                    {
+                      scaleX:
+                        selectedSection.id === section.id ? animatedWidth : 0,
+                    },
+                  ],
+                }}
+              />
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+    );
+  };
+
+  // step 1
+  const renderPersonalInfo = () => {
+    return (
+      <View>
+        <View
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: spacing.lg,
+          }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={{
+              backgroundColor: colors.ui.lightGrey,
+              borderRadius: spacing.xxl,
+              justifyContent: "center",
+              alignItems: "center",
+              padding: spacing.xl,
+            }}
+          >
+            <Feather name="user" size={42} color={colors.ui.grey} />
+            <View
+              style={{
+                position: "absolute",
+                bottom: 0,
+                right: 0,
+                borderRadius: spacing.xxl,
+                backgroundColor: colors.ui.darkBlue,
+                padding: spacing.sm,
+              }}
+            >
+              <Feather name="camera" size={18} color={colors.ui.white} />
+            </View>
+          </TouchableOpacity>
+          <Text
+            style={{
+              ...globalStyles.subTitle,
+              fontWeight: "600",
+              marginTop: spacing.sm,
+            }}
+          >
+            Upload Photo
+          </Text>
+        </View>
+        <View>
+          <ProfileInputRowTitle title="Personal Information" icon="user" />
+          <ProfileInputRow
+            title="Full name"
+            placeholder="Enter your full name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+          <ProfileInputRow
+            title="Email"
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+          />
+
+          <ProfileInputRowTitle title="Contact Information" icon="phone" />
+          <ProfileInputRow
+            title="Phone Number"
+            placeholder="Enter your phone number"
+            value={phoneNumber}
+            onChangeText={setPhoneNumber}
+          />
+          <ProfileInputRow
+            title="Address"
+            placeholder="Enter your address"
+            value={address}
+            onChangeText={setAddress}
+          />
+        </View>
+        <View style={{ marginTop: spacing.lg }}>
+          <PrimaryButton title="Next" onPress={handleNext} />
+        </View>
+      </View>
+    );
+  };
+
+  // step 2
+  const renderBoatingInfo = () => {
+    return (
+      <View>
+        <ProfileInputRowTitle title="Boating Information" icon="map" />
+
+        <ProfileInputRow
+          title="Experience Level"
+          placeholder="Select your experience level"
+          value={experienceLevel}
+          onChangeText={setExperienceLevel}
+        />
+        <ProfileInputRow
+          title="Boating License"
+          placeholder="Enter your boating license"
+          value={boatingLicense}
+          onChangeText={setBoatingLicense}
+        />
+        <ProfileInputRow
+          title="Certifications"
+          placeholder="Enter your certifications"
+          value={certifications}
+          onChangeText={setCertifications}
+        />
+        <ProfileInputRow
+          title="Preferred Water"
+          placeholder="Enter your preferred water"
+          value={preferredWater}
+          onChangeText={setPreferredWater}
+        />
+
+        <ProfileInputRowTitle title="Safety Information" icon="shield" />
+        <View
+          style={{
+            marginTop: spacing.md,
+            backgroundColor: colors.ui.background,
+            padding: spacing.md,
+            borderRadius: spacing.md,
+            borderWidth: 1,
+            borderColor: colors.ui.lightGrey,
+          }}
+        >
+          <Text
+            style={{
+              ...globalStyles.subTitle,
+              color: colors.text.secondary,
+            }}
+          >
+            Please ensure your safety information is up to date. This
+            information will be used in case of emergencies.
+          </Text>
+        </View>
+        <View style={{ marginTop: spacing.lg }}>
+          <PrimaryButton title="Next" onPress={handleNext} />
+        </View>
+      </View>
+    );
+  };
+
+  // step 3
+  const renderPreferences = () => {
+    return (
+      <View>
+        <ProfileInputRowTitle title="App Preferences" icon="settings" />
+        <SwitchInputRow
+          title="Notifications"
+          value={notifications}
+          onChange={setNotifications}
+        />
+        <SwitchInputRow
+          title="Dark Mode"
+          value={darkMode}
+          onChange={setDarkMode}
+        />
+        <DropdownRow
+          title="Language"
+          value={selectedLanguage}
+          onChange={setSelectedLanguage}
+          onPress={() => {
+            setModalTitle("Language");
+            setModalData(languages);
+            setCurrentDropdownType("language");
+            setModalVisible(true);
+          }}
+        />
+        <DropdownRow
+          title="Measurement Units"
+          value={selectedMeasurementUnit}
+          onChange={setSelectedMeasurementUnit}
+          onPress={() => {
+            setModalTitle("Measurement Units");
+            setModalData(measurementUnits);
+            setCurrentDropdownType("measurement");
+            setModalVisible(true);
+          }}
+        />
+        <View
+          style={{
+            marginTop: spacing.xl,
+            gap: spacing.md,
+          }}
+        >
+          <TouchableOpacity onPress={openPrivacyPolicy}>
+            <Text style={{ ...globalStyles.subTitle, color: colors.text.link }}>
+              Privacy Policy
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={openTermsOfService}>
+            <Text style={{ ...globalStyles.subTitle, color: colors.text.link }}>
+              Terms of Service
+            </Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ marginTop: spacing.lg }}>
+          <PrimaryButton title="Complete" onPress={handleComplete} />
+        </View>
+      </View>
+    );
+  };
+
+  const renderForm = () => {
+    switch (step) {
+      case 1:
+        return renderPersonalInfo();
+      case 2:
+        return renderBoatingInfo();
+      case 3:
+        return renderPreferences();
+    }
+  };
+
+  const handleNext = () => {
+    scrollViewRef.current?.scrollTo({
+      y: 0,
+      animated: true,
+    });
+
+    setTimeout(() => {
+      setStep(step + 1);
+
+      Animated.spring(animatedProcent, {
+        toValue: procent + 33,
+        useNativeDriver: false,
+        tension: 40,
+        friction: 8,
+      }).start();
+
+      setProcent(procent + 33);
+      setSelectedSection(sections[step]);
+    }, 300);
+  };
+
+  const handleComplete = () => {
+    console.log("complete");
+  };
+
+  const renderModal = () => {
+    return (
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <TouchableOpacity
+          style={{
+            flex: 1,
+            justifyContent: "flex-end",
+          }}
+          onPress={() => setModalVisible(false)}
+        >
+          <View
+            style={{
+              backgroundColor: colors.ui.white,
+              borderTopLeftRadius: spacing.xl,
+              borderTopRightRadius: spacing.xl,
+              padding: spacing.xl,
+              maxHeight: "60%",
+              shadowColor: "#000",
+              shadowOffset: {
+                width: 0,
+                height: -4,
+              },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 5,
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: spacing.lg,
+              }}
+            >
+              <Text
+                style={{
+                  ...globalStyles.title,
+                  fontSize: 24,
+                }}
+              >
+                {modalTitle}
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <AntDesign
+                  name="close"
+                  size={24}
+                  color={colors.text.tertiary}
+                />
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              showsVerticalScrollIndicator={false}
+              data={modalData}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    padding: spacing.md,
+                    borderRadius: spacing.sm,
+                    backgroundColor: colors.ui.background,
+                    marginBottom: spacing.xs,
+                  }}
+                  onPress={() => {
+                    if (currentDropdownType === "language") {
+                      setSelectedLanguage(item);
+                    } else if (currentDropdownType === "measurement") {
+                      setSelectedMeasurementUnit(item);
+                    }
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text
+                    style={{
+                      ...globalStyles.input,
+                      color: colors.text.primary,
+                    }}
+                  >
+                    {item.title}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    );
+  };
+
+  const openPrivacyPolicy = () => {
+    Linking.openURL("https://www.google.com");
+  };
+
+  const openTermsOfService = () => {
+    Linking.openURL("https://www.google.com");
+  };
+
   return (
-    <View>
-      <Text>CreateProfileScreen</Text>
-    </View>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+      style={{ flex: 1 }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={globalStyles.scrollContainer}>
+          <ScrollView
+            ref={scrollViewRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{
+              paddingBottom: spacing.xxl,
+              paddingTop: spacing.lg,
+              flexGrow: 1,
+            }}
+          >
+            <View>
+              <View
+                style={{
+                  height: 10,
+                  backgroundColor: colors.brand.light,
+                  borderRadius: spacing.md,
+                  position: "relative",
+                }}
+              >
+                <Animated.View
+                  style={{
+                    width: animatedProcent.interpolate({
+                      inputRange: [0, 100],
+                      outputRange: ["0%", "100%"],
+                    }),
+                    height: 10,
+                    backgroundColor: colors.ui.darkBlue,
+                    borderRadius: spacing.md,
+                    position: "absolute",
+                    left: 0,
+                  }}
+                />
+              </View>
+              <Text
+                style={{
+                  ...globalStyles.smallText,
+                  color: colors.text.secondary,
+                  marginTop: spacing.sm,
+                }}
+              >
+                {procent}% completed
+              </Text>
+            </View>
+            {renderSection()}
+            {renderForm()}
+          </ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
+      {renderModal()}
+    </KeyboardAvoidingView>
   );
 };
 

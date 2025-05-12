@@ -20,7 +20,7 @@ const PrimaryButton = ({
   arrow,
 }: {
   onPress: () => void;
-  loading: boolean;
+  loading?: boolean;
   disabled?: boolean;
   title: string;
   arrow?: boolean;

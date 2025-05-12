@@ -24,7 +24,8 @@ import PrimaryButton from "../../components/PrimaryButton";
 import AntDesign from "@expo/vector-icons/build/AntDesign";
 import { Keyboard } from "react-native";
 import RoleSelector from "./components/RoleSelector";
-
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 const roles = [
   {
     id: 1,
@@ -43,7 +44,13 @@ const roles = [
   },
 ];
 
+type RootStackParamList = {
+  CreateProfile: undefined;
+};
+
 const AuthScreen = () => {
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -124,6 +131,7 @@ const AuthScreen = () => {
 
   function handleCompleteSetup() {
     console.log("Complete Setup");
+    navigation.navigate("CreateProfile");
   }
 
   function renderPhoneInput() {
