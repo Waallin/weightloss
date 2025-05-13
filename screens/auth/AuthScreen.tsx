@@ -303,7 +303,7 @@ const AuthScreen = () => {
               marginTop: spacing.md,
               backgroundColor: colors.ui.background,
               padding: spacing.md,
-              borderRadius: spacing.md,
+              borderRadius: spacing.borderRadius,
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "space-between",
@@ -313,7 +313,7 @@ const AuthScreen = () => {
               style={{
                 backgroundColor: colors.ui.white,
                 padding: spacing.md,
-                borderRadius: spacing.xl,
+                borderRadius: spacing.borderRadius,
               }}
             >
               <AntDesign name="qrcode" size={24} color={colors.brand.primary} />
@@ -406,7 +406,7 @@ const AuthScreen = () => {
               style={{
                 ...globalStyles.input,
                 flex: 1,
-                color: colors.text.prima22ry,
+                color: colors.text.primary,
                 marginLeft: spacing.sm,
               }}
               placeholder="Enter the 6-digit verification code"
@@ -576,7 +576,7 @@ const AuthScreen = () => {
           onScrollBeginDrag={() => Keyboard.dismiss()}
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          <View style={[globalStyles.container, { marginTop: spacing.xl }]}>
+          <View style={[globalStyles.authContainer, { marginTop: spacing.xl }]}>
             <Text
               style={{
                 ...globalStyles.title,
@@ -662,7 +662,7 @@ const AuthScreen = () => {
                       flexDirection: "row",
                       alignItems: "center",
                       padding: spacing.md,
-                      borderRadius: spacing.sm,
+                      borderRadius: spacing.borderRadius,
                       backgroundColor:
                         selectedCountry.code === item.code
                           ? colors.ui.background
@@ -727,7 +727,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderWidth: 1,
     borderColor: colors.ui.border,
-    borderRadius: spacing.md,
+    borderRadius: spacing.borderRadius,
     padding: spacing.md,
     flexDirection: "row",
     alignItems: "center",

@@ -23,6 +23,9 @@ import ProfileInputRow from "./components/ProfileInputRow";
 import PrimaryButton from "../../components/PrimaryButton";
 import SwitchInputRow from "./components/SwitchInputRow";
 import DropdownRow from "./components/DropdownRow";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/types";
 
 const sections = [
   {
@@ -65,7 +68,7 @@ const languages = [
   },
 ];
 
-const CreateProfileScreen = () => {
+const CreateProfileScreen = ({}) => {
   const [procent, setProcent] = useState(0);
   const [selectedSection, setSelectedSection] = useState(sections[0]);
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -73,6 +76,9 @@ const CreateProfileScreen = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [step, setStep] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [fullName, setFullName] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -152,7 +158,7 @@ const CreateProfileScreen = () => {
                       ? colors.ui.darkBlue
                       : "transparent",
                   marginTop: spacing.sm,
-                  borderRadius: spacing.sm,
+                  borderRadius: spacing.borderRadius,
                   transform: [
                     {
                       scaleX:
@@ -183,7 +189,7 @@ const CreateProfileScreen = () => {
             activeOpacity={0.8}
             style={{
               backgroundColor: colors.ui.lightGrey,
-              borderRadius: spacing.xxl,
+              borderRadius: spacing.rounded,
               justifyContent: "center",
               alignItems: "center",
               padding: spacing.xl,
@@ -195,7 +201,7 @@ const CreateProfileScreen = () => {
                 position: "absolute",
                 bottom: 0,
                 right: 0,
-                borderRadius: spacing.xxl,
+                borderRadius: spacing.rounded,
                 backgroundColor: colors.ui.darkBlue,
                 padding: spacing.sm,
               }}
@@ -286,7 +292,7 @@ const CreateProfileScreen = () => {
             marginTop: spacing.md,
             backgroundColor: colors.ui.background,
             padding: spacing.md,
-            borderRadius: spacing.md,
+            borderRadius: spacing.borderRadius,
             borderWidth: 1,
             borderColor: colors.ui.lightGrey,
           }}
@@ -403,6 +409,7 @@ const CreateProfileScreen = () => {
 
   const handleComplete = () => {
     console.log("complete");
+    navigation.navigate("MainStack");
   };
 
   const renderModal = () => {
@@ -471,8 +478,9 @@ const CreateProfileScreen = () => {
                     flexDirection: "row",
                     alignItems: "center",
                     padding: spacing.md,
-                    borderRadius: spacing.sm,
-                    backgroundColor: colors.ui.background,
+                    borderRadius: spacing.borderRadius,
+                    borderBottomWidth: 1,
+                    borderColor: colors.ui.lightGrey,
                     marginBottom: spacing.xs,
                   }}
                   onPress={() => {
@@ -532,7 +540,7 @@ const CreateProfileScreen = () => {
                 style={{
                   height: 10,
                   backgroundColor: colors.brand.light,
-                  borderRadius: spacing.md,
+                  borderRadius: spacing.borderRadius,
                   position: "relative",
                 }}
               >
@@ -544,7 +552,7 @@ const CreateProfileScreen = () => {
                     }),
                     height: 10,
                     backgroundColor: colors.ui.darkBlue,
-                    borderRadius: spacing.md,
+                    borderRadius: spacing.borderRadius,
                     position: "absolute",
                     left: 0,
                   }}

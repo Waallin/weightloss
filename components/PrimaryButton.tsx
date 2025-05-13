@@ -71,7 +71,7 @@ const PrimaryButton = ({
         style={{
           backgroundColor: backgroundColor,
           padding: spacing.md,
-          borderRadius: spacing.md,
+          borderRadius: spacing.borderRadius,
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "row",

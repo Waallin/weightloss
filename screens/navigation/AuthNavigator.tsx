@@ -2,20 +2,18 @@ import { createStackNavigator } from "@react-navigation/stack";
 import AuthScreen from "../auth/AuthScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import CreateProfileScreen from "../auth/CreateProfileScreen";
-import { TouchableOpacity, Text } from "react-native";
-import { spacing } from "../../constants/spacing";
-import { colors } from "../../constants/colors";
+import { MainStack } from "./MainStack";
 const Stack = createStackNavigator();
 
 export const AuthNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {/* <Stack.Screen
+        <Stack.Screen
           name="Auth"
           component={AuthScreen}
           options={{ headerShown: false }}
-        /> */}
+        />
         <Stack.Screen
           name="CreateProfile"
           component={CreateProfileScreen}
@@ -25,6 +23,11 @@ export const AuthNavigator = () => {
             headerLeft: () => null,
             gestureEnabled: false,
           }}
+        />
+        <Stack.Screen
+          name="MainStack"
+          component={MainStack}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

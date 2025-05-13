@@ -55,8 +55,9 @@ const RoleSelector = ({
           backgroundColor: selected ? colors.ui.background : "white",
           borderWidth: selected ? 2 : 0,
           borderColor: colors.ui.border,
-          padding: spacing.md,
-          borderRadius: spacing.md,
+          paddingHorizontal: spacing.sm,
+          paddingVertical: spacing.md,
+          borderRadius: spacing.borderRadius,
           alignItems: "center",
           justifyContent: "center",
           ...globalStyles.cardShadow,
@@ -72,7 +73,7 @@ const RoleSelector = ({
               : colors.ui.background,
             width: 50,
             height: 50,
-            borderRadius: 25,
+            borderRadius: spacing.borderRadius,
             alignItems: "center",
             justifyContent: "center",
           }}
@@ -88,6 +89,9 @@ const RoleSelector = ({
             ...globalStyles.smallText,
             fontWeight: "bold",
             marginTop: spacing.sm,
+            textAlign: "center",
+            width: "100%",
+            flexShrink: 0,
           }}
         >
           {title}

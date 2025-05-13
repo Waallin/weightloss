@@ -8,6 +8,13 @@ export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
+    padding: 20,
+    backgroundColor: colors.ui.background,
+  },
+
+  authContainer: {
+    flex: 1,
+    width: "100%",
     padding: spacing.lg,
   },
   scrollContainer: {
@@ -22,14 +29,21 @@ export const globalStyles = StyleSheet.create({
     color: colors.text.primary,
   },
 
+  bodyText: {
+    fontSize: RFValue(16),
+    fontFamily: fonts.primary.regular,
+    fontWeight: "600",
+    color: colors.text.primary,
+  },
+
   subTitle: {
-    fontSize: RFValue(12),
+    fontSize: RFValue(14),
     fontFamily: fonts.primary.regular,
     fontWeight: "400",
     color: colors.text.secondary,
   },
   smallText: {
-    fontSize: RFValue(10),
+    fontSize: RFValue(12),
     fontFamily: fonts.primary.regular,
     fontWeight: "400",
     color: colors.text.secondary,
