@@ -24,7 +24,7 @@ const ProfileInputRowTitle = ({
         style={{
           backgroundColor: colors.ui.lightGrey,
           padding: spacing.sm,
-          borderRadius: spacing.md,
+          borderRadius: spacing.borderRadius,
         }}
       >
         <Feather name={icon as any} size={24} color={colors.ui.darkBlue} />

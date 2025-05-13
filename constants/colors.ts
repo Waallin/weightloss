@@ -13,7 +13,7 @@ export const colors = {
   ui: {
     border: "#75A0C4",
     accent: "#6B8598",
-    background: "#E6EEF5",
+    background: "#EEF6FF",
     white: "#FFFFFF",
     darkBlue: "#2A5580",
     grey: "#9CA3AF",

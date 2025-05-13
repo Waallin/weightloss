@@ -26,7 +26,7 @@ const ProfileInputRow = ({
           marginTop: spacing.sm,
           borderWidth: 1,
           borderColor: colors.ui.lightGrey,
-          borderRadius: spacing.md,
+          borderRadius: spacing.borderRadius,
           padding: spacing.md,
         }}
         value={value}

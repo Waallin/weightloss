@@ -48,6 +48,7 @@ import Animated, {
   Extrapolation,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { spacing } from "./constants/spacing";
 
 const { width, height } = Dimensions.get("window");
 const isSmallScreen = height < 700;
@@ -972,7 +973,7 @@ const styles = StyleSheet.create({
     width: "100%",
     maxWidth: 400,
     alignSelf: "center",
-    borderRadius: 28,
+    borderRadius: spacing.borderRadius,
     overflow: "hidden",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 8 },
@@ -981,7 +982,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   formContainerSmall: {
-    borderRadius: 20,
+    borderRadius: spacing.borderRadius,
   },
   formContainerKeyboard: {
     marginTop: 20,
@@ -1011,7 +1012,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: Colors.neutral[50],
-    borderRadius: 16,
+    borderRadius: spacing.borderRadius,
     marginBottom: 16,
     paddingHorizontal: 16,
     borderWidth: 1,
@@ -1040,7 +1041,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     backgroundColor: "#6B8598", // This matches the screenshot's button color better
-    borderRadius: 16,
+    borderRadius: spacing.borderRadius,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
@@ -1068,7 +1069,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "transparent",
-    borderRadius: 16,
+    borderRadius: spacing.borderRadius,
   },
   secondaryButtonText: {
     fontFamily: "Poppins-Medium",
@@ -1097,7 +1098,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: isSmallScreen ? 12 : 16,
-    borderRadius: 16,
+    borderRadius: spacing.borderRadius,
     backgroundColor: Colors.neutral[50],
     borderWidth: 1.5,
     borderColor: Colors.neutral[200],
@@ -1208,7 +1209,7 @@ const styles = StyleSheet.create({
   },
   countryPickerContainer: {
     backgroundColor: Colors.background,
-    borderRadius: 12,
+    borderRadius: spacing.borderRadius,
     marginTop: -16,
     marginBottom: 16,
     padding: 8,
@@ -1224,7 +1225,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: spacing.borderRadius,
   },
   countryName: {
     flex: 1,
@@ -1244,7 +1245,7 @@ const styles = StyleSheet.create({
   qrCodeIconContainer: {
     width: 42,
     height: 42,
-    borderRadius: 21,
+    borderRadius: spacing.borderRadius,
     backgroundColor: "rgba(255,255,255,0.8)",
     alignItems: "center",
     justifyContent: "center",
@@ -1268,7 +1269,7 @@ const styles = StyleSheet.create({
   qrArrowContainer: {
     width: 30,
     height: 30,
-    borderRadius: 15,
+    borderRadius: spacing.borderRadius,
     alignItems: "center",
     justifyContent: "center",
   },
