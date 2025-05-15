@@ -45,7 +45,7 @@ const SettingsRow = ({
           <View
             style={{
               marginRight: spacing.md,
-              backgroundColor: colors.ui.background,
+              backgroundColor: colors.ui.lightBlueBackground,
               padding: spacing.sm,
               borderRadius: spacing.borderRadius,
             }}

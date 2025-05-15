@@ -22,7 +22,7 @@ const ProfileInputRow = ({
       <TextInput
         placeholder={placeholder}
         style={{
-          ...globalStyles.input,
+          ...globalStyles.smallGreyText,
           marginTop: spacing.sm,
           borderWidth: 1,
           borderColor: colors.ui.lightGrey,

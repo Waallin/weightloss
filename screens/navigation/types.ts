@@ -2,6 +2,7 @@ export type RootStackParamList = {
   MainNavigator: undefined;
   Profile: undefined;
   MainStack: undefined;
+  BoatRegistration: undefined;
 };
 
 declare global {
