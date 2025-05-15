@@ -9,7 +9,7 @@ export const AuthNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen
+        {/* <Stack.Screen
           name="Auth"
           component={AuthScreen}
           options={{ headerShown: false }}
@@ -23,7 +23,7 @@ export const AuthNavigator = () => {
             headerLeft: () => null,
             gestureEnabled: false,
           }}
-        />
+        /> */}
         <Stack.Screen
           name="MainStack"
           component={MainStack}

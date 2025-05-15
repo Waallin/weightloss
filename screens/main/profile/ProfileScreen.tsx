@@ -15,7 +15,7 @@ import { Feather } from "@expo/vector-icons";
 import VesselCard from "./components/VesselCard";
 import SettingsRow from "./components/SettingsRow";
 import SwitchSettingsRow from "./components/SwitchSettingsRow";
-
+import { useNavigation } from "@react-navigation/native";
 const dummyVessels = [
   {
     id: 1,
@@ -39,7 +39,7 @@ const dummyVessels = [
 
 const ProfileScreen = () => {
   const profileImage = require("../../../assets/profile.png");
-
+  const navigation = useNavigation();
   const [notifications, setNotifications] = useState(true);
   const [location, setLocation] = useState(false);
   const accountSettings = [
@@ -88,11 +88,16 @@ const ProfileScreen = () => {
     },
   ];
 
+  const handleNavigateToBoatRegistration = () => {
+    navigation.navigate("BoatRegistration");
+  };
+
   return (
     <View
       style={{
-        ...globalStyles.container,
-        padding: 0,
+        flex: 1,
+        width: "100%",
+        backgroundColor: colors.ui.primaryBackground,
       }}
     >
       <ScrollView
@@ -160,7 +165,7 @@ const ProfileScreen = () => {
             </Text>
             <TouchableOpacity
               style={{
-                backgroundColor: colors.ui.background,
+                backgroundColor: colors.ui.lightBlueBackground,
                 padding: spacing.xs,
                 paddingHorizontal: spacing.md,
                 borderRadius: spacing.borderRadius,
@@ -199,6 +204,7 @@ const ProfileScreen = () => {
             My Vessels
           </Text>
           <TouchableOpacity
+            onPress={handleNavigateToBoatRegistration}
             style={{
               backgroundColor: colors.ui.darkBlue,
               paddingHorizontal: spacing.md,

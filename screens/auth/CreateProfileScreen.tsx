@@ -290,7 +290,7 @@ const CreateProfileScreen = ({}) => {
         <View
           style={{
             marginTop: spacing.md,
-            backgroundColor: colors.ui.background,
+            backgroundColor: colors.ui.lightBlueBackground,
             padding: spacing.md,
             borderRadius: spacing.borderRadius,
             borderWidth: 1,
@@ -494,7 +494,7 @@ const CreateProfileScreen = ({}) => {
                 >
                   <Text
                     style={{
-                      ...globalStyles.input,
+                      ...globalStyles.smallGreyText,
                       color: colors.text.primary,
                     }}
                   >

@@ -3,24 +3,25 @@ import { colors } from "./colors";
 import { fonts } from "./fonts";
 import { spacing } from "./spacing";
 import { RFValue } from "react-native-responsive-fontsize";
+import { LinearGradient } from "react-native-svg";
 
 export const globalStyles = StyleSheet.create({
   container: {
     flex: 1,
     width: "100%",
-    padding: 20,
-    backgroundColor: colors.ui.background,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.ui.primaryBackground,
   },
 
   authContainer: {
     flex: 1,
     width: "100%",
-    padding: spacing.lg,
+    padding: spacing.md,
   },
   scrollContainer: {
     flex: 1,
     width: "100%",
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
   },
   title: {
     fontSize: RFValue(26),
@@ -55,11 +56,11 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "600",
     color: colors.ui.white,
   },
-  input: {
+  smallGreyText: {
     fontSize: RFValue(12),
-    fontFamily: fonts.primary.regular,
+    fontFamily: fonts.primary.medium,
     fontWeight: "400",
-    color: colors.text.tertiary,
+    color: colors.text.light,
   },
 
   cardShadow: {

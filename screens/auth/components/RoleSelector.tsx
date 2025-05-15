@@ -52,7 +52,7 @@ const RoleSelector = ({
         activeOpacity={0.8}
         style={{
           flex: 1,
-          backgroundColor: selected ? colors.ui.background : "white",
+          backgroundColor: selected ? colors.ui.lightBlueBackground : "white",
           borderWidth: selected ? 2 : 0,
           borderColor: colors.ui.border,
           paddingHorizontal: spacing.sm,
@@ -70,7 +70,7 @@ const RoleSelector = ({
           style={{
             backgroundColor: selected
               ? colors.ui.darkBlue
-              : colors.ui.background,
+              : colors.ui.lightBlueBackground,
             width: 50,
             height: 50,
             borderRadius: spacing.borderRadius,

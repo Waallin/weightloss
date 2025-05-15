@@ -207,7 +207,7 @@ const AuthScreen = () => {
               <Feather name="phone" size={20} color={colors.brand.primary} />
               <Text
                 style={{
-                  ...globalStyles.input,
+                  ...globalStyles.smallGreyText,
                   color: colors.text.tertiary,
                 }}
               >
@@ -215,7 +215,7 @@ const AuthScreen = () => {
               </Text>
               <Text
                 style={{
-                  ...globalStyles.input,
+                  ...globalStyles.smallGreyText,
                   color: colors.text.tertiary,
                 }}
               >
@@ -239,7 +239,7 @@ const AuthScreen = () => {
             >
               <TextInput
                 style={{
-                  ...globalStyles.input,
+                  ...globalStyles.smallGreyText,
                   color: colors.text.primary,
                   padding: 0,
                 }}
@@ -301,7 +301,7 @@ const AuthScreen = () => {
             }}
             style={{
               marginTop: spacing.md,
-              backgroundColor: colors.ui.background,
+              backgroundColor: colors.ui.lightBlueBackground,
               padding: spacing.md,
               borderRadius: spacing.borderRadius,
               flexDirection: "row",
@@ -404,7 +404,7 @@ const AuthScreen = () => {
             <Feather name="lock" size={24} color={colors.brand.primary} />
             <TextInput
               style={{
-                ...globalStyles.input,
+                ...globalStyles.smallGreyText,
                 flex: 1,
                 color: colors.text.primary,
                 marginLeft: spacing.sm,
@@ -493,7 +493,7 @@ const AuthScreen = () => {
             <Feather name="user" size={24} color={colors.brand.primary} />
             <TextInput
               style={{
-                ...globalStyles.input,
+                ...globalStyles.smallGreyText,
                 flex: 1,
                 color: colors.text.primary,
                 marginLeft: spacing.sm,
@@ -665,7 +665,7 @@ const AuthScreen = () => {
                       borderRadius: spacing.borderRadius,
                       backgroundColor:
                         selectedCountry.code === item.code
-                          ? colors.ui.background
+                          ? colors.ui.lightBlueBackground
                           : "transparent",
                       marginBottom: spacing.xs,
                     }}
@@ -677,7 +677,7 @@ const AuthScreen = () => {
                     <View>
                       <Text
                         style={{
-                          ...globalStyles.input,
+                          ...globalStyles.smallGreyText,
                           color: colors.text.primary,
                         }}
                       >
