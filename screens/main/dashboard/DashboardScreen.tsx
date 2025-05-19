@@ -25,5 +25,4 @@ const DashboardScreen = () => {
 };
 
 export default DashboardScreen;
-
 const styles = StyleSheet.create({});

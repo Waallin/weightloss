@@ -78,7 +78,7 @@ const MainNavigator = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
+        tabBarShowLabel: true,
         tabBarStyle: {
           backgroundColor: colors.ui.white,
           marginBottom: spacing.lg,
@@ -86,12 +86,13 @@ const MainNavigator = () => {
           borderRadius: spacing.borderRadius,
           ...globalStyles.cardShadow,
           height: 65,
-          paddingTop: spacing.sm,
+          paddingTop: 5,
         },
         tabBarActiveTintColor: colors.brand.primary,
         tabBarInactiveTintColor: colors.text.tertiary,
         tabBarLabelStyle: {
           ...globalStyles.tabBarLabel,
+          paddingTop: 5,
         },
       }}
     >
