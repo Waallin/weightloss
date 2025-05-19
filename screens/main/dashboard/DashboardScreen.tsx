@@ -4,11 +4,19 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/types";
 import { colors } from "../../../constants/colors";
+import { globalStyles } from "../../../constants/globalStyles";
 const DashboardScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View
+      style={{
+        ...globalStyles.container,
+        backgroundColor: colors.ui.lightBlueBackground,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
       <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
         <Text style={{ color: colors.text.primary }}>go to profile</Text>
       </TouchableOpacity>
