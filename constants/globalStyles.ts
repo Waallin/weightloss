@@ -63,6 +63,13 @@ export const globalStyles = StyleSheet.create({
     color: colors.text.light,
   },
 
+  tabBarLabel: {
+    fontSize: RFValue(8),
+    fontFamily: fonts.primary.regular,
+    fontWeight: "400",
+    color: colors.text.light,
+  },
+
   cardShadow: {
     // iOS shadow
     shadowColor: colors.text.primary,
