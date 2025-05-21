@@ -87,6 +87,7 @@ const MainNavigator = () => {
           ...globalStyles.cardShadow,
           height: 65,
           paddingTop: 5,
+          position: "absolute",
         },
         tabBarActiveTintColor: colors.brand.primary,
         tabBarInactiveTintColor: colors.text.tertiary,

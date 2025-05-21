@@ -164,7 +164,7 @@ const BoatRegistration = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             flexGrow: 1,
-            paddingBottom: spacing.xxl,
+            paddingBottom: spacing.scrollViewBottomPadding,
           }}
         >
           <View
