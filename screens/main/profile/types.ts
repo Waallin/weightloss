@@ -12,3 +12,14 @@ export type SwitchSettingsRowProps = {
   value: boolean;
   onValueChange: (value: boolean) => void;
 };
+
+export type DropdownRowProps = {
+  title: string;
+  value: string;
+  onValueChange: (value: string) => void;
+};
+
+export type ModalItem = {
+  id: number;
+  title: string;
+};
