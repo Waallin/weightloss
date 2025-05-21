@@ -1,6 +1,5 @@
 import { Modal, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
-import ProfileInputRowTitle from "../../../auth/components/ProfileInputRowTitle";
 import SwitchInputRow from "../../../auth/components/SwitchInputRow";
 import DropdownRow from "../../../auth/components/DropdownRow";
 import { colors } from "../../../../constants/colors";

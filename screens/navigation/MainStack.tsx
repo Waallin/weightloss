@@ -3,6 +3,7 @@ import MainNavigator from "./MainNavigator";
 import ProfileScreen from "../main/profile/ProfileScreen";
 import BoatRegistration from "../main/boat-registration/BoatRegistration";
 import PreferenceView from "../main/profile/preferences/PreferenceView";
+import { SafeAreaView } from "react-native";
 const Stack = createStackNavigator();
 
 export const MainStack = () => {

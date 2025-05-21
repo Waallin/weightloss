@@ -574,7 +574,10 @@ const AuthScreen = () => {
         <SafeAreaView />
         <ScrollView
           onScrollBeginDrag={() => Keyboard.dismiss()}
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingBottom: spacing.scrollViewBottomPadding,
+          }}
         >
           <View style={[globalStyles.authContainer, { marginTop: spacing.xl }]}>
             <Text

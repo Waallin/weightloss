@@ -530,7 +530,7 @@ const CreateProfileScreen = ({}) => {
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
-              paddingBottom: spacing.xxl,
+              paddingBottom: spacing.scrollViewBottomPadding,
               paddingTop: spacing.lg,
               flexGrow: 1,
             }}

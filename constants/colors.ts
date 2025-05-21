@@ -16,10 +16,13 @@ export const colors = {
     accent: "#6B8598",
     primaryBackground: "#F3F6FA",
     lightBlueBackground: "#EEF6FF",
+    lightBlue: "#D1E9FF",
     white: "#FFFFFF",
     darkBlue: "#2A5580",
     grey: "#9CA3AF",
+    green: "#34C759",
     lightGrey: "#E5E7EB",
+    darkGrey: "#C5D4E0",
   },
   status: {
     success: "#43A047",
@@ -27,5 +30,12 @@ export const colors = {
     error: "#E53935",
     info: "#1A406A",
     disabled: "#C4CDD4",
+  },
+
+  progressBar: {
+    zero: "#E53935",
+    twentyFive: "#FFA726",
+    fifty: "#2A5580",
+    oneHundred: "#34C759",
   },
 };

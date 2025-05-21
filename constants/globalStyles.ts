@@ -30,6 +30,13 @@ export const globalStyles = StyleSheet.create({
     color: colors.text.primary,
   },
 
+  smallTitle: {
+    fontSize: RFValue(20),
+    fontFamily: fonts.primary.bold,
+    fontWeight: "700",
+    color: colors.text.primary,
+  },
+
   bodyText: {
     fontSize: RFValue(16),
     fontFamily: fonts.primary.regular,
@@ -45,6 +52,13 @@ export const globalStyles = StyleSheet.create({
   },
   smallText: {
     fontSize: RFValue(12),
+    fontFamily: fonts.primary.regular,
+    fontWeight: "400",
+    color: colors.text.secondary,
+  },
+
+  xSmallText: {
+    fontSize: RFValue(10),
     fontFamily: fonts.primary.regular,
     fontWeight: "400",
     color: colors.text.secondary,
