@@ -64,7 +64,7 @@ const ProfileScreen = () => {
       title: "Preferences",
       icon: "settings",
       onPress: () => {
-        console.log("Preferences");
+        navigation.navigate("PreferenceView");
       },
     },
   ];
@@ -263,33 +263,6 @@ const ProfileScreen = () => {
                 onPress={setting.onPress}
               />
             ))}
-          </View>
-          <View
-            style={{ paddingHorizontal: spacing.md, marginTop: spacing.md }}
-          >
-            <Text
-              style={{
-                ...globalStyles.bodyText,
-                color: colors.ui.darkBlue,
-                fontWeight: "bold",
-                marginBottom: spacing.sm,
-              }}
-            >
-              Notifications
-            </Text>
-
-            <SwitchSettingsRow
-              title="Notifications"
-              icon="bell"
-              value={notifications}
-              onValueChange={() => setNotifications(!notifications)}
-            />
-            <SwitchSettingsRow
-              title="Location"
-              icon="map-pin"
-              value={location}
-              onValueChange={() => setLocation(!location)}
-            />
           </View>
         </View>
         <View style={{ paddingHorizontal: spacing.md, marginTop: spacing.md }}>
