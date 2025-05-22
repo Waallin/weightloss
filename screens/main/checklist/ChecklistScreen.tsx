@@ -88,8 +88,8 @@ const renderChecklist = () => {
         marginTop: spacing.md,
       }}
     >
-      {dummyChecklist.map((checklist) => (
-        <Checklist checklist={checklist} />
+      {dummyChecklist.map((checklist, index) => (
+        <Checklist checklist={checklist} key={index} />
       ))}
     </View>
   );

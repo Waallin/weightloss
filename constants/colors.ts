@@ -32,6 +32,20 @@ export const colors = {
     disabled: "#C4CDD4",
   },
 
+  boatStatus: {
+    docked: "#34C759",
+    sailing: "#2A5580",
+    anchor: "#FF9500",
+    unknown: "#C4CDD4",
+  },
+
+  nearbyItemColor: {
+    fuel: "#FFD600",
+    restaurant: "#34C759",
+    marina: "#2A5580",
+    default: "#D1E9FF",
+  },
+
   progressBar: {
     zero: "#E53935",
     twentyFive: "#FFA726",

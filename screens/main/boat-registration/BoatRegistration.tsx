@@ -14,7 +14,7 @@ import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import InputRow from "./components/InputRow";
 import PrimaryButton from "../../../components/PrimaryButton";
-import SegmentedControl from "./components/SegmentedControl";
+import SegmentedControl from "../../../components/SegmentedControl";
 import * as Haptics from "expo-haptics";
 import { useRef } from "react";
 const BoatRegistration = () => {

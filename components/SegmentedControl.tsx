@@ -1,8 +1,8 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { colors } from "../../../../constants/colors";
-import { globalStyles } from "../../../../constants/globalStyles";
-import { spacing } from "../../../../constants/spacing";
+import { colors } from "../constants/colors";
+import { globalStyles } from "../constants/globalStyles";
+import { spacing } from "../constants/spacing";
 import * as Haptics from "expo-haptics";
 const SegmentedControl = ({
   values,
