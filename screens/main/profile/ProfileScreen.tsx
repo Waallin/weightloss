@@ -16,6 +16,7 @@ import VesselCard from "./components/VesselCard";
 import SettingsRow from "./components/SettingsRow";
 import SwitchSettingsRow from "./components/SwitchSettingsRow";
 import { useNavigation } from "@react-navigation/native";
+
 const dummyVessels = [
   {
     id: 1,
