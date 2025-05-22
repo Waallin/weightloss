@@ -12,6 +12,8 @@ import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import { Ionicons } from "@expo/vector-icons";
 import Checklist from "./components/Checklist";
+import useUserStore from "../../../stores/useUserStore";
+import globalApi from "../../../services/api";
 const dummyChecklist = [
   {
     id: 1,
@@ -81,21 +83,26 @@ const dummyChecklist = [
   },
 ];
 
-const renderChecklist = () => {
-  return (
-    <View
-      style={{
-        marginTop: spacing.md,
-      }}
-    >
-      {dummyChecklist.map((checklist, index) => (
-        <Checklist checklist={checklist} key={index} />
-      ))}
-    </View>
-  );
-};
-
 const ChecklistScreen = () => {
+  const { user } = useUserStore();
+  const renderChecklist = () => {
+    return (
+      <View
+        style={{
+          marginTop: spacing.md,
+        }}
+      >
+        {dummyChecklist.map((checklist, index) => (
+          <Checklist checklist={checklist} key={index} />
+        ))}
+      </View>
+    );
+  };
+
+  const handleAPI = () => {
+    globalApi("GET", "user/get", null, user.token);
+  };
+
   return (
     <View
       style={{
@@ -202,6 +209,7 @@ const ChecklistScreen = () => {
         }}
       >
         <TouchableOpacity
+          onPress={handleAPI}
           style={{
             flexDirection: "row",
             alignItems: "center",
