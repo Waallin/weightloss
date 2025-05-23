@@ -11,11 +11,11 @@ interface DropdownRowProps {
     id: number;
     title: string;
   };
-  onChange: (value: any) => void;
+
   onPress: () => void;
 }
 
-const DropdownRow = ({ title, value, onChange, onPress }: DropdownRowProps) => {
+const DropdownRow = ({ title, value, onPress }: DropdownRowProps) => {
   return (
     <View
       style={{

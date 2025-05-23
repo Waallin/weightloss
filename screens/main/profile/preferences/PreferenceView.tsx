@@ -9,6 +9,8 @@ import { AntDesign } from "@expo/vector-icons";
 import { FlatList } from "react-native";
 import { TouchableOpacity } from "react-native";
 import { ModalItem } from "../types";
+import globalApi from "../../../../services/api";
+import useUserStore from "../../../../stores/useUserStore";
 const languages = [
   { id: 1, title: "English" },
   { id: 2, title: "Spanish" },
@@ -20,16 +22,34 @@ const measurementUnits = [
 ];
 
 const PreferenceView = () => {
+  const { user } = useUserStore();
+
   const [notifications, setNotifications] = useState(false);
   const [location, setLocation] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<ModalItem[]>([]);
   const [currentDropdownType, setCurrentDropdownType] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
   const [selectedMeasurementUnit, setSelectedMeasurementUnit] = useState(
     measurementUnits[0]
   );
+
+  const handleChangeSwitch = async (key: string, value: any) => {
+    const payload = {
+      [key]: !value,
+    };
+    const endpoint = "user/update";
+    const response = await globalApi("POST", endpoint, payload, user.token);
+  };
+
+  const handleChangeDropdown = async (key: string, value: any) => {
+    const payload = {
+      [key]: value,
+    };
+    const endpoint = "user/update";
+    const response = await globalApi("POST", endpoint, payload, user.token);
+  };
 
   const renderModal = () => {
     return (
@@ -103,6 +123,7 @@ const PreferenceView = () => {
                     marginBottom: spacing.xs,
                   }}
                   onPress={() => {
+                    handleChangeDropdown(currentDropdownType, item.title);
                     if (currentDropdownType === "language") {
                       setSelectedLanguage(item);
                     } else if (currentDropdownType === "measurement") {
@@ -134,18 +155,23 @@ const PreferenceView = () => {
         <SwitchInputRow
           title="Notifications"
           value={notifications}
-          onChange={setNotifications}
+          onChange={() => {
+            setNotifications(!notifications);
+            handleChangeSwitch("notifications", notifications);
+          }}
         />
 
         <SwitchInputRow
           title="Location"
           value={location}
-          onChange={setLocation}
+          onChange={() => {
+            setLocation(!location);
+            handleChangeSwitch("location", location);
+          }}
         />
         <DropdownRow
           title="Language"
           value={selectedLanguage}
-          onChange={setSelectedLanguage}
           onPress={() => {
             setModalTitle("Language");
             setModalData(languages);
@@ -156,7 +182,6 @@ const PreferenceView = () => {
         <DropdownRow
           title="Measurement Units"
           value={selectedMeasurementUnit}
-          onChange={setSelectedMeasurementUnit}
           onPress={() => {
             setModalTitle("Measurement Units");
             setModalData(measurementUnits);
