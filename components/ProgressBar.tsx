@@ -14,6 +14,8 @@ const ProgressBar = ({ progress }: { progress: number }) => {
     }
     return colors.progressBar.zero;
   };
+
+  
   return (
     <View>
       <View
