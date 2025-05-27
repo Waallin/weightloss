@@ -96,4 +96,10 @@ export const globalStyles = StyleSheet.create({
     // Android shadow
     elevation: 4,
   },
+
+  widgetContainer: {
+    backgroundColor: colors.ui.white,
+    borderRadius: spacing.borderRadius,
+    padding: spacing.md,
+  },
 });

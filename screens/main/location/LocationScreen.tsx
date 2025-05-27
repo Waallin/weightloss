@@ -94,6 +94,7 @@ const LocationScreen = () => {
   const [mapExpanded, setMapExpanded] = useState(true);
   const animatedHeight = useRef(new Animated.Value(500)).current;
   const [selectedSegment, setSelectedSegment] = useState(0);
+
   const handleExpandMap = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const toValue = mapExpanded ? 300 : 500;
