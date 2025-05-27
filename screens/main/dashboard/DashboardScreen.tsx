@@ -6,6 +6,7 @@ import {
   View,
   Image,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -22,8 +23,12 @@ import WeatherFocast from "./widgets/WeatherFocast";
 
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
+
 const DashboardScreen = () => {
   const profileImage = require("../../../assets/profile.png");
+  const { height } = useWindowDimensions();
+
+  const headerHeight = height * 0.27;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -39,7 +44,11 @@ const DashboardScreen = () => {
     return (
       <LinearGradient
         colors={[darkblue, lightblue]}
-        style={[styles.header]}
+        style={{
+          alignItems: "center",
+          height: headerHeight,
+          zIndex: -1,
+        }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
@@ -223,10 +232,4 @@ const DashboardScreen = () => {
 
 export default DashboardScreen;
 
-const styles = StyleSheet.create({
-  header: {
-    alignItems: "center",
-    height: 250,
-    zIndex: -1,
-  },
-});
+const styles = StyleSheet.create({});

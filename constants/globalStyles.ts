@@ -3,7 +3,6 @@ import { colors } from "./colors";
 import { fonts } from "./fonts";
 import { spacing } from "./spacing";
 import { RFValue } from "react-native-responsive-fontsize";
-import { LinearGradient } from "react-native-svg";
 
 export const globalStyles = StyleSheet.create({
   container: {
