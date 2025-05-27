@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  ScrollView,
 } from "react-native";
 import React from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -12,12 +13,12 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/types";
 import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
-import PrimaryButton from "../../../components/PrimaryButton";
 import { LinearGradient } from "expo-linear-gradient";
 import WeatherCondition from "./widgets/WeatherCondition";
 import { spacing } from "../../../constants/spacing";
-import { AntDesign, Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import WeatherFocast from "./widgets/WeatherFocast";
 
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
@@ -178,6 +179,7 @@ const DashboardScreen = () => {
       </LinearGradient>
     );
   };
+
   const renderContent = () => {
     return (
       <View
@@ -194,18 +196,28 @@ const DashboardScreen = () => {
             paddingTop: 30,
             paddingHorizontal: spacing.md,
             flex: 1,
+            gap: spacing.md,
           }}
         >
           <WeatherCondition />
+          <WeatherFocast />
         </View>
       </View>
     );
   };
   return (
-    <View>
-      {renderHeader()}
-      {renderContent()}
-    </View>
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        paddingBottom: spacing.scrollViewBottomPadding,
+      }}
+      bounces={false}
+    >
+      <View>
+        {renderHeader()}
+        {renderContent()}
+      </View>
+    </ScrollView>
   );
 };
 
