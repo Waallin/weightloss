@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
@@ -6,6 +6,8 @@ import { globalStyles } from "../../../../constants/globalStyles";
 import { Entypo, Feather, FontAwesome5 } from "@expo/vector-icons";
 
 const WeatherCondition = () => {
+  const sun = require("../../../../assets/sun.png");
+
   return (
     <View style={globalStyles.widgetContainer}>
       <View
@@ -17,12 +19,12 @@ const WeatherCondition = () => {
       >
         <Text
           style={{
-            ...globalStyles.smallText,
+            ...globalStyles.bodyText,
             fontWeight: "bold",
             color: colors.ui.darkBlue,
           }}
         >
-          Weather Conditions
+          Weather
         </Text>
         <View
           style={{
@@ -72,7 +74,7 @@ const WeatherCondition = () => {
           </Text>
         </View>
         <View>
-          <Feather name="sun" size={36} color={colors.ui.darkBlue} />
+          <Image source={sun} style={{ width: 36, height: 36 }} />
         </View>
       </View>
       <View
@@ -139,8 +141,8 @@ const WeatherCondition = () => {
         <TouchableOpacity
           style={{
             flexDirection: "row",
-
             gap: spacing.sm,
+            alignItems: "center",
           }}
         >
           <Text
