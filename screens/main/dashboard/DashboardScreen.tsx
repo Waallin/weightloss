@@ -20,6 +20,7 @@ import { spacing } from "../../../constants/spacing";
 import { Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import WeatherFocast from "./widgets/WeatherFocast";
+import SmartAlert from "./widgets/SmartAlert";
 
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
@@ -208,6 +209,7 @@ const DashboardScreen = () => {
             gap: spacing.md,
           }}
         >
+          <SmartAlert />
           <WeatherCondition />
           <WeatherFocast />
         </View>
@@ -216,6 +218,7 @@ const DashboardScreen = () => {
   };
   return (
     <ScrollView
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         flexGrow: 1,
         paddingBottom: spacing.scrollViewBottomPadding,
