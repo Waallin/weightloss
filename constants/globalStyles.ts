@@ -62,6 +62,12 @@ export const globalStyles = StyleSheet.create({
     fontWeight: "400",
     color: colors.text.secondary,
   },
+  xxSmallText: {
+    fontSize: RFValue(8),
+    fontFamily: fonts.primary.regular,
+    fontWeight: "400",
+    color: colors.text.secondary,
+  },
 
   buttonText: {
     fontSize: RFValue(14),

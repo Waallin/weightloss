@@ -4,6 +4,7 @@ export type RootStackParamList = {
   MainStack: undefined;
   BoatRegistration: undefined;
   PreferenceView: undefined;
+  Forecast: undefined;
 };
 
 declare global {
