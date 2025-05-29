@@ -4,9 +4,14 @@ import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
 import { Entypo, Feather, FontAwesome5 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const WeatherCondition = () => {
   const sun = require("../../../../assets/sun.png");
+  const navigation = useNavigation();
+  const handleNavigation = () => {
+    navigation.navigate("Forecast");
+  };
 
   return (
     <View style={globalStyles.widgetContainer}>
@@ -139,6 +144,7 @@ const WeatherCondition = () => {
         }}
       >
         <TouchableOpacity
+          onPress={handleNavigation}
           style={{
             flexDirection: "row",
             gap: spacing.sm,

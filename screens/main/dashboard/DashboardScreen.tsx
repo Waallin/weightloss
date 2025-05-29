@@ -209,8 +209,8 @@ const DashboardScreen = () => {
             gap: spacing.md,
           }}
         >
-          <SmartAlert />
           <WeatherCondition />
+          <SmartAlert />
           <WeatherFocast />
         </View>
       </View>
