@@ -37,8 +37,14 @@ const DashboardScreen = () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const handleDetails = async () => {
+  const handleProfile = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Profile");
+  };
+
+  const handleBoat = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Boat");
   };
 
   const renderHeader = () => {
@@ -78,16 +84,18 @@ const DashboardScreen = () => {
                 gap: spacing.sm,
               }}
             >
-              <Image
-                source={profileImage}
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 50,
-                  borderWidth: 2,
-                  borderColor: colors.ui.white,
-                }}
-              />
+              <TouchableOpacity onPress={handleProfile}>
+                <Image
+                  source={profileImage}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 50,
+                    borderWidth: 2,
+                    borderColor: colors.ui.white,
+                  }}
+                />
+              </TouchableOpacity>
               <View>
                 <Text
                   style={[globalStyles.smallText, { color: colors.ui.white }]}
@@ -169,7 +177,7 @@ const DashboardScreen = () => {
               </View>
             </View>
             <TouchableOpacity
-              onPress={handleDetails}
+              onPress={handleBoat}
               activeOpacity={0.8}
               style={{
                 flexDirection: "row",
