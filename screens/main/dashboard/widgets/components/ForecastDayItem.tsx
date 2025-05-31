@@ -4,9 +4,27 @@ import { Feather } from "@expo/vector-icons";
 import { colors } from "../../../../../constants/colors";
 import { spacing } from "../../../../../constants/spacing";
 import { globalStyles } from "../../../../../constants/globalStyles";
+import { ForecastItemType } from "../../../forecast/types";
 
-const ForecastDayItem = ({ item }: { item: any }) => {
-  const sun = require("../../../../../assets/sun.png");
+const ForecastDayItem = ({
+  item,
+  index,
+}: {
+  item: ForecastItemType;
+  index: number;
+}) => {
+  const conditionIcon = "https:" + item.condition.icon;
+
+  const returnDay = () => {
+    switch (index) {
+      case 0:
+        return "Today";
+      case 1:
+        return "Tomorrow";
+      default:
+        return item.dayInWeek;
+    }
+  };
   return (
     <View
       style={{
@@ -26,13 +44,16 @@ const ForecastDayItem = ({ item }: { item: any }) => {
             fontWeight: "bold",
           }}
         >
-          {item.title}
+          {returnDay()}
         </Text>
         <Text style={{ ...globalStyles.smallText, color: colors.ui.darkBlue }}>
           {item.date}
         </Text>
       </View>
-      <Image source={sun} style={{ width: 42, height: 42 }} />
+      <Image
+        source={{ uri: conditionIcon }}
+        style={{ width: 42, height: 42 }}
+      />
       <Text
         style={{
           ...globalStyles.bodyText,
@@ -40,17 +61,19 @@ const ForecastDayItem = ({ item }: { item: any }) => {
           fontWeight: "bold",
         }}
       >
-        {item.temperature}°C
+        {item?.maxtemp_c}°C
       </Text>
-      <Text
-        onPress={() => console.log("item", item)}
-        style={{
-          ...globalStyles.smallText,
-          color: colors.ui.darkBlue,
-        }}
-      >
-        {item.weather}
-      </Text>
+      <View style={{ width: "100%", alignItems: "center", flex: 1 }}>
+        <Text
+          style={{
+            ...globalStyles.smallText,
+            color: colors.ui.darkBlue,
+            textAlign: "center",
+          }}
+        >
+          {item?.condition?.text}
+        </Text>
+      </View>
       <View
         style={{
           height: 1,
@@ -75,7 +98,7 @@ const ForecastDayItem = ({ item }: { item: any }) => {
               fontWeight: "bold",
             }}
           >
-            25%
+            {item?.daily_chance_of_rain}%
           </Text>
           <Feather name="cloud-rain" size={16} color={colors.ui.darkBlue} />
         </View>
@@ -94,7 +117,7 @@ const ForecastDayItem = ({ item }: { item: any }) => {
               fontWeight: "bold",
             }}
           >
-            12/km h
+            {item?.maxwind_kph} km/h
           </Text>
           <Feather name="wind" size={16} color={colors.ui.darkBlue} />
         </View>

@@ -5,9 +5,13 @@ import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
 import { Entypo, Feather, FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import useWeatherStore from "../../../../stores/useWeatherStore";
 
 const WeatherCondition = () => {
-  const sun = require("../../../../assets/sun.png");
+  const { weather } = useWeatherStore();
+
+  const conditionIcon = "https:" + weather?.current?.condition?.icon;
+
   const navigation = useNavigation();
   const handleNavigation = () => {
     navigation.navigate("Forecast");
@@ -50,7 +54,7 @@ const WeatherCondition = () => {
               color: colors.ui.darkBlue,
             }}
           >
-            Marina Bay
+            {weather?.location?.name}
           </Text>
         </View>
       </View>
@@ -70,16 +74,19 @@ const WeatherCondition = () => {
               color: colors.ui.darkBlue,
             }}
           >
-            24°C
+            {weather?.current?.temp_c}°C
           </Text>
           <Text
             style={{ ...globalStyles.smallText, color: colors.ui.darkBlue }}
           >
-            Partly Cloudy
+            {weather?.current?.condition?.text}
           </Text>
         </View>
         <View>
-          <Image source={sun} style={{ width: 36, height: 36 }} />
+          <Image
+            source={{ uri: conditionIcon }}
+            style={{ width: 36, height: 36 }}
+          />
         </View>
       </View>
       <View
@@ -104,7 +111,7 @@ const WeatherCondition = () => {
         >
           <Feather name="wind" size={24} color="white" />
           <Text style={{ ...globalStyles.smallText, color: colors.ui.white }}>
-            10 km/h
+            {weather?.current?.wind_kph} km/h
           </Text>
         </View>
         <View
@@ -125,7 +132,7 @@ const WeatherCondition = () => {
         >
           <Feather name="cloud-rain" size={24} color="white" />
           <Text style={{ ...globalStyles.smallText, color: colors.ui.white }}>
-            75%
+            {weather?.current?.humidity}%
           </Text>
         </View>
       </View>

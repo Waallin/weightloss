@@ -1,64 +1,46 @@
-import { FlatList, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import React, { useEffect, useState } from "react";
 import { globalStyles } from "../../../../constants/globalStyles";
 import { colors } from "../../../../constants/colors";
 import { Entypo } from "@expo/vector-icons";
 import { spacing } from "../../../../constants/spacing";
 import ForecastDayItem from "./components/ForecastDayItem";
+import useWeatherStore from "../../../../stores/useWeatherStore";
+import { useNavigation } from "@react-navigation/native";
 
-const dummyData = [
-  {
-    title: "Today",
-    date: "May 24",
-    temperature: 18,
-    weather: "sunny",
-    icon: "sun",
-    description: "Soligt",
-    humidity: 45,
-    wind: 8,
-  },
-  {
-    title: "Tomorrow",
-    date: "May 25",
-    temperature: 16,
-    weather: "cloudy",
-    icon: "cloud",
-    description: "Molnigt",
-    humidity: 60,
-    wind: 12,
-  },
-  {
-    title: "Thursday",
-    date: "May 26",
-    temperature: 15,
-    weather: "rainy",
-    icon: "cloud-rain",
-    description: "Regnigt",
-    humidity: 75,
-    wind: 15,
-  },
-  {
-    title: "Friday",
-    date: "May 27",
-    temperature: 17,
-    weather: "partly-cloudy",
-    icon: "cloud-sun",
-    description: "Delvis molnigt",
-    humidity: 55,
-    wind: 10,
-  },
-  {
-    title: "Saturday",
-    date: "May 28",
-    temperature: 19,
-    weather: "sunny",
-    icon: "sun",
-    description: "Soligt",
-    humidity: 50,
-    wind: 7,
-  },
-];
 const WeatherFocast = () => {
+  const { weather } = useWeatherStore();
+  const navigation = useNavigation();
+  const [forecast, setForecast] = useState<any>([]);
+
+  useEffect(() => {
+    setForecastFunction();
+  }, [weather]);
+
+  const setForecastFunction = () => {
+    setForecast(
+      weather?.forecast?.forecastday?.map((day: any) => ({
+        ...day.day,
+        date: new Date(day.date).toLocaleDateString("en-US", {
+          day: "numeric",
+          month: "long",
+        }),
+        dayInWeek: new Date(day.date).toLocaleDateString("en-US", {
+          weekday: "long",
+        }),
+      }))
+    );
+  };
+
+  const handleViewMore = () => {
+    navigation.navigate("Forecast");
+  };
   return (
     <View style={globalStyles.widgetContainer}>
       <View
@@ -77,12 +59,13 @@ const WeatherFocast = () => {
         >
           Forecast
         </Text>
-        <View
+        <TouchableOpacity
           style={{
             flexDirection: "row",
             alignItems: "center",
             gap: spacing.sm,
           }}
+          onPress={handleViewMore}
         >
           <Text
             style={{ ...globalStyles.smallText, color: colors.ui.darkBlue }}
@@ -90,7 +73,7 @@ const WeatherFocast = () => {
             View More
           </Text>
           <Entypo name="chevron-right" size={24} color={colors.ui.darkBlue} />
-        </View>
+        </TouchableOpacity>
       </View>
       <FlatList
         horizontal
@@ -99,8 +82,10 @@ const WeatherFocast = () => {
           gap: spacing.md,
           paddingTop: spacing.md,
         }}
-        data={dummyData}
-        renderItem={({ item }) => <ForecastDayItem item={item} />}
+        data={forecast}
+        renderItem={({ item, index }) => (
+          <ForecastDayItem item={item} index={index} />
+        )}
       />
     </View>
   );

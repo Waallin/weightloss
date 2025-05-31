@@ -13,6 +13,6 @@ export const spacing = {
   xl: Math.round(32 * scale),
   xxl: Math.round(48 * scale),
   scrollViewBottomPadding: Math.round(100 * scale),
-  borderRadius: 7,
+  borderRadius: 14,
   rounded: Math.round(100 * scale),
 };
