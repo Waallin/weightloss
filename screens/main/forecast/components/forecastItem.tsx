@@ -1,13 +1,30 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
-import { ForecastItem } from "../types";
+import { ForecastItemType } from "../types";
 import { colors } from "../../../../constants/colors";
 import { Feather } from "@expo/vector-icons";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
 
-const forecastItem = ({ item }: { item: ForecastItem }) => {
-  const sun = require("../../../../assets/sun.png");
+const forecastItem = ({
+  item,
+  index,
+}: {
+  item: ForecastItemType;
+  index: number;
+}) => {
+  const conditionIcon = "https:" + item?.condition?.icon;
+
+  const renderDay = () => {
+    switch (index) {
+      case 0:
+        return "Today";
+      case 1:
+        return "Tomorrow";
+      default:
+        return item.date;
+    }
+  };
   return (
     <View
       style={{
@@ -28,7 +45,7 @@ const forecastItem = ({ item }: { item: ForecastItem }) => {
         }}
       >
         <Feather name="calendar" size={24} color={colors.ui.lightBlue} />
-        <Text style={{ ...globalStyles.xSmallText }}>{item.day}</Text>
+        <Text style={{ ...globalStyles.xSmallText }}>{renderDay()}</Text>
       </View>
       <View
         style={{
@@ -39,7 +56,12 @@ const forecastItem = ({ item }: { item: ForecastItem }) => {
           width: "40%",
         }}
       >
-        <Image source={sun} style={{ width: 24, height: 24 }} />
+        <Image
+          source={{
+            uri: conditionIcon,
+          }}
+          style={{ width: 26, height: 26 }}
+        />
         <Text
           style={{
             ...globalStyles.xSmallText,
@@ -47,7 +69,7 @@ const forecastItem = ({ item }: { item: ForecastItem }) => {
             width: "80%",
           }}
         >
-          {item.weather}
+          {item?.condition?.text}
         </Text>
       </View>
       <View
@@ -60,10 +82,10 @@ const forecastItem = ({ item }: { item: ForecastItem }) => {
         }}
       >
         <Text style={{ ...globalStyles.xSmallText, fontWeight: "bold" }}>
-          {item.temperatureHigh}
+          {item?.maxtemp_c}°C
         </Text>
         <Text style={{ ...globalStyles.xSmallText, color: colors.ui.darkGrey }}>
-          {item.temperatureLow}
+          {item?.mintemp_c}°C
         </Text>
       </View>
     </View>

@@ -1,8 +1,17 @@
-import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
-import { globalStyles } from "./constants/globalStyles";
+import { useEffect } from "react";
+import globalApi from "./services/api";
+
 export default function App() {
+  useEffect(() => {
+    // getWeather();
+  }, []);
+
+  const getWeather = async () => {
+    const response = await globalApi("GET", "/weather");
+    console.log(response);
+  };
   return (
     <View style={{ flex: 1 }}>
       <AuthNavigator />
