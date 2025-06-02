@@ -3,7 +3,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import DashboardScreen from "../main/dashboard/DashboardScreen";
 import ChecklistScreen from "../main/checklist/ChecklistScreen";
 import LocationScreen from "../main/location/LocationScreen";
-import ServiceScreen from "../main/service/ServiceScreen";
 import FuelScreen from "../main/fuel/FuelScreen";
 import { colors } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,6 +18,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
+import MaintanceScreen from "../main/maintance/MaintanceScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -144,7 +144,7 @@ const MainNavigator = () => {
       />
       <Tab.Screen
         name="Service"
-        component={ServiceScreen}
+        component={MaintanceScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon focused={focused} tabName="Service">
