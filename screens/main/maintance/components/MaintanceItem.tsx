@@ -15,7 +15,6 @@ const MaintanceItem = ({ item }: { item: MaintanceItemType }) => {
         padding: spacing.md,
         borderRadius: spacing.borderRadius,
         ...globalStyles.cardShadow,
-
         flex: 1,
       }}
     >
@@ -49,7 +48,7 @@ const MaintanceItem = ({ item }: { item: MaintanceItemType }) => {
               gap: spacing.sm,
             }}
           >
-            <Entypo name="calendar" size={18} color={colors.ui.grey} />{" "}
+            <Entypo name="calendar" size={18} color={colors.ui.grey} />
             <Text
               style={{
                 ...globalStyles.xSmallText,
