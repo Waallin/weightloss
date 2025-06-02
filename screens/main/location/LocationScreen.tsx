@@ -17,6 +17,7 @@ import * as Haptics from "expo-haptics";
 import SegmentedControl from "../../../components/SegmentedControl";
 import HistoryItem from "./components/HistoryItem";
 import NearbyItem from "./components/NearbyItem";
+import TopBar from "../../../components/TopBar";
 const dummyHistory = [
   {
     id: 1,
@@ -270,18 +271,7 @@ const LocationScreen = () => {
           paddingBottom: spacing.scrollViewBottomPadding,
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: spacing.md,
-            paddingHorizontal: spacing.md,
-            alignItems: "center",
-            backgroundColor: colors.ui.lightBlueBackground,
-          }}
-        >
-          <Text style={{ ...globalStyles.smallTitle }}>Location</Text>
-        </View>
+        <TopBar title="Location" />
         {renderMap()}
         <View
           style={{
