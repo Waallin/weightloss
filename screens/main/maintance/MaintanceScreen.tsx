@@ -3,6 +3,7 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import React, { useState } from "react";
@@ -12,6 +13,7 @@ import { colors } from "../../../constants/colors";
 import MaintanceFilterButton from "./components/MaintanceFilterButton";
 import { globalStyles } from "../../../constants/globalStyles";
 import MaintanceItem from "../maintance/components/MaintanceItem";
+import ServiceProviderItem from "./components/ServiceProviderItem";
 
 const filterOptions = [
   {
@@ -73,6 +75,27 @@ const dummyData = [
     date: "2021-01-01",
   },
 ];
+
+const dummyServiceProvider = [
+  {
+    id: 1,
+    name: "John Doe",
+    title: "Marina Boatyard",
+    rating: 4.5,
+  },
+  {
+    id: 2,
+    name: "Maria Svensson",
+    title: "Maritime Workshop",
+    rating: 4.8,
+  },
+  {
+    id: 3,
+    name: "Anders Nilsson",
+    title: "Boat Tech AB",
+    rating: 4.2,
+  },
+];
 const MaintanceScreen = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
 
@@ -118,6 +141,12 @@ const MaintanceScreen = () => {
           <View style={{ flex: 1, marginTop: spacing.md, gap: spacing.md }}>
             {dummyData.map((item) => (
               <MaintanceItem key={item.id} item={item} />
+            ))}
+            <Text style={{ ...globalStyles.smallTitle}}>
+              Service Providers
+            </Text>
+            {dummyServiceProvider.map((item) => (
+              <ServiceProviderItem key={item.id} item={item} />
             ))}
           </View>
         </View>

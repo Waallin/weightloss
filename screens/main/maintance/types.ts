@@ -10,3 +10,11 @@ export type MaintanceFilterButtonType = {
   id: number;
   title: string;
 };
+
+export type ServiceProviderItemType = {
+  id: number;
+  name: string;
+  title: string;
+  text: string;
+  rating: number;
+};

@@ -23,6 +23,7 @@ export const colors = {
     green: "#34C759",
     lightGrey: "#E5E7EB",
     darkGrey: "#C5D4E0",
+    yellow: "#FFD600",
   },
   status: {
     success: "#43A047",
