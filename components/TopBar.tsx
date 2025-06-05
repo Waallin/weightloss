@@ -11,7 +11,7 @@ const TopBar = ({ title }: { title: string }) => {
         flexDirection: "row",
         justifyContent: "space-between",
         marginTop: spacing.md,
-        paddingHorizontal: spacing.md,
+
         alignItems: "center",
         backgroundColor: colors.ui.lightBlueBackground,
       }}

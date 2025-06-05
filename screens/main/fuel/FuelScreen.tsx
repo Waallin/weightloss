@@ -67,7 +67,9 @@ const FuelScreen = () => {
           paddingBottom: spacing.scrollViewBottomPadding,
         }}
       >
-        <TopBar title="Fuel management" />
+        <View style={{ paddingHorizontal: spacing.md }}>
+          <TopBar title="Fuel management" />
+        </View>
         <View
           style={{
             ...globalStyles.container,
