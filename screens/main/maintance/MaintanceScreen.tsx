@@ -4,6 +4,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useState } from "react";
@@ -14,6 +15,8 @@ import MaintanceFilterButton from "./components/MaintanceFilterButton";
 import { globalStyles } from "../../../constants/globalStyles";
 import MaintanceItem from "../maintance/components/MaintanceItem";
 import ServiceProviderItem from "./components/ServiceProviderItem";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const filterOptions = [
   {
@@ -98,7 +101,7 @@ const dummyServiceProvider = [
 ];
 const MaintanceScreen = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
-
+  const navigation = useNavigation();
   const handleFilter = (filter: string) => {
     setSelectedFilter(filter);
   };
@@ -153,6 +156,19 @@ const MaintanceScreen = () => {
           </View>
         </View>
       </ScrollView>
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          bottom: 120,
+          right: 40,
+          backgroundColor: colors.ui.darkBlue,
+          padding: spacing.md,
+          borderRadius: spacing.borderRadius,
+        }}
+        onPress={() => navigation.navigate("AddMaintance")}
+      >
+        <Ionicons name="add" size={24} color={colors.ui.white} />
+      </TouchableOpacity>
     </View>
   );
 };
