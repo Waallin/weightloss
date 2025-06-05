@@ -6,6 +6,7 @@ import PreferenceView from "../main/profile/preferences/PreferenceView";
 import { SafeAreaView } from "react-native";
 import ForecastScreen from "../main/forecast/ForecastScreen";
 import BoatScreen from "../main/boat/BoatScreen";
+import AddMaintanceScreen from "../main/maintance/AddMaintanceScreen";
 
 const Stack = createStackNavigator();
 
@@ -47,6 +48,11 @@ export const MainStack = () => {
         name="Boat"
         component={BoatScreen}
         options={{ headerShown: true, headerTitle: "Boat" }}
+      />
+      <Stack.Screen
+        name="AddMaintance"
+        component={AddMaintanceScreen}
+        options={{ headerShown: true, headerTitle: "Add Maintance" }}
       />
     </Stack.Navigator>
   );

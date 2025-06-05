@@ -18,3 +18,9 @@ export type ServiceProviderItemType = {
   text: string;
   rating: number;
 };
+
+export type MaintanceOptionType = {
+  label: string;
+  value: string;
+  icon: string;
+};
