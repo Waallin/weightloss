@@ -21,6 +21,7 @@ import { Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import WeatherFocast from "./widgets/WeatherFocast";
 import SmartAlert from "./widgets/SmartAlert";
+import EmergencyContact from "./widgets/EmergencyContact";
 
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
@@ -217,6 +218,7 @@ const DashboardScreen = () => {
             gap: spacing.md,
           }}
         >
+          <EmergencyContact />
           <WeatherCondition />
           <SmartAlert />
           <WeatherFocast />
