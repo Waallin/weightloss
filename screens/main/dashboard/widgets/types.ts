@@ -7,3 +7,8 @@ export type SmartAlertItem = {
   timestamp: string;
   location: string;
 };
+
+export type EmergencyContactItemType = {
+  name: string;
+  phone: string;
+};
