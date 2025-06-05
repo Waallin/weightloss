@@ -19,6 +19,7 @@ import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import MaintanceScreen from "../main/maintance/MaintanceScreen";
+import LogBookScreen from "../main/logbook/LogBookScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -120,6 +121,21 @@ const MainNavigator = () => {
             <AnimatedTabIcon focused={focused} tabName="Checklist">
               <AnimatedIcon
                 name={focused ? "list" : "list-outline"}
+                size={24}
+                color={color}
+              />
+            </AnimatedTabIcon>
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="LogBook"
+        component={LogBookScreen}
+        options={{
+          tabBarIcon: ({ color, focused }) => (
+            <AnimatedTabIcon focused={focused} tabName="Location">
+              <AnimatedIcon
+                name={focused ? "book" : "book-outline"}
                 size={24}
                 color={color}
               />

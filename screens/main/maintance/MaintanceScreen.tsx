@@ -119,7 +119,9 @@ const MaintanceScreen = () => {
           paddingBottom: spacing.scrollViewBottomPadding,
         }}
       >
-        <TopBar title="Maintance" />
+        <View style={{ paddingHorizontal: spacing.md }}>
+          <TopBar title="Maintance" />
+        </View>
         <View style={{ ...globalStyles.container, flex: 1 }}>
           <View style={{ marginTop: spacing.md }}>
             <FlatList
@@ -142,7 +144,7 @@ const MaintanceScreen = () => {
             {dummyData.map((item) => (
               <MaintanceItem key={item.id} item={item} />
             ))}
-            <Text style={{ ...globalStyles.smallTitle}}>
+            <Text style={{ ...globalStyles.smallTitle }}>
               Service Providers
             </Text>
             {dummyServiceProvider.map((item) => (

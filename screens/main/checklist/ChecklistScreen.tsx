@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import Checklist from "./components/Checklist";
 import useUserStore from "../../../stores/useUserStore";
 import globalApi from "../../../services/api";
+import TopBar from "../../../components/TopBar";
 const dummyChecklist = [
   {
     id: 1,
@@ -118,17 +119,7 @@ const ChecklistScreen = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            marginTop: spacing.md,
-
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ ...globalStyles.smallTitle }}>Checklists</Text>
-        </View>
+        <TopBar title="Checklists" />
         <View
           style={{
             flexDirection: "row",

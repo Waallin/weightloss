@@ -271,7 +271,9 @@ const LocationScreen = () => {
           paddingBottom: spacing.scrollViewBottomPadding,
         }}
       >
-        <TopBar title="Location" />
+        <View style={{ paddingHorizontal: spacing.md }}>
+          <TopBar title="Location" />
+        </View>
         {renderMap()}
         <View
           style={{
