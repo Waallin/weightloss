@@ -1,9 +1,9 @@
 import {
-  FlatList,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React from "react";
@@ -12,8 +12,9 @@ import TopBar from "../../../components/TopBar";
 import { colors } from "../../../constants/colors";
 import FuelLevel from "./widgets/FuelLevel";
 import { globalStyles } from "../../../constants/globalStyles";
-import FuelLogs from "./widgets/FuelLogs";
 import LogItem from "./components/LogItem";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const dummmyLogs = [
   {
@@ -51,6 +52,12 @@ const dummmyLogs = [
 ];
 
 const FuelScreen = () => {
+  const navigation = useNavigation();
+
+  const handleAddFuel = () => {
+    navigation.navigate("AddFuel");
+  };
+
   return (
     <View
       style={{
@@ -85,6 +92,19 @@ const FuelScreen = () => {
           ))}
         </View>
       </ScrollView>
+      <TouchableOpacity
+        style={{
+          position: "absolute",
+          bottom: 120,
+          right: 40,
+          backgroundColor: colors.ui.darkBlue,
+          padding: spacing.md,
+          borderRadius: spacing.borderRadius,
+        }}
+        onPress={handleAddFuel}
+      >
+        <Ionicons name="add" size={24} color={colors.ui.white} />
+      </TouchableOpacity>
     </View>
   );
 };
