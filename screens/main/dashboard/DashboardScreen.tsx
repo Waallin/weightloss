@@ -22,6 +22,7 @@ import * as Haptics from "expo-haptics";
 import WeatherFocast from "./widgets/WeatherFocast";
 import SmartAlert from "./widgets/SmartAlert";
 import EmergencyContact from "./widgets/EmergencyContact";
+import QuickActions from "./widgets/QuickActions";
 
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
@@ -218,6 +219,7 @@ const DashboardScreen = () => {
             gap: spacing.md,
           }}
         >
+          <QuickActions />
           <EmergencyContact />
           <WeatherCondition />
           <SmartAlert />
