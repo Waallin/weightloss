@@ -53,4 +53,10 @@ export const colors = {
     fifty: "#2A5580",
     oneHundred: "#34C759",
   },
+
+  notificationColor: {
+    weather: "#FF3C2F",
+    maintenance: "#FF9500",
+    default: "#D1E9FF",
+  },
 };

@@ -37,6 +37,7 @@ const DashboardScreen = () => {
 
   const handleNotifications = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("Notification");
   };
 
   const handleProfile = async () => {
