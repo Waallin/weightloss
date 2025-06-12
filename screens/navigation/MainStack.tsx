@@ -8,6 +8,7 @@ import ForecastScreen from "../main/forecast/ForecastScreen";
 import BoatScreen from "../main/boat/BoatScreen";
 import AddMaintanceScreen from "../main/maintance/AddMaintanceScreen";
 import AddFuelScreen from "../main/fuel/AddFuelScreen";
+import NotificationScreen from "../main/notifications/NotificationScreen";
 
 const Stack = createStackNavigator();
 
@@ -59,6 +60,15 @@ export const MainStack = () => {
         name="AddFuel"
         component={AddFuelScreen}
         options={{ headerShown: true, headerTitle: "Add Fuel" }}
+      />
+      <Stack.Screen
+        name="Notification"
+        component={NotificationScreen}
+        options={{
+          headerShown: true,
+          headerTitle: "Notifications",
+          presentation: "modal",
+        }}
       />
     </Stack.Navigator>
   );
