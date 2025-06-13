@@ -9,6 +9,7 @@ import BoatScreen from "../main/boat/BoatScreen";
 import AddMaintanceScreen from "../main/maintance/AddMaintanceScreen";
 import AddFuelScreen from "../main/fuel/AddFuelScreen";
 import NotificationScreen from "../main/notifications/NotificationScreen";
+import CrewScreen from "../main/crew/CrewScreen";
 
 const Stack = createStackNavigator();
 
@@ -69,6 +70,11 @@ export const MainStack = () => {
           headerTitle: "Notifications",
           presentation: "modal",
         }}
+      />
+      <Stack.Screen
+        name="Crew"
+        component={CrewScreen}
+        options={{ headerShown: true, headerTitle: "Crew" }}
       />
     </Stack.Navigator>
   );

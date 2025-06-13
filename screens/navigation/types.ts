@@ -9,6 +9,7 @@ export type RootStackParamList = {
   AddMaintance: undefined;
   AddFuel: undefined;
   Notification: undefined;
+  Crew: undefined;
 };
 
 declare global {
