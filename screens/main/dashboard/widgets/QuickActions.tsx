@@ -12,8 +12,10 @@ import { globalStyles } from "../../../../constants/globalStyles";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import * as Haptics from "expo-haptics";
+import { useNavigation } from "@react-navigation/native";
 
 const QuickActions = () => {
+  const navigation = useNavigation();
   const { width } = useWindowDimensions();
   const quickActions = [
     {
@@ -22,7 +24,7 @@ const QuickActions = () => {
       color2: "#27B260",
       icon: <FontAwesome name="users" size={20} color="white" />,
       onPress: () => {
-        console.log("Crew");
+        navigation.navigate("Crew");
       },
     },
     {
