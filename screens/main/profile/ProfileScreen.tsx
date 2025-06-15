@@ -14,8 +14,8 @@ import { spacing } from "../../../constants/spacing";
 import { Feather } from "@expo/vector-icons";
 import VesselCard from "./components/VesselCard";
 import SettingsRow from "./components/SettingsRow";
-import SwitchSettingsRow from "./components/SwitchSettingsRow";
 import { useNavigation } from "@react-navigation/native";
+import useUserStore from "../../../stores/useUserStore";
 
 const dummyVessels = [
   {
@@ -41,6 +41,7 @@ const dummyVessels = [
 const ProfileScreen = () => {
   const profileImage = require("../../../assets/profile.png");
   const navigation = useNavigation();
+  const { user } = useUserStore();
   const [notifications, setNotifications] = useState(true);
   const [location, setLocation] = useState(false);
   const accountSettings = [
@@ -153,7 +154,7 @@ const ProfileScreen = () => {
                 fontWeight: "bold",
               }}
             >
-              Captain Mike Johnson
+              {user?.profile?.full_name}
             </Text>
             <Text
               style={{
@@ -162,7 +163,7 @@ const ProfileScreen = () => {
                 marginTop: spacing.xs,
               }}
             >
-              mike@vstboat.com
+              {user?.profile?.email}
             </Text>
             <TouchableOpacity
               style={{

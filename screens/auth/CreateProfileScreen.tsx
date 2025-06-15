@@ -26,6 +26,9 @@ import DropdownRow from "./components/DropdownRow";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/types";
+import globalApi from "../../services/api";
+import useUserStore from "../../stores/useUserStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const sections = [
   {
@@ -57,18 +60,22 @@ const languages = [
   {
     id: 1,
     title: "English",
+    value: "en",
   },
   {
     id: 2,
-    title: "Spanish",
-  },
-  {
-    id: 3,
-    title: "French",
+    title: "Svenska",
+    value: "sv",
   },
 ];
 
-const CreateProfileScreen = ({}) => {
+const CreateProfileScreen = ({
+  route,
+}: {
+  route: { params: { token: string } };
+}) => {
+  const { token } = route.params;
+  const { setUser } = useUserStore();
   const [procent, setProcent] = useState(0);
   const [selectedSection, setSelectedSection] = useState(sections[0]);
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -81,7 +88,6 @@ const CreateProfileScreen = ({}) => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [fullName, setFullName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
@@ -90,6 +96,8 @@ const CreateProfileScreen = ({}) => {
   const [preferredWater, setPreferredWater] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [emergencyContact, setEmergencyContact] = useState("");
+  const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState("");
 
   const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
   const [selectedMeasurementUnit, setSelectedMeasurementUnit] = useState(
@@ -234,18 +242,25 @@ const CreateProfileScreen = ({}) => {
             onChangeText={setEmail}
           />
 
-          <ProfileInputRowTitle title="Contact Information" icon="phone" />
-          <ProfileInputRow
-            title="Phone Number"
-            placeholder="Enter your phone number"
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-          />
           <ProfileInputRow
             title="Address"
             placeholder="Enter your address"
             value={address}
             onChangeText={setAddress}
+          />
+          <ProfileInputRowTitle title="Emergency Contact" icon="phone" />
+          <ProfileInputRow
+            title="Emergency Contact"
+            placeholder="Emergency name"
+            value={emergencyContact}
+            onChangeText={setEmergencyContact}
+          />
+          <ProfileInputRow
+            title="Emergency Phone Number"
+            placeholder="Emergency phone number"
+            value={emergencyPhoneNumber}
+            keyboardType="numeric"
+            onChangeText={setEmergencyPhoneNumber}
           />
         </View>
         <View style={{ marginTop: spacing.lg }}>
@@ -285,28 +300,6 @@ const CreateProfileScreen = ({}) => {
           value={preferredWater}
           onChangeText={setPreferredWater}
         />
-
-        <ProfileInputRowTitle title="Safety Information" icon="shield" />
-        <View
-          style={{
-            marginTop: spacing.md,
-            backgroundColor: colors.ui.lightBlueBackground,
-            padding: spacing.md,
-            borderRadius: spacing.borderRadius,
-            borderWidth: 1,
-            borderColor: colors.ui.lightGrey,
-          }}
-        >
-          <Text
-            style={{
-              ...globalStyles.subTitle,
-              color: colors.text.secondary,
-            }}
-          >
-            Please ensure your safety information is up to date. This
-            information will be used in case of emergencies.
-          </Text>
-        </View>
         <View style={{ marginTop: spacing.lg }}>
           <PrimaryButton title="Next" onPress={handleNext} />
         </View>
@@ -324,11 +317,7 @@ const CreateProfileScreen = ({}) => {
           value={notifications}
           onChange={setNotifications}
         />
-        <SwitchInputRow
-          title="Dark Mode"
-          value={darkMode}
-          onChange={setDarkMode}
-        />
+
         <DropdownRow
           title="Language"
           value={selectedLanguage}
@@ -407,9 +396,61 @@ const CreateProfileScreen = ({}) => {
     }, 300);
   };
 
-  const handleComplete = () => {
-    console.log("complete");
+  const handleComplete = async () => {
+    const personalInfoPayload = {
+      full_name: "anders wallin",
+      email: "hessssj@email.com",
+      date_of_birth: "1990-01-01",
+      image: "",
+      address: "address",
+      emergency_contact: "emergency contact",
+    };
+
+    const boatingInfoPayload = {
+      experience_level: "experienceLevel",
+      boating_license: "boatingLicense",
+      certifications: "certifications",
+      preferred_waters: "preferredWater",
+    };
+
+    const preferencesPayload = {
+      language: selectedLanguage.value,
+      measurement_unit: selectedMeasurementUnit.title.toLowerCase(),
+      notification: notifications ? 1 : 0,
+    };
+
+    const endpoints = [
+      { endpoint: "profile/setup", payload: personalInfoPayload },
+      { endpoint: "boating", payload: boatingInfoPayload },
+      { endpoint: "preferences", payload: preferencesPayload },
+    ];
+
+    for (const { endpoint, payload } of endpoints) {
+      await handlePostFunction({ endpoint, payload });
+    }
+
+    console.log("EVERTHING IS DONE");
+    const getUserEndpoint = "user/get";
+
+    const user = await globalApi("GET", getUserEndpoint, null, token);
+    setUser(user.data);
+    await AsyncStorage.setItem("user_token", token);
     navigation.navigate("MainStack");
+  };
+
+  const handlePostFunction = async ({
+    endpoint,
+    payload,
+  }: {
+    endpoint: string;
+    payload: any;
+  }) => {
+    const response = await globalApi("POST", endpoint, payload, token);
+    console.log("🚀 ~ handlePostFunction ~ response:", response);
+
+    if (!response.success) {
+      return;
+    }
   };
 
   const renderModal = () => {

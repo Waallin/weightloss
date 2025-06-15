@@ -63,7 +63,7 @@ const globalApi = async (
       console.log("Request Headers:", Object.fromEntries(headers.entries()));
       console.log("Response Status:", response.status);
       console.log("Response Data:", data);
-      alert(data.message || "API Error, message unknown🚨");
+      alert(data.error_message || "API Error, message unknown🚨");
     }
 
     return data;
