@@ -23,14 +23,15 @@ import WeatherFocast from "./widgets/WeatherFocast";
 import SmartAlert from "./widgets/SmartAlert";
 import EmergencyContact from "./widgets/EmergencyContact";
 import QuickActions from "./widgets/QuickActions";
-
+import useUserStore from "../../../stores/useUserStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
 
 const DashboardScreen = () => {
   const profileImage = require("../../../assets/profile.png");
   const { height } = useWindowDimensions();
-
+  const { user } = useUserStore();
   const headerHeight = height * 0.27;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -101,6 +102,7 @@ const DashboardScreen = () => {
               </TouchableOpacity>
               <View>
                 <Text
+                  onPress={() => console.log("user", user)}
                   style={[globalStyles.smallText, { color: colors.ui.white }]}
                 >
                   Welcome back,
@@ -111,7 +113,7 @@ const DashboardScreen = () => {
                     { color: colors.ui.white, fontWeight: "bold" },
                   ]}
                 >
-                  John Doe
+                  {user?.profile?.full_name}
                 </Text>
               </View>
             </View>

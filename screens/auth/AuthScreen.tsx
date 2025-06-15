@@ -11,8 +11,9 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   Animated,
+  Alert,
 } from "react-native";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import { colors } from "../../constants/colors";
 import WavesBackground from "../../components/WavesBackground";
@@ -26,6 +27,10 @@ import { Keyboard } from "react-native";
 import RoleSelector from "./components/RoleSelector";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+import globalApi from "../../services/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import useUserStore from "../../stores/useUserStore";
 const roles = [
   {
     id: 1,
@@ -44,11 +49,8 @@ const roles = [
   },
 ];
 
-type RootStackParamList = {
-  CreateProfile: undefined;
-};
-
 const AuthScreen = () => {
+  const { setUser } = useUserStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [loading, setLoading] = useState(false);
@@ -82,8 +84,35 @@ const AuthScreen = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  function handleContinue() {
+  useEffect(() => {
+    checkIfUserIsLoggedIn();
+  }, []);
+
+  const checkIfUserIsLoggedIn = async () => {
+    const token = await AsyncStorage.getItem("user_token");
+    if (token) {
+      console.log("user is logged in", token);
+      const endpoint = "user/get";
+      const user = await globalApi("GET", endpoint, null, token);
+      console.log("user", user);
+      setUser(user.data);
+      navigation.navigate("MainStack");
+    }
+  };
+
+  const handleContinue = async () => {
+    setLoading(true);
+
+    if (step === 1) {
+      await handleGetVerificationCode();
+    } else if (step === 2) {
+      await handleVerifyCode();
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    setLoading(false);
     // Animera ut nuvarande formulär
+
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -113,7 +142,36 @@ const AuthScreen = () => {
         }),
       ]).start();
     });
-  }
+  };
+
+  const handleGetVerificationCode = async () => {
+    const endpoint = "phone/initiate";
+    const payload = {
+      phone_number: phoneNumber,
+      phone_country_code: selectedCountry.code,
+    };
+
+    const response = await globalApi("POST", endpoint, payload);
+
+    if (!response.success) {
+      Alert.alert("Error", response.error_message);
+      return;
+    }
+    setVerificationCode(response.data.dev_verification_code);
+  };
+
+  const handleVerifyCode = async () => {
+    const endpoint = "phone/verify";
+    const payload = {
+      phone_number: phoneNumber,
+      phone_country_code: selectedCountry.code,
+      code: verificationCode,
+    };
+    const response = await globalApi("POST", endpoint, payload);
+    if (response.success) {
+      navigation.navigate("CreateProfile", { token: response.data.token });
+    }
+  };
 
   const handleCountrySelect = (country: any) => {
     setSelectedCountry(country);
@@ -248,7 +306,6 @@ const AuthScreen = () => {
                 keyboardType="phone-pad"
                 maxLength={9}
                 onChangeText={(text) => {
-                  console.log(text.length);
                   setPhoneNumber(text);
                 }}
                 value={phoneNumber}
@@ -549,8 +606,6 @@ const AuthScreen = () => {
           return renderPhoneInput();
         case 2:
           return renderVerificationInput();
-        case 3:
-          return renderProfileInput();
         default:
           return renderPhoneInput();
       }

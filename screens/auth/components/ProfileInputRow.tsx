@@ -8,11 +8,13 @@ const ProfileInputRow = ({
   placeholder,
   value,
   onChangeText,
+  keyboardType,
 }: {
   title: string;
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  keyboardType?: "numeric" | "email-address" | "default";
 }) => {
   return (
     <View style={{ marginTop: spacing.md }}>
@@ -22,7 +24,7 @@ const ProfileInputRow = ({
       <TextInput
         placeholder={placeholder}
         style={{
-          ...globalStyles.smallGreyText,
+          ...globalStyles.smallText,
           marginTop: spacing.sm,
           borderWidth: 1,
           borderColor: colors.ui.lightGrey,

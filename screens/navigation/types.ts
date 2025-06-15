@@ -10,6 +10,7 @@ export type RootStackParamList = {
   AddFuel: undefined;
   Notification: undefined;
   Crew: undefined;
+  CreateProfile: { token: string };
 };
 
 declare global {
