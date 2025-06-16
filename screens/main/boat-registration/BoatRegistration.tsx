@@ -17,9 +17,54 @@ import PrimaryButton from "../../../components/PrimaryButton";
 import SegmentedControl from "../../../components/SegmentedControl";
 import * as Haptics from "expo-haptics";
 import { useRef } from "react";
+import useUserStore from "../../../stores/useUserStore";
+import globalApi from "../../../services/api";
+import { useNavigation } from "@react-navigation/native";
+import { Alert } from "react-native";
+
 const BoatRegistration = () => {
   const scrollViewRef = useRef<ScrollView>(null);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const navigation = useNavigation();
+  const { user } = useUserStore();
+
+  const [boatName, setBoatName] = useState("");
+  const [boatModel, setBoatModel] = useState("");
+  const [registrationNumber, setRegistrationNumber] = useState("");
+  const [yearOfManufacture, setYearOfManufacture] = useState("");
+  const [boatLength, setBoatLength] = useState("");
+  const [manufacturer, setManufacturer] = useState("");
+  const [engineType, setEngineType] = useState("");
+  const [hullMaterial, setHullMaterial] = useState("");
+
+  const handleRegisterBoat = async () => {
+    const payload = {
+      name: boatName,
+      model: boatModel,
+      registration_number: registrationNumber,
+      year: yearOfManufacture,
+      length: boatLength,
+      manufacturer: manufacturer,
+      engine_type: engineType,
+      hull_material: hullMaterial,
+    };
+
+    const endpoint = "boats";
+    const response = await globalApi("POST", endpoint, payload, user?.token);
+    if (response.success) {
+      Alert.alert("Boat registered successfully");
+      navigation.goBack();
+    }
+  };
+
+  const handleToAdditionalInfo = () => {
+    setSelectedIndex(1);
+  };
+
+  const handleScanQR = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    console.log("Scan QR");
+  };
 
   const renderBasicInfo = () => {
     return (
@@ -28,26 +73,38 @@ const BoatRegistration = () => {
           label="Boat Name"
           placeholder="Enter boat name"
           icon="directions-boat-filled"
+          value={boatName}
+          onChangeText={setBoatName}
         />
         <InputRow
           label="Boat Model"
           placeholder="Enter boat model"
           icon="anchor"
+          value={boatModel}
+          onChangeText={setBoatModel}
         />
         <InputRow
           label="Registration Number"
           placeholder="Enter registration number"
           icon="badge"
+          value={registrationNumber}
+          onChangeText={setRegistrationNumber}
         />
         <InputRow
           label="Year of Manufacture"
           placeholder="Enter year of manufacture"
           icon="calendar-month"
+          value={yearOfManufacture}
+          keyboardType="numeric"
+          onChangeText={setYearOfManufacture}
         />
         <InputRow
           label="Boat Length"
           placeholder="Enter boat length"
           icon="height"
+          value={boatLength}
+          keyboardType="numeric"
+          onChangeText={setBoatLength}
         />
 
         <TouchableOpacity
@@ -103,6 +160,19 @@ const BoatRegistration = () => {
     );
   };
 
+  const isRegisterButtonDisabled = () => {
+    return (
+      boatName === "" ||
+      boatModel === "" ||
+      registrationNumber === "" ||
+      yearOfManufacture === "" ||
+      boatLength === "" ||
+      manufacturer === "" ||
+      engineType === "" ||
+      hullMaterial === ""
+    );
+  };
+
   const renderAdditionalInfo = () => {
     return (
       <View>
@@ -110,19 +180,26 @@ const BoatRegistration = () => {
           label="Manufacturer"
           placeholder="Boat manufacturer"
           icon="directions-boat-filled"
+          value={manufacturer}
+          onChangeText={setManufacturer}
         />
         <InputRow
           label="Engine Type"
           placeholder="e-g Outboard, Inboard, etc."
           icon="speed"
+          value={engineType}
+          onChangeText={setEngineType}
         />
         <InputRow
           label="Hull Material"
           placeholder="e-g Fiberglass, Aluminum, etc."
           icon="construction"
+          value={hullMaterial}
+          onChangeText={setHullMaterial}
         />
         <View style={{ marginTop: spacing.xl }}>
           <PrimaryButton
+            disabled={isRegisterButtonDisabled()}
             title="Register Boat"
             onPress={handleRegisterBoat}
             arrow={true}
@@ -140,18 +217,6 @@ const BoatRegistration = () => {
     }
   };
 
-  const handleRegisterBoat = () => {
-    console.log("Register Boat");
-  };
-
-  const handleToAdditionalInfo = () => {
-    setSelectedIndex(1);
-  };
-
-  const handleScanQR = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    console.log("Scan QR");
-  };
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}

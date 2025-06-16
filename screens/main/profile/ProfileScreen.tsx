@@ -16,6 +16,7 @@ import VesselCard from "./components/VesselCard";
 import SettingsRow from "./components/SettingsRow";
 import { useNavigation } from "@react-navigation/native";
 import useUserStore from "../../../stores/useUserStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const dummyVessels = [
   {
@@ -85,6 +86,11 @@ const ProfileScreen = () => {
       title: "Logout",
       icon: "log-out",
       onPress: () => {
+        AsyncStorage.removeItem("user_token");
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Auth" }],
+        });
         console.log("Logout");
       },
     },
@@ -92,6 +98,10 @@ const ProfileScreen = () => {
 
   const handleNavigateToBoatRegistration = () => {
     navigation.navigate("BoatRegistration");
+  };
+
+  const handleNavigateToEditProfile = () => {
+    navigation.navigate("EditProfile");
   };
 
   return (
@@ -166,6 +176,7 @@ const ProfileScreen = () => {
               {user?.profile?.email}
             </Text>
             <TouchableOpacity
+              onPress={handleNavigateToEditProfile}
               style={{
                 backgroundColor: colors.ui.lightBlueBackground,
                 padding: spacing.xs,

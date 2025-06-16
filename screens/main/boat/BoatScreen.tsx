@@ -6,6 +6,8 @@ import { colors } from "../../../constants/colors";
 import DocumentItem from "./components/DocumentItem";
 import { Ionicons } from "@expo/vector-icons";
 import InformationItem from "./components/InformationItem";
+import useUserStore from "../../../stores/useUserStore";
+
 const dummyDocuments = [
   {
     title: "Vessel Health",
@@ -39,35 +41,48 @@ const dummyDocuments = [
   },
 ];
 
-const dummyInformation = [
-  {
-    title: "Vessel Name",
-    value: "Sea Breeze",
-    icon: <Ionicons name="boat-outline" size={24} color={colors.ui.darkBlue} />,
-  },
-  {
-    title: "Registration Number",
-    value: "1234567890",
-    icon: <Ionicons name="card-outline" size={24} color={colors.ui.darkBlue} />,
-  },
-  {
-    title: "Model",
-    value: "Manhattan 60",
-    icon: (
-      <Ionicons name="construct-outline" size={24} color={colors.ui.darkBlue} />
-    ),
-  },
-  {
-    title: "Year",
-    value: "2020",
-    icon: (
-      <Ionicons name="calendar-outline" size={24} color={colors.ui.darkBlue} />
-    ),
-  },
-];
-
 const BoatScreen = () => {
   const image = require("../../../assets/images/vessel1.png");
+  const { mainBoat } = useUserStore();
+
+  const boatInformation = [
+    {
+      title: "Vessel Name",
+      value: mainBoat()?.name || "No Boat Registered",
+      icon: (
+        <Ionicons name="boat-outline" size={24} color={colors.ui.darkBlue} />
+      ),
+    },
+    {
+      title: "Registration Number",
+      value: mainBoat()?.registration_number || "No Registration Number",
+      icon: (
+        <Ionicons name="card-outline" size={24} color={colors.ui.darkBlue} />
+      ),
+    },
+    {
+      title: "Model",
+      value: mainBoat()?.model || "No Model",
+      icon: (
+        <Ionicons
+          name="construct-outline"
+          size={24}
+          color={colors.ui.darkBlue}
+        />
+      ),
+    },
+    {
+      title: "Year",
+      value: mainBoat()?.year || "No Year",
+      icon: (
+        <Ionicons
+          name="calendar-outline"
+          size={24}
+          color={colors.ui.darkBlue}
+        />
+      ),
+    },
+  ];
 
   const renderHeader = () => {
     return (
@@ -99,10 +114,10 @@ const BoatScreen = () => {
           }}
         >
           <Text style={{ ...globalStyles.smallTitle, color: colors.ui.white }}>
-            Sea Breeze
+            {mainBoat()?.name || "No Boat Registered"}
           </Text>
           <Text style={{ ...globalStyles.smallText, color: colors.ui.white }}>
-            Simseeler Manhattan 60
+            {mainBoat()?.location || "No Location Set"}
           </Text>
         </View>
       </View>
@@ -149,7 +164,7 @@ const BoatScreen = () => {
           Information
         </Text>
         <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
-          {dummyInformation.map((item, index) => {
+          {boatInformation.map((item, index) => {
             return <InformationItem key={index} item={item} />;
           })}
         </View>

@@ -1,4 +1,10 @@
-import { StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  KeyboardTypeOptions,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import React from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../../../constants/colors";
@@ -8,10 +14,16 @@ const InputRow = ({
   label,
   placeholder,
   icon,
+  value,
+  onChangeText,
+  keyboardType,
 }: {
   label: string;
   placeholder: string;
   icon: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  keyboardType?: KeyboardTypeOptions;
 }) => {
   return (
     <View
@@ -44,13 +56,14 @@ const InputRow = ({
           </Text>
           <TextInput
             style={{
-              ...globalStyles.smallGreyText,
+              ...globalStyles.smallText,
               width: "100%",
-
               marginTop: spacing.sm,
-              //   padding: spacing.sm,
             }}
-            placeholder={"placeholder"}
+            placeholder={placeholder}
+            value={value}
+            onChangeText={onChangeText}
+            keyboardType={keyboardType}
           />
         </View>
       </View>

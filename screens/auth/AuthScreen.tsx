@@ -91,10 +91,8 @@ const AuthScreen = () => {
   const checkIfUserIsLoggedIn = async () => {
     const token = await AsyncStorage.getItem("user_token");
     if (token) {
-      console.log("user is logged in", token);
       const endpoint = "user/get";
       const user = await globalApi("GET", endpoint, null, token);
-      console.log("user", user);
       setUser({ ...user.data, token: token });
       navigation.navigate("MainStack");
     }
@@ -169,7 +167,22 @@ const AuthScreen = () => {
     };
     const response = await globalApi("POST", endpoint, payload);
     if (response.success) {
-      navigation.navigate("CreateProfile", { token: response.data.token });
+      if (!response.is_new_user) {
+        const endpoint = "user/get";
+        const user = await globalApi(
+          "GET",
+          endpoint,
+          null,
+          response.data.token
+        );
+
+        await AsyncStorage.setItem("user_token", response.data.token);
+        setUser({ ...user.data, token: response.data.token });
+
+        navigation.navigate("MainStack");
+      } else {
+        navigation.navigate("CreateProfile", { token: response.data.token });
+      }
     }
   };
 
