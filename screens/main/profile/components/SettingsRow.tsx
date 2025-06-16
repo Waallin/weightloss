@@ -30,10 +30,10 @@ const SettingsRow = ({
           backgroundColor: colors.ui.white,
           padding: spacing.md,
           ...globalStyles.cardShadow,
-          borderTopLeftRadius: firstIndex ? spacing.xs : 0,
-          borderTopRightRadius: firstIndex ? spacing.xs : 0,
-          borderBottomLeftRadius: lastIndex ? spacing.xs : 0,
-          borderBottomRightRadius: lastIndex ? spacing.xs : 0,
+          borderTopLeftRadius: firstIndex ? spacing.borderRadius : 0,
+          borderTopRightRadius: firstIndex ? spacing.borderRadius : 0,
+          borderBottomLeftRadius: lastIndex ? spacing.borderRadius : 0,
+          borderBottomRightRadius: lastIndex ? spacing.borderRadius : 0,
         }}
       >
         <View

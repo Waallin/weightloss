@@ -525,6 +525,7 @@ export default function AuthScreen() {
 
     if (success) {
       // Success means the user exists, navigate to main app
+
       router.replace("/(tabs)");
     } else {
       // User doesn't exist, show registration screen

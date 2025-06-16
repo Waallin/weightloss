@@ -10,6 +10,7 @@ import AddMaintanceScreen from "../main/maintance/AddMaintanceScreen";
 import AddFuelScreen from "../main/fuel/AddFuelScreen";
 import NotificationScreen from "../main/notifications/NotificationScreen";
 import CrewScreen from "../main/crew/CrewScreen";
+import EditProfileScreen from "../main/profile/EditProfileScreen";
 
 const Stack = createStackNavigator();
 
@@ -75,6 +76,11 @@ export const MainStack = () => {
         name="Crew"
         component={CrewScreen}
         options={{ headerShown: true, headerTitle: "Crew" }}
+      />
+      <Stack.Screen
+        name="EditProfile"
+        component={EditProfileScreen}
+        options={{ headerShown: true, headerTitle: "Edit Profile" }}
       />
     </Stack.Navigator>
   );
