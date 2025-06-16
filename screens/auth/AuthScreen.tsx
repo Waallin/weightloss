@@ -95,7 +95,7 @@ const AuthScreen = () => {
       const endpoint = "user/get";
       const user = await globalApi("GET", endpoint, null, token);
       console.log("user", user);
-      setUser(user.data);
+      setUser({ ...user.data, token: token });
       navigation.navigate("MainStack");
     }
   };

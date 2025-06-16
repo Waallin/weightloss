@@ -22,10 +22,14 @@ const measurementUnits = [
 ];
 
 const PreferenceView = () => {
-  const { user } = useUserStore();
+  const { user, setUser } = useUserStore();
 
-  const [notifications, setNotifications] = useState(false);
-  const [location, setLocation] = useState(false);
+  const [notification, setNotification] = useState(
+    Boolean(user?.preferences?.notification)
+  );
+  const [location, setLocation] = useState(
+    Boolean(user?.preferences?.location)
+  );
   const [modalTitle, setModalTitle] = useState("");
   const [modalData, setModalData] = useState<ModalItem[]>([]);
   const [currentDropdownType, setCurrentDropdownType] = useState("");
@@ -37,10 +41,18 @@ const PreferenceView = () => {
 
   const handleChangeSwitch = async (key: string, value: any) => {
     const payload = {
-      [key]: !value,
+      [key]: !value ? 1 : 0,
     };
     const endpoint = "user/update";
     const response = await globalApi("POST", endpoint, payload, user.token);
+
+    setUser({
+      ...user,
+      preferences: {
+        ...user.preferences,
+        [key]: !value,
+      },
+    });
   };
 
   const handleChangeDropdown = async (key: string, value: any) => {
@@ -154,10 +166,10 @@ const PreferenceView = () => {
       <View>
         <SwitchInputRow
           title="Notifications"
-          value={notifications}
+          value={notification}
           onChange={() => {
-            setNotifications(!notifications);
-            handleChangeSwitch("notifications", notifications);
+            setNotification(!notification);
+            handleChangeSwitch("notification", notification);
           }}
         />
 
