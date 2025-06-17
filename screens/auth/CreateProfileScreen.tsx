@@ -18,8 +18,8 @@ import { globalStyles } from "../../constants/globalStyles";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
 import { AntDesign, Feather } from "@expo/vector-icons";
-import ProfileInputRowTitle from "./components/ProfileInputRowTitle";
-import ProfileInputRow from "./components/ProfileInputRow";
+import ProfileInputRowTitle from "../../components/ProfileInputRowTitle";
+import ProfileInputRow from "../../components/ProfileInputRow";
 import PrimaryButton from "../../components/PrimaryButton";
 import SwitchInputRow from "./components/SwitchInputRow";
 import DropdownRow from "./components/DropdownRow";
@@ -95,7 +95,6 @@ const CreateProfileScreen = ({
   const [certifications, setCertifications] = useState("");
   const [preferredWater, setPreferredWater] = useState("");
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [emergencyContact, setEmergencyContact] = useState("");
   const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState("");
 
@@ -398,19 +397,20 @@ const CreateProfileScreen = ({
 
   const handleComplete = async () => {
     const personalInfoPayload = {
-      full_name: "anders wallin",
-      email: "hessssj@email.com",
+      full_name: fullName,
+      email: email,
       date_of_birth: "1990-01-01",
       image: "",
-      address: "address",
-      emergency_contact: "emergency contact",
+      address: address,
+      emergency_contact: emergencyContact,
+      emergency_phone_number: emergencyPhoneNumber,
     };
 
     const boatingInfoPayload = {
-      experience_level: "experienceLevel",
-      boating_license: "boatingLicense",
-      certifications: "certifications",
-      preferred_waters: "preferredWater",
+      experience_level: experienceLevel,
+      boating_license: boatingLicense,
+      certifications: certifications,
+      preferred_waters: preferredWater,
     };
 
     const preferencesPayload = {
@@ -426,10 +426,12 @@ const CreateProfileScreen = ({
     ];
 
     for (const { endpoint, payload } of endpoints) {
-      await handlePostFunction({ endpoint, payload });
+      const response = await handlePostFunction({ endpoint, payload });
+      if (!response.success) {
+        return;
+      }
     }
 
-    console.log("EVERTHING IS DONE");
     const getUserEndpoint = "user/get";
 
     const user = await globalApi("GET", getUserEndpoint, null, token);
@@ -446,11 +448,7 @@ const CreateProfileScreen = ({
     payload: any;
   }) => {
     const response = await globalApi("POST", endpoint, payload, token);
-    console.log("🚀 ~ handlePostFunction ~ response:", response);
-
-    if (!response.success) {
-      return;
-    }
+    return response;
   };
 
   const renderModal = () => {

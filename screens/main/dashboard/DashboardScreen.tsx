@@ -24,6 +24,7 @@ import SmartAlert from "./widgets/SmartAlert";
 import EmergencyContact from "./widgets/EmergencyContact";
 import QuickActions from "./widgets/QuickActions";
 import useUserStore from "../../../stores/useUserStore";
+import globalApi from "../../../services/api";
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
 
@@ -48,6 +49,11 @@ const DashboardScreen = () => {
   const handleBoat = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("Boat");
+  };
+
+  const handleEditProfile = async () => {
+    console.log("user", user);
+    return;
   };
 
   const renderHeader = () => {
@@ -101,7 +107,7 @@ const DashboardScreen = () => {
               </TouchableOpacity>
               <View>
                 <Text
-                  onPress={() => console.log("user", user)}
+                  onPress={handleEditProfile}
                   style={[globalStyles.smallText, { color: colors.ui.white }]}
                 >
                   Welcome back,

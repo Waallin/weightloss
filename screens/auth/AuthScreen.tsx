@@ -167,7 +167,7 @@ const AuthScreen = () => {
     };
     const response = await globalApi("POST", endpoint, payload);
     if (response.success) {
-      if (!response.is_new_user) {
+      if (response.is_new_user === 1) {
         const endpoint = "user/get";
         const user = await globalApi(
           "GET",
