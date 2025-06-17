@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { Feather } from "@expo/vector-icons";
-import { colors } from "../../../constants/colors";
-import { spacing } from "../../../constants/spacing";
-import { globalStyles } from "../../../constants/globalStyles";
+import { colors } from "../constants/colors";
+import { spacing } from "../constants/spacing";
+import { globalStyles } from "../constants/globalStyles";
 
 const ProfileInputRowTitle = ({
   title,

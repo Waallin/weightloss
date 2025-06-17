@@ -44,6 +44,12 @@
       <key>NSAllowsLocalNetworking</key>
       <true/>
     </dict>
+    <key>NSCameraUsageDescription</key>
+    <string>This app needs access to your camera to take a new profile picture.</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>This app needs access to your microphone to capture photos with sound.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>This app needs access to your photo library to select a profile picture.</string>
     <key>UILaunchStoryboardName</key>
     <string>SplashScreen</string>
     <key>UIRequiredDeviceCapabilities</key>

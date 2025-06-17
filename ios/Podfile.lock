@@ -3,6 +3,9 @@ PODS:
   - DoubleConversion (1.1.6)
   - EXConstants (17.1.6):
     - ExpoModulesCore
+  - EXImageLoader (5.1.0):
+    - ExpoModulesCore
+    - React-Core
   - Expo (53.0.11):
     - DoubleConversion
     - ExpoModulesCore
@@ -37,6 +40,8 @@ PODS:
   - ExpoFont (13.3.1):
     - ExpoModulesCore
   - ExpoHaptics (14.1.4):
+    - ExpoModulesCore
+  - ExpoImagePicker (16.1.4):
     - ExpoModulesCore
   - ExpoKeepAwake (14.1.4):
     - ExpoModulesCore
@@ -2070,17 +2075,25 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - SocketRocket (0.7.1)
+  - VisionCamera (4.7.0):
+    - VisionCamera/Core (= 4.7.0)
+    - VisionCamera/React (= 4.7.0)
+  - VisionCamera/Core (4.7.0)
+  - VisionCamera/React (4.7.0):
+    - React-Core
   - Yoga (0.0.0)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - EXConstants (from `../node_modules/expo-constants/ios`)
+  - EXImageLoader (from `../node_modules/expo-image-loader/ios`)
   - Expo (from `../node_modules/expo`)
   - ExpoAsset (from `../node_modules/expo-asset/ios`)
   - ExpoFileSystem (from `../node_modules/expo-file-system/ios`)
   - ExpoFont (from `../node_modules/expo-font/ios`)
   - ExpoHaptics (from `../node_modules/expo-haptics/ios`)
+  - ExpoImagePicker (from `../node_modules/expo-image-picker/ios`)
   - ExpoKeepAwake (from `../node_modules/expo-keep-awake/ios`)
   - ExpoLinearGradient (from `../node_modules/expo-linear-gradient/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
@@ -2160,6 +2173,7 @@ DEPENDENCIES:
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2173,6 +2187,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec"
   EXConstants:
     :path: "../node_modules/expo-constants/ios"
+  EXImageLoader:
+    :path: "../node_modules/expo-image-loader/ios"
   Expo:
     :path: "../node_modules/expo"
   ExpoAsset:
@@ -2183,6 +2199,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-font/ios"
   ExpoHaptics:
     :path: "../node_modules/expo-haptics/ios"
+  ExpoImagePicker:
+    :path: "../node_modules/expo-image-picker/ios"
   ExpoKeepAwake:
     :path: "../node_modules/expo-keep-awake/ios"
   ExpoLinearGradient:
@@ -2338,6 +2356,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
+  VisionCamera:
+    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2345,11 +2365,13 @@ SPEC CHECKSUMS:
   boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
   DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 9f310f44bfedba09087042756802040e464323c0
+  EXImageLoader: 4d3d3284141f1a45006cc4d0844061c182daf7ee
   Expo: 4e8bda07d30b024b1732f87843a5349a3ecc1316
   ExpoAsset: 3bc9adb7dbbf27ae82c18ca97eb988a3ae7e73b1
   ExpoFileSystem: c36eb8155eb2381c83dda7dc210e3eec332368b6
   ExpoFont: abbb91a911eb961652c2b0a22eef801860425ed6
   ExpoHaptics: 0ff6e0d83cd891178a306e548da1450249d54500
+  ExpoImagePicker: 0963da31800c906e01c03e25d7c849f16ebf02a2
   ExpoKeepAwake: bf0811570c8da182bfb879169437d4de298376e7
   ExpoLinearGradient: 7734c8059972fcf691fb4330bcdf3390960a152d
   ExpoModulesCore: d431ffe83c8673d02cb38425594a5f5480fd3061
@@ -2428,6 +2450,7 @@ SPEC CHECKSUMS:
   RNScreens: 482e9707f9826230810c92e765751af53826d509
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
+  VisionCamera: c5c07db74721d37f4c9f8331ad1f8da7b2539995
   Yoga: 29f74a5b77dca8c37669e1e1e867e5f4e12407df
 
 PODFILE CHECKSUM: 27dff46acc63beb26ba77f406caaa24d46260e98

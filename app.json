@@ -12,9 +12,23 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app needs access to your photo library to select a profile picture.",
+          "cameraPermission": "This app needs access to your camera to take a new profile picture."
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.developer-scriptsector.vst"
+      "bundleIdentifier": "com.developer-scriptsector.vst",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select a profile picture.",
+        "NSCameraUsageDescription": "This app needs access to your camera to take a new profile picture.",
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone to capture photos with sound."
+      }
     },
     "android": {
       "adaptiveIcon": {

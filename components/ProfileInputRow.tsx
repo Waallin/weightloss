@@ -1,8 +1,9 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import React from "react";
-import { globalStyles } from "../../../constants/globalStyles";
-import { spacing } from "../../../constants/spacing";
-import { colors } from "../../../constants/colors";
+import { globalStyles } from "../constants/globalStyles";
+import { spacing } from "../constants/spacing";
+import { colors } from "../constants/colors";
+
 const ProfileInputRow = ({
   title,
   placeholder,
