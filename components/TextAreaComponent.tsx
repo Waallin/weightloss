@@ -9,11 +9,13 @@ const TextAreaComponent = ({
   placeholder,
   value,
   onChangeText,
+  disabled,
 }: {
   title: string;
   placeholder: string;
   value: string;
   onChangeText: (text: string) => void;
+  disabled?: boolean;
 }) => {
   return (
     <View>
@@ -32,6 +34,7 @@ const TextAreaComponent = ({
         style={{
           borderColor: colors.ui.lightGrey,
           borderWidth: 1,
+          color: disabled ? colors.ui.grey : colors.ui.darkBlue,
           borderRadius: spacing.borderRadius,
           padding: spacing.sm,
           marginTop: spacing.sm,
@@ -40,6 +43,7 @@ const TextAreaComponent = ({
         placeholder={placeholder}
         value={value}
         onChangeText={onChangeText}
+        editable={!disabled}
       />
     </View>
   );

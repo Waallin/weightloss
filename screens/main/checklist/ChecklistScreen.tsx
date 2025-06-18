@@ -3,105 +3,123 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { Ionicons } from "@expo/vector-icons";
 import Checklist from "./components/Checklist";
 import useUserStore from "../../../stores/useUserStore";
-import globalApi from "../../../services/api";
 import TopBar from "../../../components/TopBar";
-const dummyChecklist = [
-  {
-    id: 1,
-    title: "weekend trip pre-departure check",
-    sections: [
-      {
-        id: 1,
-        title: "safety equipment",
-        items: [
-          {
-            id: 1,
-            title: "life jackets present and in good condition",
-            comments: "all 8 life jackets are in good condition",
-          },
-        ],
-      },
-      {
-        id: 2,
-        title: "Documentation",
-        items: [
-          {
-            id: 1,
-            title: "Boat registration",
-          },
-          {
-            id: 2,
-            title: "Boat insurance",
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    id: 2,
-    title: "monthly check",
-    sections: [
-      {
-        id: 1,
-        title: "safety equipment",
-        items: [
-          {
-            id: 1,
-            title: "life jackets",
-          },
-          {
-            id: 2,
-            title: "fire extinguisher",
-          },
-        ],
-      },
-      {
-        id: 2,
-        title: "Documentation",
-        items: [
-          {
-            id: 1,
-            title: "Boat registration",
-          },
-          {
-            id: 2,
-            title: "Boat insurance",
-          },
-        ],
-      },
-    ],
-  },
-];
+import globalApi from "../../../services/api";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import useChecklistStore from "../../../stores/useChecklistStore";
 
 const ChecklistScreen = () => {
-  const { user } = useUserStore();
+  const { user, mainBoat } = useUserStore();
+
+  const { checklists, setChecklists } = useChecklistStore();
+  const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    fetchChecklists();
+    startAnimation();
+  }, []);
+
+  const startAnimation = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bounceAnim, {
+          toValue: 1,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(bounceAnim, {
+          toValue: 0,
+          duration: 1500,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
+  };
+
+  const fetchChecklists = async () => {
+    const boatId = mainBoat()?.id;
+    const endpoint = `boats/${boatId}/checklists`;
+
+    if (!boatId) return;
+    const response = await globalApi("GET", endpoint, null, user.token);
+    setChecklists(response.data.checklists);
+  };
+
   const renderChecklist = () => {
     return (
       <View
         style={{
           marginTop: spacing.md,
+          flex: 1,
         }}
       >
-        {dummyChecklist.map((checklist, index) => (
-          <Checklist checklist={checklist} key={index} />
-        ))}
+        {checklists.length > 0 ? (
+          checklists.map((checklist, index) => (
+            <Checklist checklist={checklist} key={index} />
+          ))
+        ) : (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              gap: spacing.md,
+            }}
+          >
+            <Animated.View
+              style={{
+                transform: [
+                  {
+                    translateY: bounceAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, -10],
+                    }),
+                  },
+                  {
+                    rotate: bounceAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: ["0deg", "10deg"],
+                    }),
+                  },
+                ],
+              }}
+            >
+              <MaterialCommunityIcons
+                name="clipboard-text-outline"
+                size={80}
+                color={colors.ui.darkBlue}
+              />
+            </Animated.View>
+            <Text
+              style={{ ...globalStyles.subTitle, color: colors.ui.darkBlue }}
+            >
+              No checklists found
+            </Text>
+            <Text
+              style={{
+                ...globalStyles.smallText,
+                color: colors.ui.darkBlue,
+                textAlign: "center",
+                maxWidth: "80%",
+                opacity: 0.7,
+              }}
+            >
+              Create your first checklist to keep track of your boat's
+              maintenance
+            </Text>
+          </View>
+        )}
       </View>
     );
-  };
-
-  const handleAPI = () => {
-    globalApi("GET", "user/get", null, user.token);
   };
 
   return (
@@ -145,7 +163,7 @@ const ChecklistScreen = () => {
                 fontWeight: "800",
               }}
             >
-              4
+              {checklists?.length || 0}
             </Text>
             <Text
               style={{ ...globalStyles.xSmallText, color: colors.ui.darkBlue }}
@@ -198,25 +216,7 @@ const ChecklistScreen = () => {
           bottom: 110,
           right: spacing.md,
         }}
-      >
-        <TouchableOpacity
-          onPress={handleAPI}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-
-            backgroundColor: colors.ui.darkBlue,
-            paddingHorizontal: spacing.md,
-            paddingVertical: spacing.sm,
-            borderRadius: spacing.borderRadius,
-          }}
-        >
-          <Ionicons name="add" size={24} color={colors.ui.white} />
-          <Text style={{ ...globalStyles.smallText, color: colors.ui.white }}>
-            New
-          </Text>
-        </TouchableOpacity>
-      </View>
+      ></View>
     </View>
   );
 };

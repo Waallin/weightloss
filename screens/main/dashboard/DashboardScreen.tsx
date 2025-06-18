@@ -56,6 +56,11 @@ const DashboardScreen = () => {
     return;
   };
 
+  const handleAddBoat = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("BoatRegistration");
+  };
+
   const renderHeader = () => {
     return (
       <LinearGradient
@@ -161,7 +166,6 @@ const DashboardScreen = () => {
                 >
                   {mainBoat()?.name || "No Boat Registered"}
                 </Text>
-                <Entypo name="chevron-down" size={20} color={colors.ui.white} />
               </View>
               <View
                 style={{
@@ -187,7 +191,7 @@ const DashboardScreen = () => {
               </View>
             </View>
             <TouchableOpacity
-              onPress={handleBoat}
+              onPress={mainBoat()?.name ? handleBoat : handleAddBoat}
               activeOpacity={0.8}
               style={{
                 flexDirection: "row",
@@ -198,7 +202,7 @@ const DashboardScreen = () => {
               <Text
                 style={[globalStyles.smallText, { color: colors.ui.white }]}
               >
-                Details
+                {mainBoat()?.name ? "Details" : "Add Boat"}
               </Text>
               <Entypo name="chevron-right" size={20} color={colors.ui.white} />
             </TouchableOpacity>
