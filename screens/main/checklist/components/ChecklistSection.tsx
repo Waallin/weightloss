@@ -1,12 +1,40 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import { colors } from "../../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import ChecklistItem from "./ChecklistItem";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
+
 const ChecklistSection = ({ section }: { section: any }) => {
   const [expandedItem, setExpandedItem] = useState(false);
+
+  const getSectionIcon = () => {
+    const completedItems = section.items.filter(
+      (item: any) => item.responses.length > 0
+    ).length;
+    if (completedItems === section.items.length) {
+      return "checkmark-circle";
+    } else if (completedItems === 0) {
+      return "list";
+    } else {
+      return "time";
+    }
+  };
+
+  const getSectionColor = () => {
+    const completedItems = section.items.filter(
+      (item: any) => item.responses.length > 0
+    ).length;
+    if (completedItems === section.items.length) {
+      return colors.status.success;
+    } else if (completedItems === 0) {
+      return colors.ui.darkBlue;
+    } else {
+      return colors.status.warning;
+    }
+  };
+
   return (
     <View>
       <View
@@ -32,9 +60,9 @@ const ChecklistSection = ({ section }: { section: any }) => {
             }}
           >
             <Ionicons
-              name={"warning"}
+              name={getSectionIcon()}
               size={18}
-              color={colors.status.warning}
+              color={getSectionColor()}
             />
             <Text style={{ ...globalStyles.xSmallText, fontWeight: "bold" }}>
               {section.title}
@@ -50,7 +78,6 @@ const ChecklistSection = ({ section }: { section: any }) => {
             <Text style={{ ...globalStyles.xSmallText }}>
               {section.items.length} items
             </Text>
-
             <Ionicons
               name={expandedItem ? "chevron-up" : "chevron-down"}
               size={18}

@@ -1,9 +1,27 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import { StyleSheet, Text, View, Animated } from "react-native";
+import React, { useEffect, useRef } from "react";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
 
 const ProgressBar = ({ progress }: { progress: number }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const animatedPercentage = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(animatedValue, {
+        toValue: progress,
+        duration: 500,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedPercentage, {
+        toValue: progress * 100,
+        duration: 500,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  }, [progress]);
+
   const returnColor = () => {
     if (progress === 1) {
       return colors.progressBar.oneHundred;
@@ -15,7 +33,6 @@ const ProgressBar = ({ progress }: { progress: number }) => {
     return colors.progressBar.zero;
   };
 
-  
   return (
     <View>
       <View
@@ -24,14 +41,14 @@ const ProgressBar = ({ progress }: { progress: number }) => {
           alignItems: "center",
         }}
       >
-        <View
+        <Animated.View
           style={{
-            flex: progress,
+            flex: animatedValue,
             height: 10,
             backgroundColor: returnColor(),
             borderRadius: spacing.borderRadius,
           }}
-        ></View>
+        />
         <View
           style={{
             position: "absolute",
@@ -45,7 +62,7 @@ const ProgressBar = ({ progress }: { progress: number }) => {
             borderBottomLeftRadius: spacing.borderRadius,
             borderTopLeftRadius: spacing.borderRadius,
           }}
-        ></View>
+        />
       </View>
       <Text
         style={{
@@ -55,7 +72,7 @@ const ProgressBar = ({ progress }: { progress: number }) => {
           textAlign: "right",
         }}
       >
-        {progress * 100}% completed
+        {Math.round(progress * 100)}% completed
       </Text>
     </View>
   );
