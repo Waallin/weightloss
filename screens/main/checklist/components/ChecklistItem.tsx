@@ -27,14 +27,14 @@ const ChecklistItem = ({ item }: { item: any }) => {
       comments: comments,
     };
     const response = await globalApi("POST", endpoint, payload, user.token);
-
+    console.log("response", response);
     const updatedChecklists = checklists.map((checklist: any) => ({
       ...checklist,
       sections: checklist.sections.map((section: any) => ({
         ...section,
         items: section.items.map((item: any) =>
           item.id === id
-            ? { ...item, responses: [...item.responses, response.data] }
+            ? { ...item, responses: [...item.responses, response.data.status] }
             : item
         ),
       })),
@@ -106,7 +106,9 @@ const ChecklistItem = ({ item }: { item: any }) => {
   const returnButtonColor = (status: number, buttonType: "pass" | "fail") => {
     if (alreadyReported) {
       const reportedStatus = item.responses[0].status;
-      if (reportedStatus.status === status) {
+
+      if (reportedStatus === status) {
+        console.log("test");
         if (buttonType === "pass") {
           return colors.status.success;
         } else {
@@ -164,9 +166,10 @@ const ChecklistItem = ({ item }: { item: any }) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          disabled={alreadyReported}
+          // disabled={alreadyReported}
           onPress={() => {
             handleReport(item.id, 1);
+            // returnButtonColor(1, "pass");
           }}
           style={{
             backgroundColor: returnButtonColor(1, "pass"),
