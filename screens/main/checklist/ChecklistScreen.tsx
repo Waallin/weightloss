@@ -64,7 +64,7 @@ const ChecklistScreen = () => {
       >
         {checklists.length > 0 ? (
           checklists.map((checklist, index) => (
-            <Checklist checklist={checklist} key={index} />
+            <Checklist checklistId={checklist.id} key={index} />
           ))
         ) : (
           <View

@@ -9,17 +9,19 @@ import useUserStore from "../../../../stores/useUserStore";
 import TextAreaComponent from "../../../../components/TextAreaComponent";
 import useChecklistStore from "../../../../stores/useChecklistStore";
 import { Ionicons } from "@expo/vector-icons";
-const ChecklistItem = ({ item }: { item: any }) => {
-  const alreadyReported = item.responses.length > 0;
-
+const ChecklistItem = ({ item: itemProp }: { item: any }) => {
   const { user } = useUserStore();
-  const [comments, setComments] = useState(
-    alreadyReported ? item.responses[0].comment : ""
-  );
+  const { updateChecklistItem } = useChecklistStore();
 
-  const { checklists, setChecklists } = useChecklistStore();
   const [showInfo, setShowInfo] = useState(false);
   const [disabled, setDisabled] = useState(false);
+  const [photo, setPhoto] = useState<any>({});
+
+  const alreadyReported = itemProp.responses.length > 0;
+  const [comments, setComments] = useState(
+    alreadyReported ? itemProp.responses[0].comment : ""
+  );
+
   const handleReport = async (id: string, status: number) => {
     const endpoint = `checklists/items/${id}/response`;
     const payload = {
@@ -27,24 +29,12 @@ const ChecklistItem = ({ item }: { item: any }) => {
       comments: comments,
     };
     const response = await globalApi("POST", endpoint, payload, user.token);
-    console.log("response", response);
-    const updatedChecklists = checklists.map((checklist: any) => ({
-      ...checklist,
-      sections: checklist.sections.map((section: any) => ({
-        ...section,
-        items: section.items.map((item: any) =>
-          item.id === id
-            ? { ...item, responses: [...item.responses, response.data.status] }
-            : item
-        ),
-      })),
-    }));
-
-    setChecklists(updatedChecklists);
+    if (response.success) {
+      updateChecklistItem(id, response.data.status);
+    }
     setDisabled(true);
   };
 
-  const [photo, setPhoto] = useState<any>({});
   const renderCommentInput = () => {
     return (
       <View style={{ marginTop: spacing.sm }}>
@@ -57,6 +47,34 @@ const ChecklistItem = ({ item }: { item: any }) => {
         />
       </View>
     );
+  };
+
+  const handleAddPhoto = () => {
+    console.log(alreadyReported, itemProp.responses);
+    return;
+    setPhoto({
+      uri: "https://via.placeholder.com/150",
+      type: "image/jpeg",
+    });
+  };
+
+  const returnButtonColor = (status: number, buttonType: "pass" | "fail") => {
+    if (alreadyReported) {
+      const reportedStatus = itemProp.responses[0].status;
+
+      if (reportedStatus === status) {
+        console.log("test");
+        if (buttonType === "pass") {
+          return colors.status.success;
+        } else {
+          return colors.status.error;
+        }
+      }
+      return colors.ui.lightGrey;
+    }
+    const result =
+      buttonType === "pass" ? colors.status.success : colors.status.error;
+    return result;
   };
 
   const renderInfo = () => {
@@ -81,7 +99,7 @@ const ChecklistItem = ({ item }: { item: any }) => {
               </TouchableOpacity>
             </View>
             <Text style={globalStyles.smallText}>
-              {item.description}
+              {itemProp.description}
               {"\n\n"}
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
@@ -92,34 +110,6 @@ const ChecklistItem = ({ item }: { item: any }) => {
         </View>
       </Modal>
     );
-  };
-
-  const handleAddPhoto = () => {
-    console.log(alreadyReported, item.responses);
-    return;
-    setPhoto({
-      uri: "https://via.placeholder.com/150",
-      type: "image/jpeg",
-    });
-  };
-
-  const returnButtonColor = (status: number, buttonType: "pass" | "fail") => {
-    if (alreadyReported) {
-      const reportedStatus = item.responses[0].status;
-
-      if (reportedStatus === status) {
-        console.log("test");
-        if (buttonType === "pass") {
-          return colors.status.success;
-        } else {
-          return colors.status.error;
-        }
-      }
-      return colors.ui.lightGrey;
-    }
-    const result =
-      buttonType === "pass" ? colors.status.success : colors.status.error;
-    return result;
   };
 
   const renderButtons = () => {
@@ -152,7 +142,7 @@ const ChecklistItem = ({ item }: { item: any }) => {
       <View style={{ flexDirection: "row", gap: spacing.sm }}>
         <TouchableOpacity
           disabled={alreadyReported}
-          onPress={() => handleReport(item.id, 2)}
+          onPress={() => handleReport(itemProp.id, 2)}
           style={{
             backgroundColor: returnButtonColor(2, "fail"),
             padding: spacing.sm,
@@ -166,11 +156,8 @@ const ChecklistItem = ({ item }: { item: any }) => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          // disabled={alreadyReported}
-          onPress={() => {
-            handleReport(item.id, 1);
-            // returnButtonColor(1, "pass");
-          }}
+          disabled={alreadyReported}
+          onPress={() => handleReport(itemProp.id, 1)}
           style={{
             backgroundColor: returnButtonColor(1, "pass"),
             padding: spacing.sm,
@@ -207,7 +194,7 @@ const ChecklistItem = ({ item }: { item: any }) => {
               maxWidth: "70%",
             }}
           >
-            {item.title}
+            {itemProp.title}
           </Text>
         </View>
         <View

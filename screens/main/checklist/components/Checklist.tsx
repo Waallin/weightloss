@@ -6,9 +6,20 @@ import { globalStyles } from "../../../../constants/globalStyles";
 import { Ionicons } from "@expo/vector-icons";
 import ChecklistSection from "./ChecklistSection";
 import ProgressBar from "../../../../components/ProgressBar";
-import PrimaryButton from "../../../../components/PrimaryButton";
-const Checklist = ({ checklist }: { checklist: any }) => {
+
+import SwipeButton from "./SwipeButton";
+import globalApi from "../../../../services/api";
+import useUserStore from "../../../../stores/useUserStore";
+import * as Haptics from "expo-haptics";
+import useChecklistStore from "../../../../stores/useChecklistStore";
+
+const Checklist = ({ checklistId }: { checklistId: string }) => {
   const [expandedSection, setExpandedSection] = useState(false);
+
+  const { checklists, toggleChecklistCompletion } = useChecklistStore();
+  const { user } = useUserStore();
+
+  const checklist = checklists.find((c) => c.id === checklistId);
 
   const returnDate = (date: string) => {
     const dateObj = new Date(date);
@@ -21,6 +32,8 @@ const Checklist = ({ checklist }: { checklist: any }) => {
   };
 
   const countProgress = () => {
+    if (!checklist) return 0;
+
     let totalItems = 0;
     let completedItems = 0;
 
@@ -33,9 +46,26 @@ const Checklist = ({ checklist }: { checklist: any }) => {
       });
     });
 
-    const result = totalItems > 0 ? completedItems / totalItems : 0;
-    return result;
+    return totalItems > 0 ? completedItems / totalItems : 0;
   };
+
+  const handleCompleteChecklist = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    const endpoint = `checklists/${checklist.id}/toggle-completion`;
+    const response = await globalApi("POST", endpoint, null, user.token);
+
+    if (response.success) {
+      toggleChecklistCompletion(checklist.id);
+    }
+  };
+
+  if (!checklist) {
+    return (
+      <Text onPress={() => console.log("checklist", checklistId)}>
+        Checklist not found
+      </Text>
+    );
+  }
 
   return (
     <View
@@ -103,10 +133,10 @@ const Checklist = ({ checklist }: { checklist: any }) => {
             <ChecklistSection key={key} section={section} />
           ))}
           <View style={{ marginTop: spacing.md }}>
-            <PrimaryButton
-              disabled={countProgress() < 1}
-              title="Sign and Complete"
-              onPress={() => {}}
+            <SwipeButton
+              onPress={handleCompleteChecklist}
+              checklist={checklist}
+              allItemsCompleted={countProgress() === 1}
             />
           </View>
         </View>
