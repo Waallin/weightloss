@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "vst",
-    "slug": "vst",
+    "slug": "vst-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -36,10 +36,19 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.developerscriptsector.vst"
+      "package": "com.developerscriptsector.vst",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ea0de078-14c4-4574-89c2-e734074aa8a8"
+      }
+    },
+    "owner": "developer_scriptsector"
   }
 }
