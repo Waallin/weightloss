@@ -1,14 +1,12 @@
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { use, useState } from "react";
+import React, { useState } from "react";
 import { colors } from "../../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import ChecklistItem from "./ChecklistItem";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
-
 const ChecklistSection = ({ section }: { section: any }) => {
   const [expandedItem, setExpandedItem] = useState(false);
-
   const getSectionIcon = () => {
     const completedItems = section.items.filter(
       (item: any) => item.responses.length > 0
