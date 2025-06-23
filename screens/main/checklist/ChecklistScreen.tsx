@@ -20,7 +20,8 @@ import useChecklistStore from "../../../stores/useChecklistStore";
 const ChecklistScreen = () => {
   const { user, mainBoat } = useUserStore();
 
-  const { checklists, setChecklists } = useChecklistStore();
+  const { checklists, setChecklists, getCompletedLists, getListsInProgress } =
+    useChecklistStore();
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -185,7 +186,7 @@ const ChecklistScreen = () => {
                 fontWeight: "800",
               }}
             >
-              2
+              {getCompletedLists().length}
             </Text>
             <Text style={{ ...globalStyles.xSmallText }}>Completed</Text>
           </View>
@@ -203,7 +204,7 @@ const ChecklistScreen = () => {
                 fontWeight: "800",
               }}
             >
-              2
+              {getListsInProgress().length}
             </Text>
             <Text style={{ ...globalStyles.xSmallText }}>In Progress</Text>
           </View>
