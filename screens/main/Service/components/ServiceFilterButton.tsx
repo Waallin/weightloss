@@ -6,7 +6,7 @@ import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
 import * as Haptics from "expo-haptics";
 
-const MaintanceFilterButton = ({
+const ServiceFilterButton = ({
   item,
   onPress,
   selectedFilter,
@@ -48,6 +48,6 @@ const MaintanceFilterButton = ({
   );
 };
 
-export default MaintanceFilterButton;
+export default ServiceFilterButton;
 
 const styles = StyleSheet.create({});

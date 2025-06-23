@@ -6,7 +6,7 @@ import PreferenceView from "../main/profile/preferences/PreferenceView";
 import { SafeAreaView } from "react-native";
 import ForecastScreen from "../main/forecast/ForecastScreen";
 import BoatScreen from "../main/boat/BoatScreen";
-import AddMaintanceScreen from "../main/maintance/AddMaintanceScreen";
+import AddServiceScreen from "../main/Service/AddServiceScreen";
 import AddFuelScreen from "../main/fuel/AddFuelScreen";
 import NotificationScreen from "../main/notifications/NotificationScreen";
 import CrewScreen from "../main/crew/CrewScreen";
@@ -54,9 +54,9 @@ export const MainStack = () => {
         options={{ headerShown: true, headerTitle: "Boat" }}
       />
       <Stack.Screen
-        name="AddMaintance"
-        component={AddMaintanceScreen}
-        options={{ headerShown: true, headerTitle: "Add Maintance" }}
+        name="AddService"
+        component={AddServiceScreen}
+        options={{ headerShown: true, headerTitle: "Add Service" }}
       />
       <Stack.Screen
         name="AddFuel"

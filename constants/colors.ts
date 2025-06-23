@@ -59,4 +59,11 @@ export const colors = {
     maintenance: "#FF9500",
     default: "#D1E9FF",
   },
+
+  serviceType: {
+    maintenance: "#35C759",
+    inspection: "#2A5580",
+    repair: "#FF9500",
+    default: "#D1E9FF",
+  },
 };

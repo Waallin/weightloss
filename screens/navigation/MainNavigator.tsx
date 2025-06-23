@@ -18,7 +18,7 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-import MaintanceScreen from "../main/maintance/MaintanceScreen";
+import ServiceScreen from "../main/Service/ServiceScreen";
 import LogBookScreen from "../main/logbook/LogBookScreen";
 
 const Tab = createBottomTabNavigator();
@@ -160,7 +160,7 @@ const MainNavigator = () => {
       />
       <Tab.Screen
         name="Service"
-        component={MaintanceScreen}
+        component={ServiceScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon focused={focused} tabName="Service">

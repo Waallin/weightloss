@@ -7,16 +7,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TopBar from "../../../components/TopBar";
 import { spacing } from "../../../constants/spacing";
 import { colors } from "../../../constants/colors";
-import MaintanceFilterButton from "./components/MaintanceFilterButton";
+import ServiceFilterButton from "./components/ServiceFilterButton";
 import { globalStyles } from "../../../constants/globalStyles";
-import MaintanceItem from "../maintance/components/MaintanceItem";
+import ServiceItem from "./components/ServiceItem";
 import ServiceProviderItem from "./components/ServiceProviderItem";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import globalApi from "../../../services/api";
+import useUserStore from "../../../stores/useUserStore";
+import useServiceStore from "../../../stores/useServiceStore";
 
 const filterOptions = [
   {
@@ -99,11 +102,30 @@ const dummyServiceProvider = [
     rating: 4.2,
   },
 ];
-const MaintanceScreen = () => {
+const ServiceScreen = () => {
+  const { user, mainBoat } = useUserStore();
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
+  const {
+    services,
+    setServices,
+    filterServicesWithCategory,
+    filteredServices,
+  } = useServiceStore();
   const navigation = useNavigation();
+
   const handleFilter = (filter: string) => {
     setSelectedFilter(filter);
+    filterServicesWithCategory(filter);
+  };
+
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  const fetchServices = async () => {
+    const endpoint = `boats/${mainBoat()?.id}/services`;
+    const response = await globalApi("GET", endpoint, null, user.token);
+    setServices(response.data.services);
   };
 
   return (
@@ -123,14 +145,14 @@ const MaintanceScreen = () => {
         }}
       >
         <View style={{ paddingHorizontal: spacing.md }}>
-          <TopBar title="Maintance" />
+          <TopBar title="Services" />
         </View>
         <View style={{ ...globalStyles.container, flex: 1 }}>
           <View style={{ marginTop: spacing.md }}>
             <FlatList
               data={filterOptions}
               renderItem={({ item }) => (
-                <MaintanceFilterButton
+                <ServiceFilterButton
                   item={item}
                   onPress={() => handleFilter(item.title)}
                   selectedFilter={selectedFilter}
@@ -144,8 +166,8 @@ const MaintanceScreen = () => {
             />
           </View>
           <View style={{ flex: 1, marginTop: spacing.md, gap: spacing.md }}>
-            {dummyData.map((item) => (
-              <MaintanceItem key={item.id} item={item} />
+            {filteredServices?.map((item: any, index: number) => (
+              <ServiceItem key={index} item={item} />
             ))}
             <Text style={{ ...globalStyles.smallTitle }}>
               Service Providers
@@ -165,7 +187,7 @@ const MaintanceScreen = () => {
           padding: spacing.md,
           borderRadius: spacing.borderRadius,
         }}
-        onPress={() => navigation.navigate("AddMaintance")}
+        onPress={() => navigation.navigate("AddService")}
       >
         <Ionicons name="add" size={24} color={colors.ui.white} />
       </TouchableOpacity>
@@ -173,6 +195,6 @@ const MaintanceScreen = () => {
   );
 };
 
-export default MaintanceScreen;
+export default ServiceScreen;
 
 const styles = StyleSheet.create({});

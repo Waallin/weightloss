@@ -6,7 +6,7 @@ export type RootStackParamList = {
   PreferenceView: undefined;
   Forecast: undefined;
   Boat: undefined;
-  AddMaintance: undefined;
+  AddService: undefined;
   AddFuel: undefined;
   Notification: undefined;
   Crew: undefined;
