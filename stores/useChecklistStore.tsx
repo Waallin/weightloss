@@ -5,6 +5,8 @@ interface ChecklistState {
   setChecklists: (checklists: any[]) => void;
   updateChecklistItem: (itemId: string, response: any) => void;
   toggleChecklistCompletion: (checklistId: string) => void;
+  getCompletedLists: () => any[];
+  getListsInProgress: () => any[];
 }
 
 const useChecklistStore = create<ChecklistState>((set, get) => ({
@@ -34,6 +36,16 @@ const useChecklistStore = create<ChecklistState>((set, get) => ({
         : checklist
     );
     set({ checklists: updatedChecklists });
+  },
+
+  getCompletedLists: () => {
+    const { checklists } = get();
+    return checklists.filter((checklist: any) => checklist.is_completed === 1);
+  },
+
+  getListsInProgress: () => {
+    const { checklists } = get();
+    return checklists.filter((checklist: any) => checklist.is_completed === 0);
   },
 }));
 
