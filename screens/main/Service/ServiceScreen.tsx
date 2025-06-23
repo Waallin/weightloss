@@ -11,9 +11,9 @@ import React, { useState } from "react";
 import TopBar from "../../../components/TopBar";
 import { spacing } from "../../../constants/spacing";
 import { colors } from "../../../constants/colors";
-import MaintanceFilterButton from "./components/MaintanceFilterButton";
+import ServiceFilterButton from "./components/ServiceFilterButton";
 import { globalStyles } from "../../../constants/globalStyles";
-import MaintanceItem from "../maintance/components/MaintanceItem";
+import ServiceItem from "./components/ServiceItem";
 import ServiceProviderItem from "./components/ServiceProviderItem";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -99,7 +99,7 @@ const dummyServiceProvider = [
     rating: 4.2,
   },
 ];
-const MaintanceScreen = () => {
+const ServiceScreen = () => {
   const [selectedFilter, setSelectedFilter] = useState<string>("All");
   const navigation = useNavigation();
   const handleFilter = (filter: string) => {
@@ -123,14 +123,14 @@ const MaintanceScreen = () => {
         }}
       >
         <View style={{ paddingHorizontal: spacing.md }}>
-          <TopBar title="Maintance" />
+          <TopBar title="Services" />
         </View>
         <View style={{ ...globalStyles.container, flex: 1 }}>
           <View style={{ marginTop: spacing.md }}>
             <FlatList
               data={filterOptions}
               renderItem={({ item }) => (
-                <MaintanceFilterButton
+                <ServiceFilterButton
                   item={item}
                   onPress={() => handleFilter(item.title)}
                   selectedFilter={selectedFilter}
@@ -145,7 +145,7 @@ const MaintanceScreen = () => {
           </View>
           <View style={{ flex: 1, marginTop: spacing.md, gap: spacing.md }}>
             {dummyData.map((item) => (
-              <MaintanceItem key={item.id} item={item} />
+              <ServiceItem key={item.id} item={item} />
             ))}
             <Text style={{ ...globalStyles.smallTitle }}>
               Service Providers
@@ -165,7 +165,7 @@ const MaintanceScreen = () => {
           padding: spacing.md,
           borderRadius: spacing.borderRadius,
         }}
-        onPress={() => navigation.navigate("AddMaintance")}
+        onPress={() => navigation.navigate("AddService")}
       >
         <Ionicons name="add" size={24} color={colors.ui.white} />
       </TouchableOpacity>
@@ -173,6 +173,6 @@ const MaintanceScreen = () => {
   );
 };
 
-export default MaintanceScreen;
+export default ServiceScreen;
 
 const styles = StyleSheet.create({});

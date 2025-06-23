@@ -1,4 +1,4 @@
-export type MaintanceItemType = {
+export type ServiceItemType = {
   id: number;
   title: string;
   description: string;
@@ -6,7 +6,7 @@ export type MaintanceItemType = {
   date: string;
 };
 
-export type MaintanceFilterButtonType = {
+export type ServiceFilterButtonType = {
   id: number;
   title: string;
 };
@@ -19,7 +19,7 @@ export type ServiceProviderItemType = {
   rating: number;
 };
 
-export type MaintanceOptionType = {
+export type ServiceOptionType = {
   label: string;
   value: string;
   icon: string;

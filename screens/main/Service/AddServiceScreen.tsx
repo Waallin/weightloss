@@ -2,13 +2,15 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
-import MaintanceOptionItem from "./components/MaintanceOptionItem";
-import { MaintanceOptionType } from "./types";
+import ServiceOptionItem from "./components/ServiceOptionItem";
+import { ServiceOptionType } from "./types";
 import TextInputComponent from "../../../components/TextInputComponent";
 import TextAreaComponent from "../../../components/TextAreaComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../../constants/colors";
 import PrimaryButton from "../../../components/PrimaryButton";
+import globalApi from "../../../services/api";
+import useUserStore from "../../../stores/useUserStore";
 
 const serviceType = [
   {
@@ -33,18 +35,35 @@ const serviceType = [
   },
 ];
 
-const AddMaintanceScreen = () => {
+const AddServiceScreen = () => {
+  const { user, mainBoat } = useUserStore();
   const [selectedServiceType, setSelectedServiceType] =
-    useState<MaintanceOptionType | null>(null);
+    useState<ServiceOptionType | null>(null);
   const [serviceTitle, setServiceTitle] = useState<string>("");
   const [serviceDescription, setServiceDescription] = useState<string>("");
-  const handleServiceType = (item: MaintanceOptionType) => {
+  const handleServiceType = (item: ServiceOptionType) => {
     setSelectedServiceType(item);
   };
 
   const [serviceCost, setServiceCost] = useState<string>("");
   const [serviceProvider, setServiceProvider] = useState<string>("");
   const [serviceCategory, setServiceCategory] = useState<string>("");
+
+  const handleAddService = async () => {
+    const payload = {
+      type: selectedServiceType?.label.toLowerCase(),
+      title: serviceTitle,
+      description: serviceDescription,
+      cost: serviceCost,
+      service_provider: serviceProvider,
+      category: serviceCategory,
+    };
+    console.log(payload);
+
+    const endpoint = `boats/${mainBoat()?.id}/services`;
+    const response = await globalApi("POST", endpoint, payload, user.token);
+    console.log(response);
+  };
 
   const returnServiceType = () => {
     return (
@@ -54,7 +73,7 @@ const AddMaintanceScreen = () => {
         </Text>
         <View style={{ gap: spacing.sm, marginTop: spacing.sm }}>
           {serviceType.map((item) => (
-            <MaintanceOptionItem
+            <ServiceOptionItem
               key={item.title}
               item={item}
               selected={selectedServiceType?.label === item.label}
@@ -135,18 +154,6 @@ const AddMaintanceScreen = () => {
     );
   };
 
-  const handleAddService = () => {
-    const payload = {
-      serviceType: selectedServiceType?.label,
-      serviceTitle: serviceTitle,
-      serviceDescription: serviceDescription,
-      serviceCost: serviceCost,
-      serviceProvider: serviceProvider,
-      serviceCategory: serviceCategory,
-    };
-    console.log(payload);
-  };
-
   return (
     <View
       style={{
@@ -172,6 +179,6 @@ const AddMaintanceScreen = () => {
   );
 };
 
-export default AddMaintanceScreen;
+export default AddServiceScreen;
 
 const styles = StyleSheet.create({});

@@ -1,13 +1,13 @@
 import { StyleSheet, Text, View } from "react-native";
 import React from "react";
-import { MaintanceItemType } from "../types";
+import { ServiceItemType } from "../types";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
 import { Entypo } from "@expo/vector-icons";
 import StatusIcon from "../../../../components/StatusIcon";
 
-const MaintanceItem = ({ item }: { item: MaintanceItemType }) => {
+const ServiceItem = ({ item }: { item: ServiceItemType }) => {
   return (
     <View
       style={{
@@ -73,6 +73,6 @@ const MaintanceItem = ({ item }: { item: MaintanceItemType }) => {
   );
 };
 
-export default MaintanceItem;
+export default ServiceItem;
 
 const styles = StyleSheet.create({});

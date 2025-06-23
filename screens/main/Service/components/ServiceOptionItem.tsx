@@ -3,15 +3,15 @@ import React from "react";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { Ionicons } from "@expo/vector-icons";
-import { MaintanceOptionType } from "../types";
+import { ServiceOptionType } from "../types";
 import { globalStyles } from "../../../../constants/globalStyles";
 
-const MaintanceOptionItem = ({
+const ServiceOptionItem = ({
   item,
   onPress,
   selected,
 }: {
-  item: MaintanceOptionType;
+  item: ServiceOptionType;
   onPress: () => void;
   selected: boolean;
 }) => {
@@ -37,6 +37,6 @@ const MaintanceOptionItem = ({
   );
 };
 
-export default MaintanceOptionItem;
+export default ServiceOptionItem;
 
 const styles = StyleSheet.create({});
