@@ -12,6 +12,7 @@ import globalApi from "../../../../services/api";
 import useUserStore from "../../../../stores/useUserStore";
 import * as Haptics from "expo-haptics";
 import useChecklistStore from "../../../../stores/useChecklistStore";
+import { formatDate } from "../../../../utils/dateUtils";
 
 const Checklist = ({ checklistId }: { checklistId: string }) => {
   const [expandedSection, setExpandedSection] = useState(false);
@@ -20,16 +21,6 @@ const Checklist = ({ checklistId }: { checklistId: string }) => {
   const { user } = useUserStore();
 
   const checklist = checklists.find((c) => c.id === checklistId);
-
-  const returnDate = (date: string) => {
-    const dateObj = new Date(date);
-    return dateObj.toLocaleDateString("en-US", {
-      weekday: "short",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
 
   const countProgress = () => {
     if (!checklist) return 0;
@@ -112,7 +103,7 @@ const Checklist = ({ checklistId }: { checklistId: string }) => {
               {checklist.title}
             </Text>
             <Text style={globalStyles.xSmallText}>
-              {returnDate(checklist.date)}
+              {formatDate(checklist.date)}
             </Text>
           </View>
         </View>

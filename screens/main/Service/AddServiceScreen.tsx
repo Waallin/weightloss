@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { FlatList, ScrollView, StyleSheet, Text, View } from "react-native";
 import React, { useState } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
@@ -11,6 +11,8 @@ import { colors } from "../../../constants/colors";
 import PrimaryButton from "../../../components/PrimaryButton";
 import globalApi from "../../../services/api";
 import useUserStore from "../../../stores/useUserStore";
+import ServiceFilterButton from "./components/ServiceFilterButton";
+import useServiceStore from "../../../stores/useServiceStore";
 
 const serviceType = [
   {
@@ -35,6 +37,40 @@ const serviceType = [
   },
 ];
 
+const filterOptions = [
+  {
+    id: 1,
+    title: "Engine",
+  },
+  {
+    id: 2,
+    title: "Propeller",
+  },
+  {
+    id: 3,
+    title: "Hull",
+  },
+  {
+    id: 4,
+    title: "Electrical",
+  },
+  {
+    id: 5,
+    title: "Navigation",
+  },
+  {
+    id: 6,
+    title: "Safety",
+  },
+  {
+    id: 7,
+    title: "Interior",
+  },
+  {
+    id: 8,
+    title: "Other",
+  },
+];
 const AddServiceScreen = () => {
   const { user, mainBoat } = useUserStore();
   const [selectedServiceType, setSelectedServiceType] =
@@ -47,7 +83,12 @@ const AddServiceScreen = () => {
 
   const [serviceCost, setServiceCost] = useState<string>("");
   const [serviceProvider, setServiceProvider] = useState<string>("");
-  const [serviceCategory, setServiceCategory] = useState<string>("");
+  const [selectedFilter, setSelectedFilter] = useState<string>("");
+  const { services, setServices } = useServiceStore();
+
+  const handleFilter = (filter: string) => {
+    setSelectedFilter(filter);
+  };
 
   const handleAddService = async () => {
     const payload = {
@@ -56,13 +97,15 @@ const AddServiceScreen = () => {
       description: serviceDescription,
       cost: serviceCost,
       service_provider: serviceProvider,
-      category: serviceCategory,
+      category: selectedFilter,
     };
     console.log(payload);
 
     const endpoint = `boats/${mainBoat()?.id}/services`;
     const response = await globalApi("POST", endpoint, payload, user.token);
+
     console.log(response);
+    setServices([...services, response.data.service]);
   };
 
   const returnServiceType = () => {
@@ -143,17 +186,35 @@ const AddServiceScreen = () => {
             value={serviceProvider}
             onChangeText={setServiceProvider}
           />
-          <TextInputComponent
-            title="Category"
-            placeholder="Enter service category"
-            value={serviceCategory}
-            onChangeText={setServiceCategory}
-          />
         </View>
       </View>
     );
   };
 
+  const returnCategory = () => {
+    return (
+      <View style={{ gap: spacing.sm, marginTop: spacing.md }}>
+        <Text style={{ ...globalStyles.smallText, fontWeight: "bold" }}>
+          Category
+        </Text>
+        <FlatList
+          data={filterOptions}
+          renderItem={({ item }) => (
+            <ServiceFilterButton
+              item={item}
+              onPress={() => handleFilter(item.title)}
+              selectedFilter={selectedFilter}
+            />
+          )}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: spacing.md,
+          }}
+        />
+      </View>
+    );
+  };
   return (
     <View
       style={{
@@ -170,6 +231,7 @@ const AddServiceScreen = () => {
       >
         {returnServiceType()}
         {returnInputs()}
+        {returnCategory()}
         {returnPhotoInput()}
         <View style={{ marginTop: spacing.md }}>
           <PrimaryButton title="Add Service" onPress={handleAddService} />
