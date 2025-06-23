@@ -126,6 +126,7 @@ const ServiceScreen = () => {
     const endpoint = `boats/${mainBoat()?.id}/services`;
     const response = await globalApi("GET", endpoint, null, user.token);
     setServices(response.data.services);
+    filterServicesWithCategory("All");
   };
 
   return (
