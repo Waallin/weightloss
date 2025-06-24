@@ -1,74 +1,32 @@
 import { StyleSheet, Text, View, TextInput, FlatList } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../../constants/colors";
 import CrewMemberItem from "./components/CrewMemberItem";
+import globalApi from "../../../services/api";
+import useUserStore from "../../../stores/useUserStore";
+import { CrewMemberItemType } from "./types";
 
-const dummyCrew = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "john.doe@example.com",
-    phone: "+1234567890",
-    joinedDate: "2024-01-15",
-    profileImage: "https://randomuser.me/api/portraits/men/30.jpg",
-    role: "captain",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    phone: "+1987654321",
-    joinedDate: "2024-02-01",
-    profileImage: "https://randomuser.me/api/portraits/women/45.jpg",
-    role: "crew",
-  },
-  {
-    id: 3,
-    name: "Robert Johnson",
-    email: "robert.j@example.com",
-    phone: "+1122334455",
-    joinedDate: "2023-12-10",
-    profileImage: "https://randomuser.me/api/portraits/men/22.jpg",
-    role: "owner",
-  },
-  {
-    id: 4,
-    name: "Maria Garcia",
-    email: "maria.g@example.com",
-    phone: "+1567891234",
-    joinedDate: "2024-03-05",
-    profileImage: "https://randomuser.me/api/portraits/women/33.jpg",
-    role: "crew",
-  },
-  {
-    id: 5,
-    name: "David Wilson",
-    email: "david.w@example.com",
-    phone: "+1678901234",
-    joinedDate: "2024-02-20",
-    profileImage: "https://randomuser.me/api/portraits/men/41.jpg",
-    role: "crew",
-  },
-  {
-    id: 6,
-    name: "Emma Anderson",
-    email: "emma.a@example.com",
-    phone: "+1789012345",
-    joinedDate: "2024-01-30",
-    profileImage: "https://randomuser.me/api/portraits/women/28.jpg",
-    role: "crew",
-  },
-];
 const CrewScreen = () => {
-  const [crew, setCrew] = useState(dummyCrew);
-  const [filteredCrew, setFilteredCrew] = useState(dummyCrew);
+  const [crew, setCrew] = useState([]);
+  const [filteredCrew, setFilteredCrew] = useState([]);
+  const { user } = useUserStore();
+  useEffect(() => {
+    getCrew();
+  }, []);
 
+  const getCrew = async () => {
+    const endpoint = "boats/1/users";
+    const response = await globalApi("GET", endpoint, null, user?.token);
+    setCrew(response.data.users);
+    setFilteredCrew(response.data.users);
+  };
   const handleSearch = (text: string) => {
-    const filtered = crew.filter((item) =>
-      item.name.toLowerCase().includes(text.toLowerCase())
+    console.log("text", text);
+    const filtered = crew.filter((item: CrewMemberItemType) =>
+      item.user_profile.full_name.toLowerCase().includes(text.toLowerCase())
     );
     setFilteredCrew(filtered);
   };

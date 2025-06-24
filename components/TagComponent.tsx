@@ -11,22 +11,22 @@ const TagComponent = ({ item }: { item: any }) => {
         flexDirection: "row",
         alignItems: "center",
         gap: spacing.xs,
-        backgroundColor: item.backgroundColor,
+        backgroundColor: item?.backgroundColor,
         paddingVertical: spacing.xs,
         paddingHorizontal: spacing.sm,
         borderRadius: spacing.borderRadius,
       }}
     >
-      {item.icon}
+      {item?.icon}
       <Text
         style={{
           ...globalStyles.xSmallText,
           fontWeight: "bold",
-          color: item.textColor,
+          color: item?.textColor,
           textTransform: "capitalize",
         }}
       >
-        {item.type}
+        {item?.type}
       </Text>
     </View>
   );

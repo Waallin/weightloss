@@ -8,11 +8,12 @@ import TagComponent from "../../../../components/TagComponent";
 import { colors } from "../../../../constants/colors";
 
 const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
+  const profile = member?.user_profile;
   const roleConfig = {
     owner: {
       backgroundColor: colors.role.owner,
       textColor: colors.ui.white,
-      icon: <Ionicons name="crown" size={16} color={colors.ui.white} />,
+      icon: <Ionicons name="person-circle" size={16} color={colors.ui.white} />,
       type: "Owner",
     },
     captain: {
@@ -30,10 +31,15 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
   };
 
   const returnRole = () => {
-    const config = roleConfig[member.role as keyof typeof roleConfig];
+    const config = roleConfig[member?.pivot?.role as keyof typeof roleConfig];
     return <TagComponent item={config} />;
   };
 
+  const returnProfileImage = () => {
+    const random = Math.floor(Math.random() * 100);
+    const gender = Math.random() > 0.5 ? "men" : "women";
+    return `https://randomuser.me/api/portraits/${gender}/${random}.jpg`;
+  };
   return (
     <View
       style={{
@@ -56,16 +62,16 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
       </View>
       <View>
         <Image
-          source={{ uri: member.profileImage }}
+          source={{ uri: returnProfileImage() }}
           style={{ width: 50, height: 50, borderRadius: 25 }}
         />
       </View>
       <View>
         <Text
-          onPress={() => console.log("test", member)}
+          onPress={() => console.log("test", profile)}
           style={{ ...globalStyles.smallText, fontWeight: "bold" }}
         >
-          {member.name}
+          {profile?.full_name}
         </Text>
         <Text
           style={{
@@ -74,7 +80,7 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
             marginTop: spacing.xs,
           }}
         >
-          {member.email}
+          {profile?.email}
         </Text>
         <TouchableOpacity>
           <Text
@@ -86,7 +92,7 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
               textDecorationColor: colors.text.link,
             }}
           >
-            {member.phone}
+            {member?.phone_number}
           </Text>
         </TouchableOpacity>
       </View>
