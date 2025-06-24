@@ -25,6 +25,11 @@ export const colors = {
     darkGrey: "#C5D4E0",
     yellow: "#FFD600",
   },
+  role: {
+    owner: "#8B5CF6",
+    captain: "#3B82F6",
+    crew: "#0FB981",
+  },
   status: {
     success: "#43A047",
     warning: "#FF9500",
