@@ -67,10 +67,7 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
         />
       </View>
       <View>
-        <Text
-          onPress={() => console.log("test", profile)}
-          style={{ ...globalStyles.smallText, fontWeight: "bold" }}
-        >
+        <Text style={{ ...globalStyles.smallText, fontWeight: "bold" }}>
           {profile?.full_name}
         </Text>
         <Text
