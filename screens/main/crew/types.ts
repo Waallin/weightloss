@@ -1,9 +1,11 @@
 export type CrewMemberItemType = {
   id: number;
-  name: string;
-  email: string;
-  phone: string;
-  joinedDate: string;
-  profileImage: string;
-  role: string;
+  user_profile: {
+    full_name: string;
+    email: string;
+    phone_number: string;
+  };
+  pivot: {
+    role: string;
+  };
 };
