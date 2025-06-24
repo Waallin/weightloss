@@ -33,7 +33,7 @@ const QuickActions = () => {
       color2: "#1B426C",
       icon: <FontAwesome name="bar-chart" size={20} color="white" />,
       onPress: () => {
-        console.log("Analytics");
+        navigation.navigate("Analytics");
       },
     },
     {
@@ -42,7 +42,7 @@ const QuickActions = () => {
       color2: "#8042EF",
       icon: <FontAwesome name="check" size={20} color="white" />,
       onPress: () => {
-        console.log("Checklist");
+        navigation.navigate("Checklist");
       },
     },
     {
@@ -51,7 +51,7 @@ const QuickActions = () => {
       color2: "#FF8500",
       icon: <FontAwesome name="map-marker" size={20} color="white" />,
       onPress: () => {
-        console.log("Navigate");
+        navigation.navigate("Location");
       },
     },
   ];

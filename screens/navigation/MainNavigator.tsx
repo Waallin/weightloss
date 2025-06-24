@@ -129,7 +129,7 @@ const MainNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="LogBook"
+        name="Logbook"
         component={LogBookScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
