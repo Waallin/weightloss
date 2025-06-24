@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, TextInput, FlatList } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import { Ionicons } from "@expo/vector-icons";
@@ -63,6 +63,15 @@ const dummyCrew = [
   },
 ];
 const CrewScreen = () => {
+  const [crew, setCrew] = useState(dummyCrew);
+  const [filteredCrew, setFilteredCrew] = useState(dummyCrew);
+
+  const handleSearch = (text: string) => {
+    const filtered = crew.filter((item) =>
+      item.name.toLowerCase().includes(text.toLowerCase())
+    );
+    setFilteredCrew(filtered);
+  };
   const renderSearchBar = () => {
     return (
       <View
@@ -85,6 +94,7 @@ const CrewScreen = () => {
             style={{ marginLeft: spacing.md }}
           />
           <TextInput
+            onChangeText={handleSearch}
             placeholder="Search"
             style={{
               flex: 1,
@@ -112,11 +122,12 @@ const CrewScreen = () => {
         </Text>
         <View style={{ flex: 1, marginTop: spacing.md }}>
           <FlatList
-            data={dummyCrew}
+            showsVerticalScrollIndicator={false}
+            data={filteredCrew}
             contentContainerStyle={{
               gap: spacing.md,
             }}
-            renderItem={({ item }) => <CrewMemberItem crew={item} />}
+            renderItem={({ item }) => <CrewMemberItem member={item} />}
           />
         </View>
       </View>
