@@ -12,6 +12,9 @@ export type RootStackParamList = {
   Crew: undefined;
   CreateProfile: { token: string };
   EditProfile: undefined;
+  Location: undefined;
+  Checklist: undefined;
+  Analytics: undefined;
 };
 
 declare global {
