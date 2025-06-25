@@ -13,7 +13,8 @@ import globalApi from "../../../services/api";
 import useUserStore from "../../../stores/useUserStore";
 import ServiceFilterButton from "./components/ServiceFilterButton";
 import useServiceStore from "../../../stores/useServiceStore";
-
+import useToastStore from "../../../stores/useToastStore";
+import { useNavigation } from "@react-navigation/native";
 const serviceType = [
   {
     title: "Maintenance",
@@ -75,6 +76,7 @@ const AddServiceScreen = () => {
   const { user, mainBoat } = useUserStore();
   const [selectedServiceType, setSelectedServiceType] =
     useState<ServiceOptionType | null>(null);
+  const navigation = useNavigation();
   const [serviceTitle, setServiceTitle] = useState<string>("");
   const [serviceDescription, setServiceDescription] = useState<string>("");
   const handleServiceType = (item: ServiceOptionType) => {
@@ -85,7 +87,7 @@ const AddServiceScreen = () => {
   const [serviceProvider, setServiceProvider] = useState<string>("");
   const [selectedFilter, setSelectedFilter] = useState<string>("");
   const { services, setServices } = useServiceStore();
-
+  const { showToast } = useToastStore();
   const handleFilter = (filter: string) => {
     setSelectedFilter(filter);
   };
@@ -99,13 +101,15 @@ const AddServiceScreen = () => {
       service_provider: serviceProvider,
       category: selectedFilter,
     };
-    console.log(payload);
 
     const endpoint = `boats/${mainBoat()?.id}/services`;
     const response = await globalApi("POST", endpoint, payload, user.token);
 
-    console.log(response);
-    setServices([...services, response.data.service]);
+    if (response.success) {
+      showToast("Service added successfully");
+      setServices([...services, response.data.service]);
+      navigation.goBack();
+    }
   };
 
   const returnServiceType = () => {
