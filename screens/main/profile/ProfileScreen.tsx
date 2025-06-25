@@ -43,8 +43,6 @@ const ProfileScreen = () => {
   const profileImage = require("../../../assets/profile.png");
   const navigation = useNavigation();
   const { user } = useUserStore();
-  const [notifications, setNotifications] = useState(true);
-  const [location, setLocation] = useState(false);
   const accountSettings = [
     {
       id: 1,

@@ -12,13 +12,13 @@ import { CrewMemberItemType } from "./types";
 const CrewScreen = () => {
   const [crew, setCrew] = useState([]);
   const [filteredCrew, setFilteredCrew] = useState([]);
-  const { user } = useUserStore();
+  const { user, mainBoat } = useUserStore();
   useEffect(() => {
     getCrew();
   }, []);
 
   const getCrew = async () => {
-    const endpoint = "boats/1/users";
+    const endpoint = `boats/${mainBoat()?.id}/users`;
     const response = await globalApi("GET", endpoint, null, user?.token);
     setCrew(response.data.users);
     setFilteredCrew(response.data.users);

@@ -44,44 +44,6 @@ const filterOptions = [
   },
 ];
 
-const dummyData = [
-  {
-    id: 1,
-    title: "Engine Service",
-    description: "Regular maintenance check",
-    status: "Upcoming",
-    date: "2021-01-01",
-  },
-  {
-    id: 2,
-    title: "Propeller Repair",
-    description: "Fix damaged propeller blade",
-    status: "In Progress",
-    date: "2021-01-01",
-  },
-  {
-    id: 3,
-    title: "Hull Cleaning",
-    description: "Remove barnacles and algae",
-    status: "Completed",
-    date: "2021-01-01",
-  },
-  {
-    id: 4,
-    title: "Electrical System",
-    description: "Check battery and wiring",
-    status: "Scheduled",
-    date: "2021-01-01",
-  },
-  {
-    id: 5,
-    title: "Navigation Lights",
-    description: "Replace broken port light",
-    status: "Pending",
-    date: "2021-01-01",
-  },
-];
-
 const dummyServiceProvider = [
   {
     id: 1,

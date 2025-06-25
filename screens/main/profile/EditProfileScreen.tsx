@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View, Alert } from "react-native";
+import { ScrollView, StyleSheet, Text, View, Alert, Image } from "react-native";
 import React, { useState } from "react";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
@@ -21,6 +21,7 @@ const EditProfileScreen = () => {
   const { user, setUser } = useUserStore();
   const { showToast } = useToastStore();
   const [fullName, setFullName] = useState(user?.profile?.full_name);
+  const [photo, setPhoto] = useState(user?.profile?.photo);
   const [email, setEmail] = useState(user?.profile?.email);
   const [address, setAddress] = useState(user?.profile?.address);
   const [emergencyContact, setEmergencyContact] = useState(
@@ -69,9 +70,7 @@ const EditProfileScreen = () => {
             onPress: async () => {
               const imageUri = await pickImageFromGallery();
               if (imageUri) {
-                // Handle the selected image here
-                console.log("Gallery Image URI:", imageUri);
-                // Implement logic to upload the image
+                setPhoto(imageUri);
               }
             },
           },
@@ -104,31 +103,66 @@ const EditProfileScreen = () => {
             marginTop: spacing.lg,
           }}
         >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleChangePhoto}
-            style={{
-              backgroundColor: colors.ui.lightGrey,
-              borderRadius: spacing.rounded,
-              justifyContent: "center",
-              alignItems: "center",
-              padding: spacing.xl,
-            }}
-          >
-            <Feather name="user" size={42} color={colors.ui.grey} />
-            <View
+          {!photo ? (
+            <TouchableOpacity
+              onPress={handleChangePhoto}
+              activeOpacity={0.8}
               style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
+                backgroundColor: colors.ui.lightGrey,
                 borderRadius: spacing.rounded,
-                backgroundColor: colors.ui.darkBlue,
-                padding: spacing.sm,
+                justifyContent: "center",
+                alignItems: "center",
+                padding: spacing.xl,
               }}
             >
-              <Feather name="camera" size={18} color={colors.ui.white} />
-            </View>
-          </TouchableOpacity>
+              <Feather name="user" size={42} color={colors.ui.grey} />
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  borderRadius: spacing.rounded,
+                  backgroundColor: colors.ui.darkBlue,
+                  padding: spacing.sm,
+                }}
+              >
+                <Feather name="camera" size={18} color={colors.ui.white} />
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={handleChangePhoto}
+              activeOpacity={0.8}
+              style={{
+                backgroundColor: colors.ui.lightGrey,
+                borderRadius: spacing.rounded,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={{ uri: photo }}
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: spacing.rounded,
+                }}
+                resizeMode="cover"
+              />
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  borderRadius: spacing.rounded,
+                  backgroundColor: colors.ui.darkBlue,
+                  padding: spacing.sm,
+                }}
+              >
+                <Feather name="camera" size={18} color={colors.ui.white} />
+              </View>
+            </TouchableOpacity>
+          )}
           <Text
             style={{
               ...globalStyles.subTitle,
