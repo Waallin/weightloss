@@ -21,7 +21,7 @@ const EditProfileScreen = () => {
   const { user, setUser } = useUserStore();
   const { showToast } = useToastStore();
   const [fullName, setFullName] = useState(user?.profile?.full_name);
-  const [photo, setPhoto] = useState(user?.profile?.photo);
+  const [photo, setPhoto] = useState(user?.profile?.image?.image_url);
   const [email, setEmail] = useState(user?.profile?.email);
   const [address, setAddress] = useState(user?.profile?.address);
   const [emergencyContact, setEmergencyContact] = useState(
@@ -32,17 +32,30 @@ const EditProfileScreen = () => {
   );
 
   const handleSave = async () => {
-    const payload = {
-      full_name: fullName,
-      email: email,
-      address: address,
-      emergency_contact: emergencyContact,
-      emergency_phone_number: emergencyPhoneNumber,
-    };
-    setUser({ ...user, profile: payload });
+    let formData = new FormData();
+
+    formData.append("full_name", fullName);
+    formData.append("email", email);
+    formData.append("date_of_birth", "1990-01-01");
+    formData.append("address", address);
+    formData.append("emergency_contact", emergencyContact);
+    formData.append("emergency_phone_number", emergencyPhoneNumber);
+
+    if (photo) {
+      formData.append("image", {
+        uri: photo,
+        name: "profile.png",
+        type: "image/png",
+      } as any);
+    }
+
+    setUser({
+      ...user,
+      profile: { ...user.profile, image: { image_url: photo } },
+    });
 
     const endpoint = "user/update";
-    const response = await globalApi("POST", endpoint, payload, user?.token);
+    const response = await globalApi("POST", endpoint, formData, user?.token);
     if (response.success) {
       showToast("Profile updated successfully");
       navigation.goBack();
@@ -59,9 +72,7 @@ const EditProfileScreen = () => {
             onPress: async () => {
               const imageUri = await pickImageFromCamera();
               if (imageUri) {
-                // Handle the captured image here
                 console.log("Camera Image URI:", imageUri);
-                // Implement logic to upload the image
               }
             },
           },

@@ -29,9 +29,11 @@ const darkblue = "#0D395F";
 const lightblue = "#3977B0";
 
 const DashboardScreen = () => {
-  const profileImage = require("../../../assets/profile.png");
   const { height } = useWindowDimensions();
   const { user, mainBoat } = useUserStore();
+  const profileImage = user?.profile?.image?.image_url
+    ? { uri: user.profile.image.image_url }
+    : require("../../../assets/profile.png");
   const headerHeight = height * 0.27;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
