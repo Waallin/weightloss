@@ -9,10 +9,11 @@ import useUserStore from "../../../../stores/useUserStore";
 import TextAreaComponent from "../../../../components/TextAreaComponent";
 import useChecklistStore from "../../../../stores/useChecklistStore";
 import { Ionicons } from "@expo/vector-icons";
+import useToastStore from "../../../../stores/useToastStore";
 const ChecklistItem = ({ item: itemProp }: { item: any }) => {
   const { user } = useUserStore();
   const { updateChecklistItem } = useChecklistStore();
-
+  const { showToast } = useToastStore();
   const [showInfo, setShowInfo] = useState(false);
   const [disabled, setDisabled] = useState(false);
   const [photo, setPhoto] = useState<any>({});
@@ -30,8 +31,10 @@ const ChecklistItem = ({ item: itemProp }: { item: any }) => {
     };
     const response = await globalApi("POST", endpoint, payload, user.token);
     if (response.success) {
+      showToast("Checklist reported successfully");
       updateChecklistItem(id, response.data.status);
     }
+
     setDisabled(true);
   };
 

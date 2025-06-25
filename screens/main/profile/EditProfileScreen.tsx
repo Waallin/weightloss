@@ -14,10 +14,12 @@ import {
   pickImageFromCamera,
   pickImageFromGallery,
 } from "../../../services/permissions";
-
+import useToastStore from "../../../stores/useToastStore";
+import { useNavigation } from "@react-navigation/native";
 const EditProfileScreen = () => {
+  const navigation = useNavigation();
   const { user, setUser } = useUserStore();
-
+  const { showToast } = useToastStore();
   const [fullName, setFullName] = useState(user?.profile?.full_name);
   const [email, setEmail] = useState(user?.profile?.email);
   const [address, setAddress] = useState(user?.profile?.address);
@@ -34,16 +36,15 @@ const EditProfileScreen = () => {
       email: email,
       address: address,
       emergency_contact: emergencyContact,
-      // emergency_phone_number: emergencyPhoneNumber,
+      emergency_phone_number: emergencyPhoneNumber,
     };
     setUser({ ...user, profile: payload });
 
     const endpoint = "user/update";
     const response = await globalApi("POST", endpoint, payload, user?.token);
     if (response.success) {
-      console.log("success");
-    } else {
-      console.log("error");
+      showToast("Profile updated successfully");
+      navigation.goBack();
     }
   };
   const handleChangePhoto = async () => {
