@@ -12,6 +12,8 @@ import {
   Modal,
   FlatList,
   Linking,
+  Alert,
+  Image,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { globalStyles } from "../../constants/globalStyles";
@@ -29,6 +31,12 @@ import { RootStackParamList } from "../navigation/types";
 import globalApi from "../../services/api";
 import useUserStore from "../../stores/useUserStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useToastStore from "../../stores/useToastStore";
+import * as ImagePicker from "expo-image-picker";
+import {
+  pickImageFromCamera,
+  pickImageFromGallery,
+} from "../../services/permissions";
 
 const sections = [
   {
@@ -83,7 +91,8 @@ const CreateProfileScreen = ({
   const scrollViewRef = useRef<ScrollView>(null);
   const [step, setStep] = useState(1);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [photo, setPhoto] = useState<any>(null);
+  const { showToast } = useToastStore();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -181,6 +190,42 @@ const CreateProfileScreen = ({
     );
   };
 
+  const handleChangePhoto = async () => {
+    try {
+      Alert.alert(
+        "Choose Image Source",
+        "How would you like to add your profile picture?",
+        [
+          {
+            text: "Camera",
+            onPress: async () => {
+              const imageUri = await pickImageFromCamera();
+              if (imageUri) {
+                setPhoto(imageUri);
+              }
+            },
+          },
+          {
+            text: "Gallery",
+            onPress: async () => {
+              const imageUri = await pickImageFromGallery();
+              if (imageUri) {
+                setPhoto(imageUri);
+              }
+            },
+          },
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert("Error", "Failed to select image. Please try again.");
+      console.error(error);
+    }
+  };
+
   // step 1
   const renderPersonalInfo = () => {
     return (
@@ -192,39 +237,66 @@ const CreateProfileScreen = ({
             marginTop: spacing.lg,
           }}
         >
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={{
-              backgroundColor: colors.ui.lightGrey,
-              borderRadius: spacing.rounded,
-              justifyContent: "center",
-              alignItems: "center",
-              padding: spacing.xl,
-            }}
-          >
-            <Feather name="user" size={42} color={colors.ui.grey} />
-            <View
+          {!photo ? (
+            <TouchableOpacity
+              onPress={handleChangePhoto}
+              activeOpacity={0.8}
               style={{
-                position: "absolute",
-                bottom: 0,
-                right: 0,
+                backgroundColor: colors.ui.lightGrey,
                 borderRadius: spacing.rounded,
-                backgroundColor: colors.ui.darkBlue,
-                padding: spacing.sm,
+                justifyContent: "center",
+                alignItems: "center",
+                padding: spacing.xl,
               }}
             >
-              <Feather name="camera" size={18} color={colors.ui.white} />
-            </View>
-          </TouchableOpacity>
-          <Text
-            style={{
-              ...globalStyles.subTitle,
-              fontWeight: "600",
-              marginTop: spacing.sm,
-            }}
-          >
-            Upload Photo
-          </Text>
+              <Feather name="user" size={42} color={colors.ui.grey} />
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  borderRadius: spacing.rounded,
+                  backgroundColor: colors.ui.darkBlue,
+                  padding: spacing.sm,
+                }}
+              >
+                <Feather name="camera" size={18} color={colors.ui.white} />
+              </View>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              onPress={handleChangePhoto}
+              activeOpacity={0.8}
+              style={{
+                backgroundColor: colors.ui.lightGrey,
+                borderRadius: spacing.rounded,
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={{ uri: photo }}
+                style={{
+                  width: 120,
+                  height: 120,
+                  borderRadius: spacing.rounded,
+                }}
+                resizeMode="cover"
+              />
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  right: 0,
+                  borderRadius: spacing.rounded,
+                  backgroundColor: colors.ui.darkBlue,
+                  padding: spacing.sm,
+                }}
+              >
+                <Feather name="camera" size={18} color={colors.ui.white} />
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
         <View>
           <ProfileInputRowTitle title="Personal Information" icon="user" />
@@ -435,8 +507,9 @@ const CreateProfileScreen = ({
     const getUserEndpoint = "user/get";
 
     const user = await globalApi("GET", getUserEndpoint, null, token);
-    setUser(user.data);
+    setUser({ ...user.data, token: token });
     await AsyncStorage.setItem("user_token", token);
+    showToast("Profile created successfully");
     navigation.navigate("MainStack");
   };
 
@@ -603,6 +676,7 @@ const CreateProfileScreen = ({
                   color: colors.text.secondary,
                   marginTop: spacing.sm,
                 }}
+                onPress={() => console.log(photo)}
               >
                 {procent}% completed
               </Text>
