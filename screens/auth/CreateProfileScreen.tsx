@@ -468,15 +468,22 @@ const CreateProfileScreen = ({
   };
 
   const handleComplete = async () => {
-    const personalInfoPayload = {
-      full_name: fullName,
-      email: email,
-      date_of_birth: "1990-01-01",
-      image: "",
-      address: address,
-      emergency_contact: emergencyContact,
-      emergency_phone_number: emergencyPhoneNumber,
-    };
+    let formData = new FormData();
+
+    formData.append("full_name", fullName);
+    formData.append("email", email);
+    formData.append("date_of_birth", "1990-01-01");
+    formData.append("address", address);
+    formData.append("emergency_contact", emergencyContact);
+    formData.append("emergency_phone_number", emergencyPhoneNumber);
+
+    if (photo) {
+      formData.append("image", {
+        uri: photo,
+        name: "profile.png",
+        type: "image/png",
+      } as any);
+    }
 
     const boatingInfoPayload = {
       experience_level: experienceLevel,
@@ -492,7 +499,7 @@ const CreateProfileScreen = ({
     };
 
     const endpoints = [
-      { endpoint: "profile/setup", payload: personalInfoPayload },
+      { endpoint: "profile/setup", payload: formData },
       { endpoint: "boating", payload: boatingInfoPayload },
       { endpoint: "preferences", payload: preferencesPayload },
     ];

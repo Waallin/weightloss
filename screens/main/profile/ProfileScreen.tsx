@@ -40,9 +40,11 @@ const dummyVessels = [
 ];
 
 const ProfileScreen = () => {
-  const profileImage = require("../../../assets/profile.png");
   const navigation = useNavigation();
   const { user } = useUserStore();
+  const profileImage = user?.profile?.image?.image_url
+    ? { uri: user.profile.image.image_url }
+    : require("../../../assets/profile.png");
   const accountSettings = [
     {
       id: 1,
@@ -136,7 +138,7 @@ const ProfileScreen = () => {
                 height: 75,
                 borderRadius: 50,
                 borderWidth: 2,
-                borderColor: "#1A406B",
+                borderColor: colors.ui.lightBlueBackground,
               }}
             />
             <View
