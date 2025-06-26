@@ -517,7 +517,7 @@ const CreateProfileScreen = ({
     setUser({ ...user.data, token: token });
     await AsyncStorage.setItem("user_token", token);
     showToast("Profile created successfully");
-    navigation.navigate("MainStack");
+    navigation.navigate("AddBoat");
   };
 
   const handlePostFunction = async ({

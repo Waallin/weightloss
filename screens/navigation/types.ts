@@ -15,6 +15,7 @@ export type RootStackParamList = {
   Location: undefined;
   Checklist: undefined;
   Analytics: undefined;
+  AddBoat: undefined;
 };
 
 declare global {

@@ -3,6 +3,7 @@ import AuthScreen from "../auth/AuthScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import CreateProfileScreen from "../auth/CreateProfileScreen";
 import { MainStack } from "./MainStack";
+import AddBoatScreen from "../auth/AddBoatScreen";
 const Stack = createStackNavigator();
 
 export const AuthNavigator = () => {
@@ -28,6 +29,12 @@ export const AuthNavigator = () => {
           name="MainStack"
           component={MainStack}
           options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="AddBoat"
+          component={AddBoatScreen}
+          options={{ headerShown: false, headerTitle: "Add Boat" }}
         />
       </Stack.Navigator>
     </NavigationContainer>
