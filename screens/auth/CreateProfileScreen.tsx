@@ -511,12 +511,8 @@ const CreateProfileScreen = ({
       }
     }
 
-    const getUserEndpoint = "user/get";
-
-    const user = await globalApi("GET", getUserEndpoint, null, token);
-    setUser({ ...user.data, token: token });
     await AsyncStorage.setItem("user_token", token);
-    showToast("Profile created successfully");
+
     navigation.navigate("AddBoat");
   };
 

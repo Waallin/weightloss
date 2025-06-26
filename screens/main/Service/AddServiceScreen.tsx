@@ -103,7 +103,12 @@ const AddServiceScreen = () => {
     };
 
     const endpoint = `boats/${mainBoat()?.id}/services`;
-    const response = await globalApi("POST", endpoint, payload, user.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      payload,
+      user.auth_token
+    );
 
     if (response.success) {
       showToast("Service added successfully");

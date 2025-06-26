@@ -93,7 +93,7 @@ const AuthScreen = () => {
     if (token) {
       const endpoint = "user/get";
       const user = await globalApi("GET", endpoint, null, token);
-      setUser({ ...user.data, token: token });
+      setUser(user.data);
 
       if (user.data.boats.length > 0) {
         navigation.replace("MainStack");

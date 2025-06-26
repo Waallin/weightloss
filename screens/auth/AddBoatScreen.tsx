@@ -3,7 +3,6 @@ import {
   Keyboard,
   StyleSheet,
   Text,
-  TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
@@ -16,12 +15,19 @@ import { globalStyles } from "../../constants/globalStyles";
 import { Feather } from "@expo/vector-icons";
 import { TextInput } from "react-native-gesture-handler";
 import PrimaryButton from "../../components/PrimaryButton";
-
+import useUserStore from "../../stores/useUserStore";
+import globalApi from "../../services/api";
+import { useNavigation } from "@react-navigation/native";
+import useToastStore from "../../stores/useToastStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 const AddBoatScreen = () => {
+  const navigation = useNavigation();
   const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
-
+  const { user, setUser } = useUserStore();
+  const code = "96725351";
+  const { showToast } = useToastStore();
   useEffect(() => {
     const breathingAnimation = Animated.loop(
       Animated.sequence([
@@ -43,8 +49,28 @@ const AddBoatScreen = () => {
     return () => breathingAnimation.stop();
   }, [scaleAnim]);
 
-  const handleConnectToVessel = () => {
-    console.log("test");
+  const handleConnectToVessel = async () => {
+    const token = await AsyncStorage.getItem("user_token");
+    const endpoint = "boat-code/use";
+    const payload = {
+      code: code,
+    };
+
+    const response = await globalApi("POST", endpoint, payload, token);
+
+    if (response.success) {
+      handleGetUser();
+    }
+  };
+
+  const handleGetUser = async () => {
+    const token = await AsyncStorage.getItem("user_token");
+    const response = await globalApi("GET", "user/get", null, token);
+    if (response.success) {
+      setUser(response.data);
+      showToast("Boat connected successfully");
+      navigation.navigate("MainStack");
+    }
   };
 
   function renderVerificationInput() {
