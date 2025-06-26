@@ -29,7 +29,12 @@ const ChecklistItem = ({ item: itemProp }: { item: any }) => {
       status: status,
       comments: comments,
     };
-    const response = await globalApi("POST", endpoint, payload, user.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      payload,
+      user.auth_token
+    );
     if (response.success) {
       showToast("Checklist reported successfully");
       updateChecklistItem(id, response.data.status);

@@ -43,7 +43,7 @@ const Checklist = ({ checklistId }: { checklistId: string }) => {
   const handleCompleteChecklist = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const endpoint = `checklists/${checklist.id}/toggle-completion`;
-    const response = await globalApi("POST", endpoint, null, user.token);
+    const response = await globalApi("POST", endpoint, null, user.auth_token);
 
     if (response.success) {
       toggleChecklistCompletion(checklist.id);

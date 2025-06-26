@@ -28,10 +28,57 @@ const PrimaryButton = ({
 }) => {
   const opacity = useSharedValue(1);
   const scale = useSharedValue(1);
+  const dotOpacity1 = useSharedValue(1);
+  const dotOpacity2 = useSharedValue(1);
+  const dotOpacity3 = useSharedValue(1);
 
   useEffect(() => {
     opacity.value = withTiming(disabled ? 0.5 : 1, { duration: 50 });
   }, [disabled]);
+
+  useEffect(() => {
+    if (loading) {
+      let intervalId: NodeJS.Timeout;
+
+      const animateDots = () => {
+        dotOpacity1.value = withTiming(0.3, { duration: 300 }, () => {
+          dotOpacity2.value = withTiming(0.3, { duration: 300 }, () => {
+            dotOpacity3.value = withTiming(0.3, { duration: 300 }, () => {
+              dotOpacity1.value = withTiming(1, { duration: 300 });
+              dotOpacity2.value = withTiming(1, { duration: 300 });
+              dotOpacity3.value = withTiming(1, { duration: 300 });
+            });
+          });
+        });
+      };
+
+      // Starta första animationen direkt
+      animateDots();
+
+      // Fortsätt animera med intervall
+      intervalId = setInterval(() => {
+        animateDots();
+      }, 2000); // 1200ms = hela animationscykeln (300ms * 4 steg)
+
+      // Cleanup function
+      return () => {
+        if (intervalId) {
+          clearInterval(intervalId);
+        }
+      };
+    } else {
+      // Reset opacities när loading är false
+      dotOpacity1.value = withTiming(1, { duration: 100 });
+      dotOpacity2.value = withTiming(1, { duration: 100 });
+      dotOpacity3.value = withTiming(1, { duration: 100 });
+    }
+  }, [loading]);
+
+  const backgroundColorGlobal = interpolateColor(
+    opacity.value,
+    [0, 1],
+    [colors.status.disabled, colors.ui.accent]
+  );
 
   const handlePressIn = () => {
     scale.value = withSpring(0.98);
@@ -56,12 +103,7 @@ const PrimaryButton = ({
   });
 
   const buttonStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      opacity.value,
-      [0, 1],
-      [colors.status.disabled, colors.ui.accent]
-    );
-
+    const backgroundColor = backgroundColorGlobal;
     return {
       backgroundColor,
       padding: spacing.md,
@@ -74,6 +116,14 @@ const PrimaryButton = ({
 
   const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+  const dotStyle = {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.ui.white,
+    marginHorizontal: 2,
+  };
+
   return (
     <Animated.View style={animatedStyle}>
       <AnimatedTouchable
@@ -84,11 +134,31 @@ const PrimaryButton = ({
         onPressOut={handlePressOut}
         disabled={disabled}
       >
-        <Text style={{ ...globalStyles.buttonText, color: colors.ui.white }}>
-          {title}
-        </Text>
-        {arrow && (
-          <Entypo name="chevron-right" size={20} color={colors.ui.white} />
+        {loading ? (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <Text
+              style={{
+                ...globalStyles.buttonText,
+                color: backgroundColorGlobal,
+              }}
+            >
+              .
+            </Text>
+            <Animated.View style={[dotStyle, { opacity: dotOpacity1 }]} />
+            <Animated.View style={[dotStyle, { opacity: dotOpacity2 }]} />
+            <Animated.View style={[dotStyle, { opacity: dotOpacity3 }]} />
+          </View>
+        ) : (
+          <>
+            <Text
+              style={{ ...globalStyles.buttonText, color: colors.ui.white }}
+            >
+              {title}
+            </Text>
+            {arrow && (
+              <Entypo name="chevron-right" size={20} color={colors.ui.white} />
+            )}
+          </>
         )}
       </AnimatedTouchable>
     </Animated.View>

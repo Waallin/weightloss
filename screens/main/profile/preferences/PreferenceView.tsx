@@ -44,7 +44,12 @@ const PreferenceView = () => {
       [key]: !value ? 1 : 0,
     };
     const endpoint = "user/update";
-    const response = await globalApi("POST", endpoint, payload, user.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      payload,
+      user.auth_token
+    );
 
     setUser({
       ...user,
@@ -60,7 +65,12 @@ const PreferenceView = () => {
       [key]: value,
     };
     const endpoint = "user/update";
-    const response = await globalApi("POST", endpoint, payload, user.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      payload,
+      user.auth_token
+    );
   };
 
   const renderModal = () => {

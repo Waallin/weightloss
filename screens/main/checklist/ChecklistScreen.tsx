@@ -51,7 +51,12 @@ const ChecklistScreen = () => {
     const endpoint = `boats/${boatId}/checklists`;
 
     if (!boatId) return;
-    const response = await globalApi("GET", endpoint, null, user.token);
+    const response = await globalApi(
+      "GET",
+      endpoint,
+      null,
+      user.user.auth_token
+    );
     setChecklists(response.data.checklists);
   };
 

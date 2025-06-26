@@ -86,7 +86,7 @@ const ServiceScreen = () => {
 
   const fetchServices = async () => {
     const endpoint = `boats/${mainBoat()?.id}/services`;
-    const response = await globalApi("GET", endpoint, null, user.token);
+    const response = await globalApi("GET", endpoint, null, user.auth_token);
     setServices(response.data.services);
     filterServicesWithCategory("All");
   };
