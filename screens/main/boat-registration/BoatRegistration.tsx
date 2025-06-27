@@ -50,7 +50,12 @@ const BoatRegistration = () => {
     };
 
     const endpoint = "boats";
-    const response = await globalApi("POST", endpoint, payload, user?.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      payload,
+      user.user.auth_token
+    );
     if (response.success) {
       Alert.alert("Boat registered successfully");
       navigation.goBack();

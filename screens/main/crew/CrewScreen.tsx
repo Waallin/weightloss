@@ -19,9 +19,19 @@ const CrewScreen = () => {
 
   const getCrew = async () => {
     const endpoint = `boats/${mainBoat()?.id}/users`;
-    const response = await globalApi("GET", endpoint, null, user?.token);
-    setCrew(response.data.users);
-    setFilteredCrew(response.data.users);
+
+    console.log(user.user.auth_token);
+    const response = await globalApi(
+      "GET",
+      endpoint,
+      null,
+      user.user.auth_token
+    );
+
+    if (response.success) {
+      setCrew(response.data.users);
+      setFilteredCrew(response.data.users);
+    }
   };
   const handleSearch = (text: string) => {
     console.log("text", text);

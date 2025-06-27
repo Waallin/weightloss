@@ -55,7 +55,12 @@ const EditProfileScreen = () => {
     });
 
     const endpoint = "user/update";
-    const response = await globalApi("POST", endpoint, formData, user?.token);
+    const response = await globalApi(
+      "POST",
+      endpoint,
+      formData,
+      user.user.auth_token
+    );
     if (response.success) {
       showToast("Profile updated successfully");
       navigation.goBack();
