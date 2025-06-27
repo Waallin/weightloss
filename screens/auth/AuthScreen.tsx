@@ -84,25 +84,6 @@ const AuthScreen = () => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const slideAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    checkIfUserIsLoggedIn();
-  }, []);
-
-  const checkIfUserIsLoggedIn = async () => {
-    const token = await AsyncStorage.getItem("user_token");
-    if (token) {
-      const endpoint = "user/get";
-      const user = await globalApi("GET", endpoint, null, token);
-      setUser(user.data);
-
-      if (user.data.boats.length > 0) {
-        navigation.replace("MainStack");
-      } else {
-        navigation.replace("AddBoat");
-      }
-    }
-  };
-
   const handleContinue = async () => {
     setLoading(true);
 
