@@ -19,14 +19,7 @@ const CrewScreen = () => {
 
   const getCrew = async () => {
     const endpoint = `boats/${mainBoat()?.id}/users`;
-
-    console.log(user.user.auth_token);
-    const response = await globalApi(
-      "GET",
-      endpoint,
-      null,
-      user.user.auth_token
-    );
+    const response = await globalApi("GET", endpoint, null, user.auth_token);
 
     if (response.success) {
       setCrew(response.data.users);

@@ -24,15 +24,15 @@ import SmartAlert from "./widgets/SmartAlert";
 import EmergencyContact from "./widgets/EmergencyContact";
 import QuickActions from "./widgets/QuickActions";
 import useUserStore from "../../../stores/useUserStore";
-import globalApi from "../../../services/api";
+
 const darkblue = "#0D395F";
 const lightblue = "#3977B0";
 
 const DashboardScreen = () => {
   const { height } = useWindowDimensions();
   const { user, mainBoat } = useUserStore();
-  const profileImage = user?.profile?.image?.image_url
-    ? { uri: user.profile.image.image_url }
+  const profileImage = user?.user_profile?.image?.image_url
+    ? { uri: user.user_profile.image.image_url }
     : require("../../../assets/profile.png");
   const headerHeight = height * 0.27;
   const navigation =
@@ -125,7 +125,7 @@ const DashboardScreen = () => {
                     { color: colors.ui.white, fontWeight: "bold" },
                   ]}
                 >
-                  {user?.profile?.full_name}
+                  {user?.user_profile?.full_name}
                 </Text>
               </View>
             </View>

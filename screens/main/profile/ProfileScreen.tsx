@@ -42,8 +42,8 @@ const dummyVessels = [
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const { user } = useUserStore();
-  const profileImage = user?.profile?.image?.image_url
-    ? { uri: user.profile.image.image_url }
+  const profileImage = user?.user_profile?.image?.image_url
+    ? { uri: user.user_profile.image.image_url }
     : require("../../../assets/profile.png");
   const accountSettings = [
     {
@@ -86,12 +86,7 @@ const ProfileScreen = () => {
       title: "Logout",
       icon: "log-out",
       onPress: () => {
-        AsyncStorage.removeItem("user_token");
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Auth" }],
-        });
-        console.log("Logout");
+        logout();
       },
     },
   ];
@@ -164,7 +159,7 @@ const ProfileScreen = () => {
                 fontWeight: "bold",
               }}
             >
-              {user?.profile?.full_name}
+              {user?.user_profile?.full_name}
             </Text>
             <Text
               style={{
@@ -173,7 +168,7 @@ const ProfileScreen = () => {
                 marginTop: spacing.xs,
               }}
             >
-              {user?.profile?.email}
+              {user?.user_profile?.email}
             </Text>
             <TouchableOpacity
               onPress={handleNavigateToEditProfile}

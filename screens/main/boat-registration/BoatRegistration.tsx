@@ -54,7 +54,7 @@ const BoatRegistration = () => {
       "POST",
       endpoint,
       payload,
-      user.user.auth_token
+      user.auth_token
     );
     if (response.success) {
       Alert.alert("Boat registered successfully");
