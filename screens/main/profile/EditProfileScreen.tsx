@@ -20,15 +20,15 @@ const EditProfileScreen = () => {
   const navigation = useNavigation();
   const { user, setUser } = useUserStore();
   const { showToast } = useToastStore();
-  const [fullName, setFullName] = useState(user?.profile?.full_name);
-  const [photo, setPhoto] = useState(user?.profile?.image?.image_url);
-  const [email, setEmail] = useState(user?.profile?.email);
-  const [address, setAddress] = useState(user?.profile?.address);
+  const [fullName, setFullName] = useState(user?.user_profile?.full_name);
+  const [photo, setPhoto] = useState(user?.user_profile?.image?.image_url);
+  const [email, setEmail] = useState(user?.user_profile?.email);
+  const [address, setAddress] = useState(user?.user_profile?.address);
   const [emergencyContact, setEmergencyContact] = useState(
-    user?.profile?.emergency_contact
+    user?.user_profile?.emergency_contact
   );
   const [emergencyPhoneNumber, setEmergencyPhoneNumber] = useState(
-    user?.profile?.emergency_phone_number
+    user?.user_profile?.emergency_phone_number
   );
 
   const handleSave = async () => {
@@ -49,21 +49,34 @@ const EditProfileScreen = () => {
       } as any);
     }
 
-    setUser({
-      ...user,
-      profile: { ...user.profile, image: { image_url: photo } },
-    });
+    try {
+      const endpoint = "user/update";
 
-    const endpoint = "user/update";
-    const response = await globalApi(
-      "POST",
-      endpoint,
-      formData,
-      user.user.auth_token
-    );
-    if (response.success) {
-      showToast("Profile updated successfully");
-      navigation.goBack();
+      const response = await globalApi(
+        "POST",
+        endpoint,
+        formData,
+        user.auth_token
+      );
+
+      if (response.success) {
+        showToast("Profile updated successfully");
+        setUser({
+          ...user,
+          user_profile: {
+            ...user.user_profile,
+            image: { image_url: photo },
+            full_name: fullName,
+            email: email,
+            address: address,
+          },
+        });
+
+        navigation.goBack();
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      showToast("Failed to update profile. Please try again.");
     }
   };
   const handleChangePhoto = async () => {

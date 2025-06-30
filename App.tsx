@@ -28,6 +28,7 @@ export default function App() {
         const endpoint = "user/get";
         const user = await globalApi("GET", endpoint, null, token);
         if (user.success) {
+          console.log("userrrrrr", user.data);
           setUser(user.data);
           setIsAuthenticated(true);
         }

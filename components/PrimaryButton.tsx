@@ -74,12 +74,6 @@ const PrimaryButton = ({
     }
   }, [loading]);
 
-  const backgroundColorGlobal = interpolateColor(
-    opacity.value,
-    [0, 1],
-    [colors.status.disabled, colors.ui.accent]
-  );
-
   const handlePressIn = () => {
     scale.value = withSpring(0.98);
   };
@@ -103,7 +97,11 @@ const PrimaryButton = ({
   });
 
   const buttonStyle = useAnimatedStyle(() => {
-    const backgroundColor = backgroundColorGlobal;
+    const backgroundColor = interpolateColor(
+      opacity.value,
+      [0, 1],
+      [colors.status.disabled, colors.ui.accent]
+    );
     return {
       backgroundColor,
       padding: spacing.md,
@@ -139,7 +137,7 @@ const PrimaryButton = ({
             <Text
               style={{
                 ...globalStyles.buttonText,
-                color: backgroundColorGlobal,
+                color: "rgba(255, 255, 255, 0.01)",
               }}
             >
               .
