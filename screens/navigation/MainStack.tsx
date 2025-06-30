@@ -12,6 +12,7 @@ import NotificationScreen from "../main/notifications/NotificationScreen";
 import CrewScreen from "../main/crew/CrewScreen";
 import EditProfileScreen from "../main/profile/EditProfileScreen";
 import AnalyticsScreen from "../main/analytics/AnalyticsScreen";
+import AuthScreen from "../auth/AuthScreen";
 
 const Stack = createStackNavigator();
 
@@ -87,6 +88,12 @@ export const MainStack = () => {
         name="Analytics"
         component={AnalyticsScreen}
         options={{ headerShown: true, headerTitle: "Analytics" }}
+      />
+
+      <Stack.Screen
+        name="Auth"
+        component={AuthScreen}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );
