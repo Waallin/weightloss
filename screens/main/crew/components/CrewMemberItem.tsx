@@ -22,11 +22,11 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
       icon: <Ionicons name="boat" size={16} color={colors.ui.white} />,
       type: "Captain",
     },
-    crew: {
+    member: {
       backgroundColor: colors.role.crew,
       textColor: colors.ui.white,
       icon: <Ionicons name="people" size={16} color={colors.ui.white} />,
-      type: "Crew",
+      type: "Member",
     },
   };
 
@@ -68,7 +68,7 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
       </View>
       <View>
         <Text style={{ ...globalStyles.smallText, fontWeight: "bold" }}>
-          {profile?.full_name}
+          {profile?.full_name ? profile?.full_name : "No name"}
         </Text>
         <Text
           style={{
@@ -77,9 +77,9 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
             marginTop: spacing.xs,
           }}
         >
-          {profile?.email}
+          {profile?.email ? profile?.email : "No email"}
         </Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => console.log(member)}>
           <Text
             style={{
               ...globalStyles.xSmallText,
@@ -89,7 +89,7 @@ const CrewMemberItem = ({ member }: { member: CrewMemberItemType }) => {
               textDecorationColor: colors.text.link,
             }}
           >
-            {member?.phone_number}
+            {member?.phone_number ? member?.phone_number : "No phone number"}
           </Text>
         </TouchableOpacity>
       </View>

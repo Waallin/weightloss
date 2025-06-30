@@ -27,7 +27,6 @@ const CrewScreen = () => {
     }
   };
   const handleSearch = (text: string) => {
-    console.log("text", text);
     const filtered = crew.filter((item: CrewMemberItemType) =>
       item.user_profile.full_name.toLowerCase().includes(text.toLowerCase())
     );

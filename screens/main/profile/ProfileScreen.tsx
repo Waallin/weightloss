@@ -99,6 +99,14 @@ const ProfileScreen = () => {
     navigation.navigate("EditProfile");
   };
 
+  const logout = async () => {
+    await AsyncStorage.removeItem("user_token");
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "Auth" }],
+    } as any);
+  };
+
   return (
     <View
       style={{
