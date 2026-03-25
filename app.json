@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "vst",
-    "slug": "vst-app",
+    "name": "Kudoo",
+    "slug": "kudoo",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,18 +12,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "This app needs access to your photo library to select a profile picture.",
-          "cameraPermission": "This app needs access to your camera to take a new profile picture."
-        }
-      ]
-    ],
+    "plugins": [],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.developer-scriptsector.vst",
+      "bundleIdentifier": "com.devember.kudoo",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select a profile picture.",
         "NSCameraUsageDescription": "This app needs access to your camera to take a new profile picture.",
@@ -36,7 +28,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.developerscriptsector.vst",
+      "package": "com.devember.kudoo",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
@@ -46,9 +38,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "ea0de078-14c4-4574-89c2-e734074aa8a8"
+        "projectId": "2aa66fc6-704b-4789-996e-0c826ed90bd9"
       }
     },
-    "owner": "developer_scriptsector"
+    "owner": "waallin"
   }
 }

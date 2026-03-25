@@ -1,14 +1,14 @@
-import { View } from "react-native";
+import { SafeAreaView, View } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
 import { useEffect, useState } from "react";
 import globalApi from "./services/api";
-import Toast from "./components/Toast";
 import useToastStore from "./stores/useToastStore";
-import { CustomSplashScreen } from "./components/CustomSplashScreen";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useUserStore from "./stores/useUserStore";
 import { MainStack } from "./screens/navigation/MainStack";
 import { NavigationContainer } from "@react-navigation/native";
+import CustomSplashScreen from "./CustomSplashScreen";
+import { colors } from "./constants/colors";
 
 export default function App() {
   const { isVisible, message } = useToastStore();
@@ -18,44 +18,30 @@ export default function App() {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    checkAuthStatus();
+    // checkAuthStatus();
+    setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
   }, []);
 
-  const checkAuthStatus = async () => {
-    try {
-      const token = await AsyncStorage.getItem("user_token");
-      if (token) {
-        const endpoint = "user/get";
-        const user = await globalApi("GET", endpoint, null, token);
-        if (user.success) {
-          console.log("userrrrrr", user.data);
-          setUser(user.data);
-          setIsAuthenticated(true);
-        }
-      }
-    } catch (error) {
-      console.error("Auth check error:", error);
-    } finally {
-      setAuthChecked(true);
-    }
-  };
+  const checkAuthStatus = async () => {};
 
   const handleSplashFinish = () => {
     setShowSplash(false);
   };
 
   // Visa splash screen tills auth är kollad
-  if (showSplash || !authChecked) {
+  if (showSplash) {
     return <CustomSplashScreen onFinish={handleSplashFinish} />;
   }
 
   // Navigera direkt till rätt destination
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1}}>
+      <SafeAreaView />
       <NavigationContainer>
         {isAuthenticated ? <MainStack /> : <AuthNavigator />}
       </NavigationContainer>
-      {isVisible && <Toast title={message} />}
     </View>
   );
 }

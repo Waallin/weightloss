@@ -1,13 +1,10 @@
 import { StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import DashboardScreen from "../main/dashboard/DashboardScreen";
-import ChecklistScreen from "../main/checklist/ChecklistScreen";
-import LocationScreen from "../main/location/LocationScreen";
-import FuelScreen from "../main/fuel/FuelScreen";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { colors } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { spacing } from "../../constants/spacing";
-import { globalStyles } from "../../constants/globalStyles";
 import Animated, {
   useAnimatedStyle,
   withSpring,
@@ -18,25 +15,55 @@ import Animated, {
 import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
-import ServiceScreen from "../main/Service/ServiceScreen";
-import LogBookScreen from "../main/logbook/LogBookScreen";
+import HomeScreen from "../main/home/HomeScreen";
+import SettingsScreen from "../main/settings/SettingsScreen";
+import { fonts } from "../../constants/fonts";
+import { textSizes } from "../../constants/texts";
+import ProgressScreen from "../main/progress/ProgressScreen";
+import DietScreen from "../main/diet/DietScreen";
 
 const Tab = createBottomTabNavigator();
+
+const TAB_ICONS = {
+  Home: { outline: "home-outline" as const, filled: "home" as const },
+  Diet: { outline: "nutrition-outline" as const, filled: "nutrition" as const },
+  Progress: {
+    outline: "stats-chart-outline" as const,
+    filled: "stats-chart" as const,
+  },
+  Settings: {
+    outline: "settings-outline" as const,
+    filled: "settings" as const,
+  },
+} as const;
+
+type TabIconKey = keyof typeof TAB_ICONS;
 
 const AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
 
 const AnimatedTabIcon = ({
   focused,
-  children,
-  tabName,
+  tabKey,
+  color,
 }: {
   focused: boolean;
-  children: React.ReactNode;
-  tabName: string;
+  tabKey: TabIconKey;
+  color: string;
 }) => {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(focused ? 1 : 0.5);
   const navigation = useNavigation();
+
+  const iconName = focused
+    ? TAB_ICONS[tabKey].filled
+    : TAB_ICONS[tabKey].outline;
+
+  useEffect(() => {
+    opacity.value = withTiming(focused ? 1 : 0.5, { duration: 300 });
+    if (!focused) {
+      scale.value = withSpring(1, { damping: 12, stiffness: 80 });
+    }
+  }, [focused]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -48,16 +75,13 @@ const AnimatedTabIcon = ({
           withSpring(1, { damping: 12, stiffness: 80 })
         );
         opacity.value = withTiming(1, { duration: 300 });
-      } else {
-        scale.value = withSpring(1, { damping: 12, stiffness: 80 });
-        opacity.value = withTiming(0.5, { duration: 300 });
       }
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [focused, navigation]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -66,125 +90,88 @@ const AnimatedTabIcon = ({
 
   return (
     <View style={styles.tabIconContainer}>
-      {focused && <View style={styles.activeBackground} />}
+      {focused ? <View style={styles.activeBackground} /> : null}
       <Animated.View style={[animatedStyle, { zIndex: 2 }]}>
-        {children}
+        <AnimatedIcon name={iconName} size={textSizes.xxl} color={color} />
       </Animated.View>
     </View>
   );
 };
 
 const MainNavigator = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: true,
+        tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: colors.ui.white,
-          marginBottom: spacing.lg,
-          marginHorizontal: spacing.md,
-          borderRadius: spacing.borderRadius,
-          ...globalStyles.cardShadow,
-          height: 65,
-          paddingTop: 5,
           position: "absolute",
+          height: spacing.tabBarBaseHeight + insets.bottom,
+          paddingTop: spacing.md,
+          paddingBottom: insets.bottom,
+          borderTopWidth: 1,
+          borderTopColor: colors.ui.cardBorder,
+          borderTopLeftRadius: spacing.tabBarTopRadius,
+          borderTopRightRadius: spacing.tabBarTopRadius,
+          shadowColor: colors.ui.shadow,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 10,
+          elevation: 10,
         },
-        tabBarActiveTintColor: colors.brand.primary,
-        tabBarInactiveTintColor: colors.text.tertiary,
+        tabBarActiveTintColor: colors.ui.primary,
+        tabBarInactiveTintColor: colors.text.secondary,
+
         tabBarLabelStyle: {
-          ...globalStyles.tabBarLabel,
-          paddingTop: 5,
+          fontFamily: fonts.primary.regular,
+          fontSize: textSizes.sm,
         },
       }}
     >
       <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
+        name="Home"
+        component={HomeScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Dashboard">
-              <AnimatedIcon
-                name={focused ? "boat-sharp" : "boat-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
+            <AnimatedTabIcon focused={focused} tabKey="Home" color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="Checklist"
-        component={ChecklistScreen}
+        name="Diet"
+        component={DietScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Checklist">
-              <AnimatedIcon
-                name={focused ? "list" : "list-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
+            <AnimatedTabIcon focused={focused} tabKey="Diet" color={color} />
           ),
         }}
       />
       <Tab.Screen
-        name="Logbook"
-        component={LogBookScreen}
+        name="Progress"
+        component={ProgressScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Location">
-              <AnimatedIcon
-                name={focused ? "book" : "book-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
+            <AnimatedTabIcon
+              focused={focused}
+              tabKey="Progress"
+              color={color}
+            />
           ),
         }}
       />
       <Tab.Screen
-        name="Location"
-        component={LocationScreen}
+        name="Settings"
+        component={SettingsScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Location">
-              <AnimatedIcon
-                name={focused ? "location" : "location-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Service"
-        component={ServiceScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Service">
-              <AnimatedIcon
-                name={focused ? "settings" : "settings-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Fuel"
-        component={FuelScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabName="Fuel">
-              <AnimatedIcon
-                name={focused ? "water" : "water-outline"}
-                size={24}
-                color={color}
-              />
-            </AnimatedTabIcon>
+            <AnimatedTabIcon
+              focused={focused}
+              tabKey="Settings"
+              color={color}
+            />
           ),
         }}
       />
@@ -208,7 +195,7 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: `${colors.brand.primary}10`,
+    backgroundColor: `${colors.ui.primary}18`,
     zIndex: 1,
   },
 });

@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.developerscriptsector.vst'
+    namespace 'com.devember.kudoo'
     defaultConfig {
-        applicationId 'com.developerscriptsector.vst'
+        applicationId 'com.devember.kudoo'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

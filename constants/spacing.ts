@@ -1,18 +1,14 @@
-import { Dimensions } from "react-native";
-
-const { width, height } = Dimensions.get("window");
-const baseWidth = 375; // Baserad på iPhone 8 som referensenhet
-
-const scale = width / baseWidth;
-
 export const spacing = {
-  xs: Math.round(4 * scale),
-  sm: Math.round(8 * scale),
-  md: Math.round(16 * scale),
-  lg: Math.round(24 * scale),
-  xl: Math.round(32 * scale),
-  xxl: Math.round(48 * scale),
-  scrollViewBottomPadding: Math.round(100 * scale),
-  borderRadius: 14,
-  rounded: Math.round(100 * scale),
+  xs: 4,
+  sm: 8,
+  md: 16,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+  scrollViewBottomPadding: 100,
+  tabBarBaseHeight: 60,
+  tabBarTopRadius: 18,
+  borderRadius: 8,
+  rounded: 100,
+  componentGap: 16,
 };
