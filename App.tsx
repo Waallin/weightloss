@@ -8,7 +8,10 @@ import useUserStore from "./stores/useUserStore";
 import { MainStack } from "./screens/navigation/MainStack";
 import { NavigationContainer } from "@react-navigation/native";
 import CustomSplashScreen from "./CustomSplashScreen";
+import 'react-native-reanimated'
+import 'react-native-gesture-handler'
 import { colors } from "./constants/colors";
+import SocialProof from "./screens/auth/SocialProof";
 
 export default function App() {
   const { isVisible, message } = useToastStore();
@@ -40,7 +43,7 @@ export default function App() {
     <View style={{ flex: 1}}>
       <SafeAreaView />
       <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <AuthNavigator />}
+        {isAuthenticated ? <MainStack /> : <SocialProof />}
       </NavigationContainer>
     </View>
   );
