@@ -12,6 +12,7 @@ import { RootStackParamList } from '../navigation/types'
 import * as haptics from "expo-haptics";
 import { MotiView } from 'moti'
 import RoundedButtonComponent from '../../components/RoundedButtonComponent'
+import { ReduceMotion } from 'react-native-reanimated'
 
 const currentYear = new Date().getFullYear()
 const BIRTH_YEARS = (() => {
@@ -32,6 +33,25 @@ const HEIGHT_IN_CM = (() => {
     return list
 })()
 
+const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
+    return (
+        <MotiView
+            animate={{
+                width: isActive ? 20 : 8,
+                opacity: isActive ? 1 : 0.6,
+                backgroundColor: isActive ? colors.ui.primary : colors.ui.dotInactive,
+            }}
+            transition={{ type: 'timing', duration: 220, reduceMotion: ReduceMotion.Never }}
+            style={{
+                height: 8,
+                borderRadius: spacing.rounded,
+            }}
+        />
+    )
+})
+
+PaginationDot.displayName = 'PaginationDot'
+
 const ProfileDetailsScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>()
     const [birthYear, setBirthYear] = useState<number>(currentYear - 25)
@@ -41,6 +61,8 @@ const ProfileDetailsScreen = () => {
     const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male')
     const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
     const [createdPlan, setCreatedPlan] = useState<boolean>(false)
+    const totalSteps = 5
+    const activeIndex = step - 1
     const age = useMemo(() => {
         const computed = currentYear - birthYear
         return computed > 0 ? computed : 0
@@ -198,7 +220,7 @@ const ProfileDetailsScreen = () => {
             <MotiView
                 from={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ type: 'timing', duration: 350 }}
+                transition={{ type: 'timing', duration: 350, reduceMotion: ReduceMotion.Never }}
                 style={{
                     flex: 1,
                     backgroundColor: colors.ui.background,
@@ -209,8 +231,16 @@ const ProfileDetailsScreen = () => {
                     justifyContent: 'space-between',
                 }}
             >
-                <View style={{ width: '100%', alignItems: 'center' }}>
-                    <View
+                <MotiView
+                    from={{ opacity: 0, translateY: 30 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', duration: 600, delay: 160, reduceMotion: ReduceMotion.Never }}
+                    style={{ width: '100%', alignItems: 'center' }}
+                >
+                    <MotiView
+                        from={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'timing', duration: 480, delay: 60, reduceMotion: ReduceMotion.Never }}
                         style={{
                             width: 220,
                             height: 220,
@@ -228,29 +258,46 @@ const ProfileDetailsScreen = () => {
                             resizeMode="cover"
                             style={{ width: '100%', height: '100%' }}
                         />
-                    </View>
+                    </MotiView>
 
-                    <Text style={{
-                        ...textStyles.primary,
-                        fontSize: textSizes.xxxl,
-                        fontWeight: 'bold',
-                        textAlign: 'center',
-                        marginBottom: spacing.sm,
-                    }}>
-                        You’re all set
-                    </Text>
+                    <MotiView
+                        from={{ opacity: 0, translateY: 24 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ type: 'timing', duration: 380, delay: 100, reduceMotion: ReduceMotion.Never }}
+                        style={{ width: '100%' }}
+                    >
+                        <Text style={{
+                            ...textStyles.primary,
+                            fontSize: textSizes.xxxl,
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            marginBottom: spacing.sm,
+                        }}>
+                            You’re all set
+                        </Text>
+                    </MotiView>
 
-                    <Text style={{
-                        ...textStyles.secondary,
-                        textAlign: 'center',
-                        paddingHorizontal: spacing.sm,
-                        lineHeight: 20,
-                        marginBottom: spacing.lg,
-                    }}>
-                       Just follow this. We’ll handle the rest.
-                    </Text>
+                    <MotiView
+                        from={{ opacity: 0, translateY: 20 }}
+                        animate={{ opacity: 1, translateY: 0 }}
+                        transition={{ type: 'timing', duration: 340, delay: 160, reduceMotion: ReduceMotion.Never }}
+                        style={{ width: '100%' }}
+                    >
+                        <Text style={{
+                            ...textStyles.secondary,
+                            textAlign: 'center',
+                            paddingHorizontal: spacing.sm,
+                            lineHeight: 20,
+                            marginBottom: spacing.lg,
+                        }}>
+                           Just follow this. We’ll handle the rest.
+                        </Text>
+                    </MotiView>
 
-                    <View
+                    <MotiView
+                        from={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: 'timing', duration: 420, delay: 210, reduceMotion: ReduceMotion.Never }}
                         style={{
                             width: '100%',
                             backgroundColor: colors.ui.componentBackground,
@@ -334,10 +381,15 @@ const ProfileDetailsScreen = () => {
                                 {authCopy.planReadySocialProof}
                             </Text>
                         </View>
-                    </View>
-                </View>
+                    </MotiView>
+                </MotiView>
 
-                <View style={{ width: '100%', paddingBottom: spacing.sm }}>
+                <MotiView
+                    from={{ opacity: 0, translateY: 30 }}
+                    animate={{ opacity: 1, translateY: 0 }}
+                    transition={{ type: 'timing', duration: 420, delay: 380, reduceMotion: ReduceMotion.Never }}
+                    style={{ width: '100%', paddingBottom: spacing.sm }}
+                >
                     <PrimaryButtonComponent
                         title="Start my plan"
                         onPress={() => {
@@ -345,7 +397,7 @@ const ProfileDetailsScreen = () => {
                             navigation.navigate('MainNavigator')
                         }}
                     />
-                </View>
+                </MotiView>
             </MotiView>
         )
     }
@@ -389,8 +441,21 @@ const ProfileDetailsScreen = () => {
                 {step === 5 && renderGoalWeightStep()}
             </View>
             <View style={{
-                paddingBottom: 50
+                paddingBottom: spacing.scrollViewBottomPadding
             }}>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: spacing.lg,
+                        gap: spacing.xs,
+                    }}
+                >
+                    {Array.from({ length: totalSteps }).map((_, index) => (
+                        <PaginationDot key={String(index)} isActive={index === activeIndex} />
+                    ))}
+                </View>
                 <PrimaryButtonComponent
                     title={"Continue"}
                     onPress={handleNext}

@@ -1,7 +1,7 @@
 export const colors = {
   ui: {
     white: "#FFFFFF",
-    background: "#ffffff",
+    background: "#F6F6F5",
     componentBackground: "#F4F6FA",
     primary: "#16B97B",
     /** Diet hero summary (gradient card) */

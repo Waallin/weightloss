@@ -165,7 +165,7 @@ function WheelPickerInner<T>({
         height,
         width: "100%",
         borderRadius: spacing.borderRadius,
-        backgroundColor: colors.ui.white,
+        backgroundColor: colors.ui.background,
         overflow: "hidden",
       }}
     >

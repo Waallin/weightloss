@@ -40,7 +40,7 @@ export default function App() {
 
   // Navigera direkt till rätt destination
   return (
-    <View style={{ flex: 1}}>
+    <View style={{ flex: 1, backgroundColor: colors.ui.background}}>
       <SafeAreaView />
       <NavigationContainer>
         {isAuthenticated ? <MainStack /> : <AuthNavigator />}
