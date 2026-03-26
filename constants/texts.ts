@@ -25,6 +25,18 @@ export const textStyles = {
         color: colors.text.secondary,
     },
 
+    onboardingTitle: {
+        fontFamily: fonts.primary.bold,
+        fontSize: textSizes.xxxl,
+        color: colors.text.primary,
+    },
+
+    onboardingBody: {
+        fontFamily: fonts.primary.regular,
+        fontSize: textSizes.sm,
+        color: colors.text.secondary,
+    },
+
     listItemTitle: {
         fontFamily: fonts.primary.semiBold,
         fontSize: textSizes.lg,
@@ -53,4 +65,17 @@ export const textStyles = {
 export const dietLabels = {
     gramsUnit: "g",
     kudos: "Points",
+} as const;
+
+export const authCopy = {
+    planReadyTitle: "Your plan is ready",
+    planReadySubtitle: "We tailored your routine to fit your body and goal—so you can focus on showing up.",
+    planReadyStatPrefix: "Progress outlook:",
+    planReadySocialProof: "Most people start seeing results within days",
+    planReadyCta: "Continue",
+    planReadyBullets: [
+        "No calorie counting",
+        "No gym needed",
+        "Just show up daily"
+    ],
 } as const;

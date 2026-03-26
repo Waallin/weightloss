@@ -1,14 +1,17 @@
-import { Text, TouchableOpacity, View } from 'react-native'
+import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useMemo, useState } from 'react'
 import { globalStyles } from '../../constants/globalStyles'
 import PrimaryButtonComponent from '../../components/PrimaryButtonComponent'
 import { colors } from '../../constants/colors'
-import { textSizes, textStyles } from '../../constants/texts'
+import { authCopy, textSizes, textStyles } from '../../constants/texts'
 import { spacing } from '../../constants/spacing'
 import WheelPicker from '../../components/WheelPicker'
 import ProfileStepSection from './components/ProfileStepSection'
 import { NavigationProp, useNavigation } from '@react-navigation/native'
 import { RootStackParamList } from '../navigation/types'
+import * as haptics from "expo-haptics";
+import { MotiView } from 'moti'
+import RoundedButtonComponent from '../../components/RoundedButtonComponent'
 
 const currentYear = new Date().getFullYear()
 const BIRTH_YEARS = (() => {
@@ -37,10 +40,18 @@ const ProfileDetailsScreen = () => {
     const [height, setHeight] = useState<number>(175)
     const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male')
     const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
+    const [createdPlan, setCreatedPlan] = useState<boolean>(false)
     const age = useMemo(() => {
         const computed = currentYear - birthYear
         return computed > 0 ? computed : 0
     }, [birthYear, currentYear])
+
+    const goalDeltaKg = useMemo(() => Math.abs(weight - goalWeight), [goalWeight, weight])
+    const goalDirection = useMemo<'lose' | 'gain' | 'maintain'>(() => {
+        if (goalWeight < weight) return 'lose'
+        if (goalWeight > weight) return 'gain'
+        return 'maintain'
+    }, [goalWeight, weight])
 
 
     const renderHeader = () => {
@@ -90,8 +101,8 @@ const ProfileDetailsScreen = () => {
     const renderBirthdayStep = () => {
         return (
             <ProfileStepSection
-                title="What year were you born?"
-                description="This helps us adjust your personal plan."
+                title="How old are you?"
+                description="Helps us keep things realistic."
                 summaryIconName="person"
                 summaryLabel="Selected age:"
                 summaryValue={`${age}`}
@@ -110,7 +121,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="What is your gender?"
-                description="This helps us adjust your personal plan."
+                description="Used to tailor your plan."
                 summaryIconName="person"
                 summaryLabel="Selected gender:"
                 summaryValue={gender}
@@ -129,7 +140,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="What is your height?"
-                description="This helps us adjust your personal plan."
+                description="Just to personalize things for you."
                 summaryIconName="person"
                 summaryLabel="Selected height:"
                 summaryValue={`${height} cm`}
@@ -148,7 +159,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="How much do you weigh?"
-                description="This helps us adjust your personal plan."
+                description="No pressure — just a starting point."
                 summaryIconName="person"
                 summaryLabel="Selected weight:"
                 summaryValue={`${weight} kg`}
@@ -167,7 +178,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="What is your goal weight?"
-                description="This helps us adjust your personal plan."
+                description="You can always adjust this later."
                 summaryIconName="person"
                 summaryLabel="Selected goal weight:"
                 summaryValue={`${goalWeight} kg`}
@@ -182,13 +193,172 @@ const ProfileDetailsScreen = () => {
         )
     }
 
+    const renderPlanCreated = () => {
+        return (
+            <MotiView
+                from={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ type: 'timing', duration: 350 }}
+                style={{
+                    flex: 1,
+                    backgroundColor: colors.ui.background,
+                    paddingHorizontal: spacing.md,
+                    paddingTop: spacing.xl,
+                    paddingBottom: spacing.xl,
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                }}
+            >
+                <View style={{ width: '100%', alignItems: 'center' }}>
+                    <View
+                        style={{
+                            width: 220,
+                            height: 220,
+                            borderRadius: 110,
+                            backgroundColor: colors.ui.secondaryBackground,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginBottom: spacing.xl,
+                            ...globalStyles.shadow,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <Image
+                            source={require('../../assets/mascot/thumbsUp.png')}
+                            resizeMode="cover"
+                            style={{ width: '100%', height: '100%' }}
+                        />
+                    </View>
+
+                    <Text style={{
+                        ...textStyles.primary,
+                        fontSize: textSizes.xxxl,
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        marginBottom: spacing.sm,
+                    }}>
+                        You’re all set
+                    </Text>
+
+                    <Text style={{
+                        ...textStyles.secondary,
+                        textAlign: 'center',
+                        paddingHorizontal: spacing.sm,
+                        lineHeight: 20,
+                        marginBottom: spacing.lg,
+                    }}>
+                       Just follow this. We’ll handle the rest.
+                    </Text>
+
+                    <View
+                        style={{
+                            width: '100%',
+                            backgroundColor: colors.ui.componentBackground,
+                            borderRadius: spacing.borderRadius,
+                            padding: spacing.lg,
+                            borderWidth: 1,
+                            borderColor: colors.ui.cardBorder,
+                            ...globalStyles.shadow,
+                        }}
+                    >
+                        <View style={{ marginBottom: spacing.md }}>
+                            <Text style={{
+                                ...textStyles.primary,
+                                fontSize: textSizes.md,
+                                fontWeight: '700',
+                                marginBottom: spacing.xs,
+                            }}>
+                                You’re just 4 kg away
+                            </Text>
+                            <Text style={{
+                                ...textStyles.secondary,
+                                lineHeight: 20,
+                            }}>
+                              That’s closer than you think.
+                            </Text>
+                        </View>
+
+                        <View style={{ gap: spacing.sm, marginBottom: spacing.md }}>
+                            {authCopy.planReadyBullets.map((bullet) => (
+                                <View
+                                    key={bullet}
+                                    style={{
+                                        flexDirection: 'row',
+                                        alignItems: 'flex-start',
+                                        gap: spacing.sm,
+                                    }}
+                                >
+                                    <View style={{
+                                        width: 22,
+                                        height: 22,
+                                        borderRadius: 11,
+                                        backgroundColor: colors.ui.iconContainer,
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        marginTop: 1,
+                                    }}>
+                                        <Text style={{
+                                            ...textStyles.primary,
+                                            fontSize: textSizes.sm,
+                                            fontWeight: '800',
+                                            color: colors.ui.primary,
+                                        }}>
+                                            ✓
+                                        </Text>
+                                    </View>
+                                    <Text style={{
+                                        ...textStyles.secondary,
+                                        flex: 1,
+                                        lineHeight: 20,
+                                    }}>
+                                        {bullet}
+                                    </Text>
+                                </View>
+                            ))}
+                        </View>
+
+                        <View
+                            style={{
+                                backgroundColor: colors.ui.accentSoft,
+                                borderRadius: 999,
+                                paddingVertical: spacing.sm,
+                                paddingHorizontal: spacing.md,
+                                alignSelf: 'flex-start',
+                            }}
+                        >
+                            <Text style={{
+                                ...textStyles.primary,
+                                fontSize: textSizes.sm,
+                                fontWeight: '700',
+                            }}>
+                                {authCopy.planReadySocialProof}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                <View style={{ width: '100%', paddingBottom: spacing.sm }}>
+                    <PrimaryButtonComponent
+                        title="Start my plan"
+                        onPress={() => {
+                            haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+                            navigation.navigate('MainNavigator')
+                        }}
+                    />
+                </View>
+            </MotiView>
+        )
+    }
+
 
 
     const handleNext = () => {
+        haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
         if (step < 5) {
             setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4 | 5)
         } else {
-            navigation.navigate('MainStack')
+
+            setCreatedPlan(true)
         }
     }
 
@@ -198,6 +368,11 @@ const ProfileDetailsScreen = () => {
             return
         }
         if (navigation.canGoBack()) navigation.goBack()
+    }
+
+
+    if (createdPlan) {
+        return renderPlanCreated()
     }
 
     return (

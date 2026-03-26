@@ -1,5 +1,13 @@
-import React, { useCallback, useMemo, useRef } from "react";
-import { Animated, FlatList, NativeScrollEvent, NativeSyntheticEvent, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import {
+  Animated,
+  FlatList,
+  type FlatListProps,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  View,
+} from "react-native";
+import * as Haptics from "expo-haptics";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
 import { textSizes, textStyles } from "../constants/texts";
@@ -27,6 +35,12 @@ function WheelPickerInner<T>({
   height = 260,
   itemHeight = 52,
 }: WheelPickerProps<T>) {
+  const AnimatedFlatList = useMemo(
+    () =>
+      Animated.createAnimatedComponent(FlatList) as unknown as React.ComponentType<FlatListProps<T>>,
+    []
+  );
+
   const selectedIndex = useMemo(() => {
     const key = getKey(value);
     const idx = data.findIndex((item) => getKey(item) === key);
@@ -36,7 +50,12 @@ function WheelPickerInner<T>({
   const paddingVertical = (height - itemHeight) / 2;
 
   const scrollY = useRef(new Animated.Value(selectedIndex * itemHeight)).current;
-  const listRef = useRef<FlatList<T> | null>(null);
+  const lastHapticIndexRef = useRef<number>(selectedIndex);
+  const lastHapticAtMsRef = useRef<number>(0);
+
+  useEffect(() => {
+    lastHapticIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
 
   const handleMomentumEnd = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -50,6 +69,24 @@ function WheelPickerInner<T>({
   );
 
   const handleScrollToIndexFailed = useCallback(() => {}, []);
+
+  const handleScrollHaptics = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const offsetY = e.nativeEvent.contentOffset.y;
+      const rawIndex = offsetY / itemHeight;
+      const idx = clamp(Math.round(rawIndex), 0, data.length - 1);
+
+      if (idx === lastHapticIndexRef.current) return;
+
+      const now = Date.now();
+      if (now - lastHapticAtMsRef.current < 50) return;
+
+      lastHapticIndexRef.current = idx;
+      lastHapticAtMsRef.current = now;
+      void Haptics.selectionAsync();
+    },
+    [data.length, itemHeight]
+  );
 
   const renderItem = useCallback(
     ({ item, index }: { item: T; index: number }) => {
@@ -145,10 +182,7 @@ function WheelPickerInner<T>({
         }}
       />
 
-      <Animated.FlatList
-        ref={(r) => {
-          listRef.current = r;
-        }}
+      <AnimatedFlatList
         data={data}
         keyExtractor={keyExtractor}
         showsVerticalScrollIndicator={false}
@@ -164,6 +198,7 @@ function WheelPickerInner<T>({
         initialScrollIndex={selectedIndex}
         onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
           useNativeDriver: true,
+          listener: handleScrollHaptics,
         })}
         renderItem={renderItem}
       />

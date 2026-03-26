@@ -4,131 +4,272 @@ import {
   FlatList,
   Image,
   SafeAreaView,
-  Text,
-  TouchableOpacity,
   View,
 } from "react-native";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
-import { fonts } from "../../constants/fonts";
 import { globalStyles } from "../../constants/globalStyles";
+import { textSizes, textStyles } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import RoundedButtonComponent from "../../components/RoundedButtonComponent";
+import { MotiText, MotiView } from "moti";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  ReduceMotion,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from "react-native-reanimated";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import * as haptics from "expo-haptics";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+type OnboardingSection = {
+  id: number;
+  title: string;
+  description: string;
+  image: number;
+};
+
+type AuthStackParamList = {
+  Onboarding: undefined;
+  SocialProof: undefined;
+  Paywall: undefined;
+  HowItWork: undefined;
+  ProfileDetails: undefined;
+  Auth: undefined;
+  MainStack: undefined;
+};
+
+const IMAGE_SIZE = 220;
+
+const OnboardingSlide = React.memo(
+  ({
+    item,
+    index,
+    activeIndex,
+    scrollX,
+  }: {
+    item: OnboardingSection;
+    index: number;
+    activeIndex: number;
+    scrollX: Animated.SharedValue<number>;
+  }) => {
+    const isActive = index === activeIndex;
+
+    const parallaxStyle = useAnimatedStyle(() => {
+      const inputRange = [
+        (index - 1) * SCREEN_WIDTH,
+        index * SCREEN_WIDTH,
+        (index + 1) * SCREEN_WIDTH,
+      ];
+
+      const translateX = interpolate(
+        scrollX.value,
+        inputRange,
+        [-14, 0, 14],
+        Extrapolation.CLAMP
+      );
+
+      const rotate = interpolate(
+        scrollX.value,
+        inputRange,
+        [-1.25, 0, 1.25],
+        Extrapolation.CLAMP
+      );
+
+      return {
+        transform: [{ translateX }, { rotate: `${rotate}deg` }],
+      };
+    }, [index, scrollX]);
+
+    return (
+      <View
+        style={{
+          width: SCREEN_WIDTH,
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: spacing.lg,
+        }}
+      >
+        <MotiView
+          from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+          animate={{
+            opacity: isActive ? 1 : 0.85,
+            translateY: isActive ? 0 : 6,
+            scale: isActive ? 1 : 0.98,
+          }}
+          transition={{ type: "timing", duration: 450, reduceMotion: ReduceMotion.Never }}
+          style={{ alignItems: "center" }}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 14, scale: 0.96 }}
+            animate={{
+              opacity: isActive ? 1 : 0.9,
+              translateY: isActive ? 0 : 10,
+              scale: isActive ? 1 : 0.98,
+            }}
+            transition={{ type: "timing", duration: 520, delay: 60, reduceMotion: ReduceMotion.Never }}
+            style={[
+              {
+                width: IMAGE_SIZE,
+                height: IMAGE_SIZE,
+                borderRadius: IMAGE_SIZE / 2,
+                backgroundColor: colors.ui.secondaryBackground,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: spacing.xl,
+                ...globalStyles.shadow,
+                overflow: "hidden",
+              },
+              parallaxStyle,
+            ]}
+          >
+            <Image
+              source={item.image}
+              resizeMode="cover"
+              style={{ width: "100%", height: "100%" }}
+            />
+          </MotiView>
+
+          <MotiText
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: isActive ? 1 : 0, translateY: isActive ? 0 : 10 }}
+            transition={{ type: "timing", duration: 380, delay: 120, reduceMotion: ReduceMotion.Never }}
+            style={{
+              fontWeight: "bold",
+              fontSize: textSizes.xxxl,
+              color: colors.text.primary,
+              textAlign: "center",
+              marginBottom: spacing.sm,
+            }}
+          >
+            {item.title}
+          </MotiText>
+
+          <MotiText
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: isActive ? 1 : 0, translateY: isActive ? 0 : 10 }}
+            transition={{ type: "timing", duration: 380, delay: 170, reduceMotion: ReduceMotion.Never }}
+            style={{
+              ...textStyles.secondary,
+              textAlign: "center",
+              paddingHorizontal: spacing.sm,
+              lineHeight: 20,
+            }}
+          >
+            {item.description}
+          </MotiText>
+        </MotiView>
+      </View>
+    );
+  }
+);
+
+OnboardingSlide.displayName = "OnboardingSlide";
+
+const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
+  return (
+    <MotiView
+      animate={{
+        width: isActive ? 20 : 8,
+        opacity: isActive ? 1 : 0.6,
+        backgroundColor: isActive ? colors.ui.primary : colors.ui.dotInactive,
+      }}
+      transition={{ type: "timing", duration: 220, reduceMotion: ReduceMotion.Never }}
+      style={{
+        height: 8,
+        borderRadius: 999,
+      }}
+    />
+  );
+});
+
+PaginationDot.displayName = "PaginationDot";
 
 const OnboardingScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const flatListRef = React.useRef<FlatList>(null);
-  const navigation = useNavigation();
-  const sections = [
+  const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
+  const sections: OnboardingSection[] = [
     {
       id: 1,
-      title: "Tired of Counting Calories?",
+      title: "Tired of counting calories?",
       description:
-        "Do you spend too much time tracking every calorie? With our app, you never have to count calories again.",
-      image: require("../../assets/onboarding1.png"),
+        "It’s hard to keep up. What if you didn’t have to think about it at all?",
+      image: require("../../assets/mascot/standing.png"),
     },
     {
       id: 2,
-      title: "No Gym? No Problem.",
+      title: "Don’t feel like going to the gym?",
       description:
-        "Don’t want to go to the gym? We’ve got you covered – no gym or special equipment needed. Achieve results from anywhere.",
-      image: require("../../assets/onboarding2.png"),
+        "You’re not alone. You don’t need it to make real progress.",
+      image: require("../../assets/mascot/pushUps.png"),
     },
     {
       id: 3,
-      title: "Dont like running?",
+      title: "Struggle to stay consistent?",
       description:
-        "We've got you covered – no running or special equipment needed. Achieve results from anywhere.",
-      image: require("../../assets/onboarding5.png"),
+        "Life gets in the way. That’s why this is built to be simple.",
+      image: require("../../assets/mascot/jump.png"),
     },
     {
       id: 4,
-      title: "Just 3 Simple Goals",
+      title: "Wish it was just… easier?",
       description:
-        "Imagine simply following 3 daily goals. That's it. The app takes care of the rest so you can focus on living your life.",
-      image: require("../../assets/onboarding3.png"),
+        "Just follow three small habits each day. That’s enough.",
+      image: require("../../assets/mascot/threeFingers.png"),
     },
     {
       id: 5,
-      title: "Ready for Change?",
+      title: "Ready to try something different?",
       description:
-        "What could you achieve if tracking and planning were effortless? Let our app guide you and see the difference.",
-      image: require("../../assets/onboarding4.png"),
+        "No pressure. Just a simple reset—one day at a time.",
+      image: require("../../assets/mascot/walk.png"),
     },
   ];
 
   const handleNext = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     if (activeIndex < sections.length - 1) {
       const nextIndex = activeIndex + 1;
       flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
       setActiveIndex(nextIndex);
       return;
     }
-    navigation.navigate("SocialProof");
+    navigation.navigate("ProfileDetails");
     // TODO: Navigate to auth/main flow when onboarding is finished
   };
 
-  const handleMomentumScrollEnd = (event: { nativeEvent: { contentOffset: { x: number } } }) => {
-    const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-    setActiveIndex(index);
-  };
+  const scrollX = useSharedValue(0);
 
-  const renderSlide = ({ item }: { item: (typeof sections)[0] }) => (
-    <View
-      style={{
-        width: SCREEN_WIDTH,
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: spacing.lg,
-      }}
-    >
-      <View
-        style={{
-          width: 180,
-          height: 180,
-          backgroundColor: colors.ui.secondaryBackground,
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: spacing.xl,
-        }}
-      >
-        <Image
-          source={item.image}
-          resizeMode="cover"
-          style={{
-            width: "100%",
-            height: "100%",
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollX.value = event.contentOffset.x;
+  });
 
-          }}
+  const handleMomentumScrollEnd = React.useCallback(
+    (event: { nativeEvent: { contentOffset: { x: number } } }) => {
+      const index = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+      setActiveIndex(index);
+    },
+    []
+  );
+
+  const renderSlide = React.useCallback(
+    ({ item, index }: { item: OnboardingSection; index: number }) => {
+      return (
+        <OnboardingSlide
+          item={item}
+          index={index}
+          activeIndex={activeIndex}
+          scrollX={scrollX}
         />
-
-      </View>
-      <Text
-        style={{
-          fontFamily: fonts.primary.bold,
-          fontSize: 24,
-          color: colors.text.primary,
-          textAlign: "center",
-          marginBottom: spacing.sm,
-        }}
-      >
-        {item.title}
-      </Text>
-      <Text
-        style={{
-          fontFamily: fonts.primary.regular,
-          fontSize: 14,
-          color: colors.text.secondary,
-          textAlign: "center",
-          paddingHorizontal: spacing.sm,
-        }}
-      >
-        {item.description}
-      </Text>
-    </View>
+      );
+    },
+    [activeIndex, scrollX]
   );
 
   const getItemLayout = (_: unknown, index: number) => ({
@@ -137,7 +278,7 @@ const OnboardingScreen: React.FC = () => {
     index,
   });
 
-  const renderPagination = () => {
+  const renderPagination = React.useCallback(() => {
     return (
       <View
         style={{
@@ -148,29 +289,19 @@ const OnboardingScreen: React.FC = () => {
           gap: spacing.xs,
         }}
       >
-        {sections.map((section, index) => {
-          const isActive = index === activeIndex;
-
-          return (
-            <View
-              key={section.id}
-              style={{
-                width: isActive ? 18 : 8,
-                height: 8,
-                borderRadius: 999,
-                backgroundColor: isActive
-                  ? colors.ui.primary
-                  : colors.ui.dotInactive,
-                marginHorizontal: spacing.xs / 2,
-              }}
-            />
-          );
-        })}
+        {sections.map((section, index) => (
+          <PaginationDot key={section.id} isActive={index === activeIndex} />
+        ))}
       </View>
     );
-  };
+  }, [activeIndex, sections]);
 
-
+  const ctaStyle = React.useMemo(() => {
+    const isLast = activeIndex === sections.length - 1;
+    return {
+      transform: [{ scale: isLast ? 1 : 1 }],
+    };
+  }, [activeIndex, sections.length]);
 
   return (
     <SafeAreaView
@@ -184,7 +315,18 @@ const OnboardingScreen: React.FC = () => {
           paddingTop: spacing.lg,
         }}
       >
-        <FlatList
+        <View 
+          style={{
+            backgroundColor: "#F6F6F5",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+        />
+
+        <Animated.FlatList
           ref={flatListRef}
           data={sections}
           renderItem={renderSlide}
@@ -192,13 +334,18 @@ const OnboardingScreen: React.FC = () => {
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
           onMomentumScrollEnd={handleMomentumScrollEnd}
           getItemLayout={getItemLayout}
           bounces={false}
           decelerationRate="fast"
         />
         {renderPagination()}
-        <RoundedButtonComponent handleNext={handleNext} icon="arrow-right" />
+        <MotiView
+        >
+          <RoundedButtonComponent handleNext={handleNext} icon={activeIndex === sections.length - 1 ? "check" : "arrow-right"} />
+        </MotiView>
       </View>
     </SafeAreaView>
   );

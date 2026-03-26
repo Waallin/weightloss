@@ -43,7 +43,7 @@ export default function App() {
     <View style={{ flex: 1}}>
       <SafeAreaView />
       <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <SocialProof />}
+        {isAuthenticated ? <MainStack /> : <AuthNavigator />}
       </NavigationContainer>
     </View>
   );
