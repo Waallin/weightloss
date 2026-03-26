@@ -12,7 +12,7 @@ const PrimaryButtonComponent = ({ title, onPress }: { title: string, onPress: ()
         borderRadius: spacing.borderRadius,
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%',
+     
     }}>
       <Text style={{
         ...textStyles.primary,

@@ -11,7 +11,6 @@ import { NavigationProp, useNavigation } from '@react-navigation/native'
 import { RootStackParamList } from '../navigation/types'
 import * as haptics from "expo-haptics";
 import { MotiView } from 'moti'
-import RoundedButtonComponent from '../../components/RoundedButtonComponent'
 import { ReduceMotion } from 'react-native-reanimated'
 
 const currentYear = new Date().getFullYear()
@@ -124,7 +123,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="How old are you?"
-                description="Helps us keep things realistic."
+                description="So we set a plan that actually works for you."
                 summaryIconName="person"
                 summaryLabel="Selected age:"
                 summaryValue={`${age}`}
@@ -162,7 +161,7 @@ const ProfileDetailsScreen = () => {
         return (
             <ProfileStepSection
                 title="What is your height?"
-                description="Just to personalize things for you."
+                description="So we can fine-tune your daily targets."
                 summaryIconName="person"
                 summaryLabel="Selected height:"
                 summaryValue={`${height} cm`}
@@ -290,7 +289,7 @@ const ProfileDetailsScreen = () => {
                             lineHeight: 20,
                             marginBottom: spacing.lg,
                         }}>
-                           Just follow this. We’ll handle the rest.
+                            Just follow this. We’ll handle the rest.
                         </Text>
                     </MotiView>
 
@@ -321,7 +320,7 @@ const ProfileDetailsScreen = () => {
                                 ...textStyles.secondary,
                                 lineHeight: 20,
                             }}>
-                              That’s closer than you think.
+                                That’s closer than you think—and we’ll help you get there
                             </Text>
                         </View>
 
@@ -383,7 +382,6 @@ const ProfileDetailsScreen = () => {
                         </View>
                     </MotiView>
                 </MotiView>
-
                 <MotiView
                     from={{ opacity: 0, translateY: 30 }}
                     animate={{ opacity: 1, translateY: 0 }}
@@ -394,7 +392,7 @@ const ProfileDetailsScreen = () => {
                         title="Start my plan"
                         onPress={() => {
                             haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-                            navigation.navigate('MainNavigator')
+                            navigation.navigate('HowItWork')
                         }}
                     />
                 </MotiView>

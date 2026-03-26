@@ -12,7 +12,7 @@ const RoundedButtonComponent = ({ handleNext, icon }: { handleNext: () => void, 
         onPress={handleNext}
         style={{
           alignSelf: "center",
-          marginBottom: spacing.xxl,
+         
         }}
       >
         <View

@@ -11,7 +11,6 @@ export const textSizes = {
     xxxl: 26,
 };
 
-
 export const textStyles = {
     primary: {
         fontFamily: fonts.primary.medium,
@@ -71,11 +70,35 @@ export const authCopy = {
     planReadyTitle: "Your plan is ready",
     planReadySubtitle: "We tailored your routine to fit your body and goal—so you can focus on showing up.",
     planReadyStatPrefix: "Progress outlook:",
-    planReadySocialProof: "Most people start seeing results within days",
+    planReadySocialProof: "People start noticing changes within the first week",
     planReadyCta: "Continue",
     planReadyBullets: [
+        "3 simple habits",
         "No calorie counting",
-        "No gym needed",
-        "Just show up daily"
+        "No gym required"
+    ],
+    howItWorkSections: [
+        {
+            id: 1,
+            title: "Todays plan",
+            description: [
+                "• Walk: 10k steps",
+                "• Drink: 10 glasses of water",
+                "• Eat: Stay within your points" 
+            ].join('\n'),
+            imageKey: "threeFingers",
+        },
+        {
+            id: 2,
+            title: "Points explained",
+            description: "Foods that keep you full = fewer points\nFoods that don’t = more points",
+            imageKey: "standing",
+        },
+        {
+            id: 3,
+            title: "You're ready",
+            description: "That’s it. Just follow today.\nWe’ll handle the rest.",
+            imageKey: "thumbsUp",
+        },
     ],
 } as const;

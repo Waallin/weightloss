@@ -23,6 +23,7 @@ import Animated, {
 } from "react-native-reanimated";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import * as haptics from "expo-haptics";
+import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -213,7 +214,7 @@ const OnboardingScreen: React.FC = () => {
       id: 3,
       title: "Struggle to stay consistent?",
       description:
-        "Life gets in the way. That’s why this is built to be simple.",
+        "You start strong… then life happens. That’s why this is built to be simple.",
       image: require("../../assets/mascot/jump.png"),
     },
     {
@@ -240,7 +241,6 @@ const OnboardingScreen: React.FC = () => {
       setActiveIndex(nextIndex);
       return;
     }
-    navigation.navigate("ProfileDetails");
     // TODO: Navigate to auth/main flow when onboarding is finished
   };
 
@@ -296,6 +296,26 @@ const OnboardingScreen: React.FC = () => {
     );
   }, [activeIndex, sections]);
 
+  const renderButton = () => {
+    if (activeIndex === sections.length - 1) {
+      return (
+        <PrimaryButtonComponent
+          title="Let’s start"
+          onPress={() => {
+            navigation.navigate("ProfileDetails");
+          }}
+        />
+      )
+    }
+    return (
+      <RoundedButtonComponent
+        handleNext={handleNext}
+        icon={"arrow-right"}
+      />
+    )
+  }
+  
+
   const ctaStyle = React.useMemo(() => {
     const isLast = activeIndex === sections.length - 1;
     return {
@@ -342,10 +362,12 @@ const OnboardingScreen: React.FC = () => {
           decelerationRate="fast"
         />
         {renderPagination()}
-        <MotiView
-        >
-          <RoundedButtonComponent handleNext={handleNext} icon={activeIndex === sections.length - 1 ? "check" : "arrow-right"} />
-        </MotiView>
+        <View style={{
+          paddingBottom: spacing.xxl,
+          paddingHorizontal: spacing.md,
+        }}>
+          {renderButton()}
+        </View>
       </View>
     </SafeAreaView>
   );
