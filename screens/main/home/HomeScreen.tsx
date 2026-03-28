@@ -9,6 +9,7 @@ import ProgressComponents from "../../../components/ProgressComponents";
 import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
+import { Ionicons } from "@expo/vector-icons";
 
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
@@ -185,8 +186,8 @@ const HomeScreen = () => {
               justifyContent: "center",
             }}
           >
-            <MaterialCommunityIcons
-              name="check-circle"
+            <Ionicons
+              name="sparkles"
               size={24}
               color={colors.ui.primary}
             />

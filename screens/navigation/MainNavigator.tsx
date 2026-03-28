@@ -1,6 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 
 import { colors } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,7 +15,6 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
 import HomeScreen from "../main/home/HomeScreen";
 import SettingsScreen from "../main/settings/SettingsScreen";
 import { fonts } from "../../constants/fonts";
@@ -24,75 +24,78 @@ import DietScreen from "../main/diet/DietScreen";
 
 const Tab = createBottomTabNavigator();
 
-const TAB_ICONS = {
-  Home: { outline: "home-outline" as const, filled: "home" as const },
-  Diet: { outline: "nutrition-outline" as const, filled: "nutrition" as const },
-  Progress: {
-    outline: "stats-chart-outline" as const,
-    filled: "stats-chart" as const,
-  },
-  Settings: {
-    outline: "settings-outline" as const,
-    filled: "settings" as const,
-  },
-} as const;
+/** Softer motion — reads more “premium” than stiff defaults */
+const SPRING_PREMIUM = { damping: 22, stiffness: 200, mass: 0.65 };
+const SPRING_BOUNCE = { damping: 14, stiffness: 220, mass: 0.55 };
 
-type TabIconKey = keyof typeof TAB_ICONS;
+const ACTIVE_PILL_SIZE = 46;
+const ACTIVE_PILL_RADIUS = ACTIVE_PILL_SIZE / 2;
 
 const AnimatedIcon = Animated.createAnimatedComponent(Ionicons);
 
 const AnimatedTabIcon = ({
   focused,
-  tabKey,
+  iconName,
   color,
 }: {
   focused: boolean;
-  tabKey: TabIconKey;
+  iconName: string;
   color: string;
 }) => {
   const scale = useSharedValue(1);
-  const opacity = useSharedValue(focused ? 1 : 0.5);
-  const navigation = useNavigation();
-
-  const iconName = focused
-    ? TAB_ICONS[tabKey].filled
-    : TAB_ICONS[tabKey].outline;
+  const opacity = useSharedValue(focused ? 1 : 0.44);
+  const pillScale = useSharedValue(focused ? 1 : 0.86);
+  const pillOpacity = useSharedValue(focused ? 1 : 0);
 
   useEffect(() => {
-    opacity.value = withTiming(focused ? 1 : 0.5, { duration: 300 });
-    if (!focused) {
-      scale.value = withSpring(1, { damping: 12, stiffness: 80 });
+    opacity.value = withTiming(focused ? 1 : 0.44, { duration: 280 });
+    pillOpacity.value = withTiming(focused ? 1 : 0, { duration: focused ? 320 : 200 });
+    pillScale.value = withSpring(focused ? 1 : 0.86, SPRING_PREMIUM);
+
+    if (focused) {
+      void Haptics.selectionAsync();
+      scale.value = withSequence(
+        withSpring(0.88, SPRING_BOUNCE),
+        withSpring(1.06, SPRING_BOUNCE),
+        withSpring(1, SPRING_PREMIUM)
+      );
+    } else {
+      scale.value = withSpring(1, SPRING_PREMIUM);
     }
   }, [focused]);
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      if (focused) {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        scale.value = withSequence(
-          withSpring(0.9, { damping: 12, stiffness: 80 }),
-          withSpring(1.1, { damping: 12, stiffness: 80 }),
-          withSpring(1, { damping: 12, stiffness: 80 })
-        );
-        opacity.value = withTiming(1, { duration: 300 });
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [focused, navigation]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
+  const animatedIconStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     opacity: opacity.value,
   }));
 
+  const animatedPillStyle = useAnimatedStyle(() => ({
+    opacity: pillOpacity.value,
+    transform: [{ scale: pillScale.value }],
+  }));
+
   return (
     <View style={styles.tabIconContainer}>
-      {focused ? <View style={styles.activeBackground} /> : null}
-      <Animated.View style={[animatedStyle, { zIndex: 2 }]}>
-        <AnimatedIcon name={iconName} size={textSizes.xxl} color={color} />
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.activePillWrap, animatedPillStyle]}
+      >
+        <LinearGradient
+          colors={[
+            `${colors.ui.dietHeroGradientStart}55`,
+            `${colors.ui.primary}30`,
+          ]}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={styles.activePillGradient}
+        />
+      </Animated.View>
+      <Animated.View style={[animatedIconStyle, { zIndex: 2 }]}>
+        <AnimatedIcon
+          name={iconName as keyof typeof Ionicons.glyphMap}
+          size={textSizes.xxl}
+          color={color}
+        />
       </Animated.View>
     </View>
   );
@@ -112,15 +115,15 @@ const MainNavigator = () => {
           height: spacing.tabBarBaseHeight + insets.bottom,
           paddingTop: spacing.md,
           paddingBottom: insets.bottom,
-          borderTopWidth: 1,
+          borderTopWidth: StyleSheet.hairlineWidth,
           borderTopColor: colors.ui.cardBorder,
           borderTopLeftRadius: spacing.tabBarTopRadius,
           borderTopRightRadius: spacing.tabBarTopRadius,
           shadowColor: colors.ui.shadow,
-          shadowOffset: { width: 0, height: -3 },
-          shadowOpacity: 0.08,
-          shadowRadius: 10,
-          elevation: 10,
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.1,
+          shadowRadius: 16,
+          elevation: 12,
         },
         tabBarActiveTintColor: colors.ui.primary,
         tabBarInactiveTintColor: colors.text.secondary,
@@ -136,7 +139,7 @@ const MainNavigator = () => {
         component={HomeScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabKey="Home" color={color} />
+            <AnimatedTabIcon focused={focused} iconName="pulse" color={color} />
           ),
         }}
       />
@@ -145,7 +148,7 @@ const MainNavigator = () => {
         component={DietScreen}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} tabKey="Diet" color={color} />
+            <AnimatedTabIcon focused={focused} iconName="nutrition" color={color} />
           ),
         }}
       />
@@ -156,7 +159,7 @@ const MainNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon
               focused={focused}
-              tabKey="Progress"
+              iconName="stats-chart"
               color={color}
             />
           ),
@@ -169,7 +172,7 @@ const MainNavigator = () => {
           tabBarIcon: ({ color, focused }) => (
             <AnimatedTabIcon
               focused={focused}
-              tabKey="Settings"
+              iconName="settings"
               color={color}
             />
           ),
@@ -185,17 +188,29 @@ const styles = StyleSheet.create({
   tabIconContainer: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 5,
-    height: 50,
-    width: 50,
+    padding: spacing.xs,
+    height: 52,
+    width: 52,
     position: "relative",
   },
-  activeBackground: {
+  activePillWrap: {
     position: "absolute",
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: `${colors.ui.primary}18`,
+    width: ACTIVE_PILL_SIZE,
+    height: ACTIVE_PILL_SIZE,
+    borderRadius: ACTIVE_PILL_RADIUS,
     zIndex: 1,
+    overflow: "hidden",
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: `${colors.ui.primary}38`,
+    shadowColor: colors.ui.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.18,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  activePillGradient: {
+    width: ACTIVE_PILL_SIZE,
+    height: ACTIVE_PILL_SIZE,
+    borderRadius: ACTIVE_PILL_RADIUS,
   },
 });
