@@ -1,42 +1,35 @@
 import { StyleSheet, Text, View, ScrollView } from "react-native";
 import React from "react";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
+import { fonts } from "../../../constants/fonts";
 import { textSizes, textStyles } from "../../../constants/texts";
 import ProgressComponents from "../../../components/ProgressComponents";
 import { spacing } from "../../../constants/spacing";
-import DailyTipsComponent from "./components/DailyTipsComponent";
+import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
 
+const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
-const dailyTips = [
+const articles = [
   {
     id: 1,
-    title: "Reach 10k steps",
-    description: "Take 10,000 steps today to stay active and healthy.",
-    emoji: "🔥",
-    color: "#FEB74F",
+    title: "Easy ways to reach 10k steps",
+    description: "How to hit 10k steps without thinking about it.",
+    color: "#F4B350",
   },
   {
     id: 2,
-    title: "Stop evening snacking",
-    description: "Avoid late night snacking",
-    emoji: "💧",
-    color: "#51949F",
+    title: "How to drink more water daily",
+    description: "Simple tricks that make it automatic",
+    color: "#6BAFB2",
   },
   {
     id: 3,
-    title: "Eat More Fruits",
-    description: "Add one extra fruit to your meals today.",
-    emoji: "🍉",
-    color: "#E46651",
-  },
-  {
-    id: 4,
-    title: "Stretch Break",
-    description: "Do a 5-minute stretch after lunch.",
-    emoji: "🧘‍♂️",
-    color: "#4FC3F7",
+    title: "Stay within your points without thinking",
+    description: "Make better choices without tracking everything.",
+    color: "#F4B350",
   },
 ];
 
@@ -54,14 +47,12 @@ const smallWins = [
 ];
 
 const HomeScreen = () => {
-
   const renderHeader = () => {
     return (
       <View
         style={{
-          height: 100,
           justifyContent: "center",
-          paddingVertical: spacing.lg,
+           marginTop: spacing.lg,
         }}
       >
         <Text
@@ -71,7 +62,7 @@ const HomeScreen = () => {
             fontWeight: "bold",
           }}
         >
-          Hi, Jane
+          Your day
         </Text>
       </View>
     );
@@ -85,38 +76,165 @@ const HomeScreen = () => {
           flexWrap: "wrap",
           gap: spacing.md,
           paddingBottom: spacing.lg,
-          justifyContent: 'center',
+          // justifyContent: 'center',
         }}
       >
         <ProgressComponents
-          title="Streak"
-          description="Days"
-          icon="fire"
-          number={"24"}
-        />
-        <ProgressComponents
           title="Water"
-          description="Glasses"
           icon="water"
-          number={"4"}
-        />
-        <ProgressComponents
-          title="Points"
-          description="Left"
-          icon="food-apple"
-          number={"5"}
+          number={4}
+          goal={10}
+          microcopy="Keep sipping"
+          width="47%"
         />
         <ProgressComponents
           title="Steps"
-          description="Today"
           icon="walk"
-          number={"2k"}
+          number={2500}
+          goal={10000}
+          microcopy="You're on track"
+          width="47%"
+        />
+        <ProgressComponents
+          title="Points"
+          icon="food-apple"
+          number={5}
+          goal={31}
+          microcopy="26 left today"
+          width="100%"
         />
       </View>
     );
   };
 
-  const renderDailyTipComponent = () => {
+  const renderArticlesComponent = () => {
+    return (
+      <View
+        style={{
+          gap: spacing.md,
+        }}
+      >
+        <Text
+          style={{
+            ...textStyles.primary,
+            fontSize: textSizes.lg,
+            fontWeight: "bold",
+          }}
+        >
+          Get there easier
+        </Text>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: spacing.md,
+          }}
+        >
+          {articles.map((article) => (
+            <ArticlesComponent
+              key={article.id}
+              title={article.title}
+              description={article.description}
+              color={article.color}
+
+            />
+          ))}
+        </ScrollView>
+      </View>
+    );
+  };
+
+  const renderProgressInsight = () => {
+    return (
+      <View
+        style={{
+          backgroundColor: colors.ui.componentBackground,
+          borderRadius: spacing.borderRadius * 1.5,
+          paddingVertical: spacing.md,
+          paddingHorizontal: spacing.md,
+          ...globalStyles.shadow,
+          width: "100%",
+        }}
+      >
+        <Text
+          style={{
+            ...textStyles.secondary,
+            fontSize: textSizes.xxs,
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            opacity: 0.55,
+            marginBottom: spacing.sm,
+          }}
+        >
+          Today
+        </Text>
+        <View
+          style={{
+            flexDirection: "row",
+            gap: spacing.md,
+            alignItems: "center",
+          }}
+        >
+          <View
+            style={{
+              width: PROGRESS_INSIGHT_ICON_SIZE,
+              height: PROGRESS_INSIGHT_ICON_SIZE,
+              borderRadius: PROGRESS_INSIGHT_ICON_SIZE / 2,
+              backgroundColor: colors.ui.iconContainer,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="check-circle"
+              size={24}
+              color={colors.ui.primary}
+            />
+          </View>
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "column",
+              gap: spacing.sm,
+              minWidth: 0,
+            }}
+          >
+            <Text
+              style={{
+                ...textStyles.primary,
+                fontFamily: fonts.primary.semiBold,
+                fontSize: textSizes.lg,
+                color: colors.text.primary,
+              }}
+            >
+              2 of 3 done 👏
+            </Text>
+            <Text style={{ ...textStyles.listItemEmphasis }}>1 more to go</Text>
+            <View
+              style={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: colors.ui.dotInactive,
+                overflow: "hidden",
+                marginTop: spacing.xs,
+              }}
+            >
+              <View
+                style={{
+                  width: "66.666%",
+                  height: "100%",
+                  backgroundColor: colors.ui.primary,
+                  borderRadius: 3,
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  const renderSmallWins = () => {
     return (
       <View
         style={{
@@ -131,85 +249,17 @@ const HomeScreen = () => {
             fontWeight: "bold",
           }}
         >
-          Daily Tips
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: spacing.md,
-          }}
-        >
-          {dailyTips.map((tip) => (
-            <DailyTipsComponent
-              key={tip.id}
-              title={tip.title}
-              description={tip.description}
-              emoji={tip.emoji}
-              color={tip.color}
-            />
-          ))}
-        </ScrollView>
-      </View>
-    );
-  };
-
-  const renderPogressInsight = () => {
-    return (
-      <View style={{
-        flexDirection: 'row',
-        gap: spacing.md,
-        backgroundColor: colors.ui.componentBackground, 
-        borderRadius: spacing.borderRadius,
-        padding: spacing.md,
-        ...globalStyles.shadow,
-        width: '100%',
-        height: 100,
-        alignItems: 'center',
-      }}>
-        <View style={{
-          width: 50,
-          height: 50,
-          borderRadius: 50,
-          backgroundColor: colors.ui.iconContainer,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Text style={{ fontSize: textSizes.xxxl, fontWeight: 'bold' }}>🎉</Text>
-        </View>
-        <View style={{
-          flexDirection: 'column',
-          gap: spacing.sm,
-        }}>
-          <Text style={{ fontSize: textSizes.lg, fontWeight: 'bold' }}>Weekly result</Text>
-          <Text style={{ fontSize: textSizes.sm, color: colors.text.secondary }}>You walked 31,200 steps</Text>
-
-        </View>
-      </View>
-    );
-  };
-
-  const renderSmallWins = () => {
-    return (
-      <View style={{
-        gap: spacing.md,
-        paddingVertical: spacing.lg,
-      }}>
-        <Text style={{
-          ...textStyles.primary,
-          fontSize: textSizes.lg,
-          fontWeight: 'bold',
-        }}>
           Small Wins
         </Text>
         <View
           style={{
-            flexDirection: 'row',
-            flexWrap: 'wrap',
+            flexDirection: "row",
+            flexWrap: "wrap",
             gap: spacing.md,
-            justifyContent: 'flex-start',
-            width: '100%',
-          }}>
+            justifyContent: "flex-start",
+            width: "100%",
+          }}
+        >
           {smallWins.map((win) => (
             <SmallWinComponent
               key={win.id}
@@ -222,22 +272,22 @@ const HomeScreen = () => {
     );
   };
 
-
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
         paddingBottom: spacing.scrollViewBottomPadding,
+        gap: spacing.homescreenGap,
       }}
       style={{
         ...globalStyles.container,
       }}
     >
       {renderHeader()}
+      {renderProgressInsight()}
       {renderProgressComponents()}
-      {renderDailyTipComponent()}
-      {renderPogressInsight()}
-      {renderSmallWins()}
+      {renderArticlesComponent()}
+
     </ScrollView>
   );
 };

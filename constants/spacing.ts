@@ -11,4 +11,5 @@ export const spacing = {
   borderRadius: 8,
   rounded: 100,
   componentGap: 16,
+  homescreenGap: 24,
 };

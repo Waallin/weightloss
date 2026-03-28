@@ -2,6 +2,7 @@ import { colors } from "./colors";
 import { fonts } from "./fonts";
 
 export const textSizes = {
+    xxs: 10,
     xs: 12,
     sm: 14,
     md: 16,
