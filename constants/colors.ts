@@ -2,7 +2,7 @@ export const colors = {
   ui: {
     white: "#FFFFFF",
     background: "#F6F6F5",
-    componentBackground: "#F4F6FA",
+    componentBackground: "white",
     primary: "#16B97B",
     /** Diet hero summary (gradient card) */
     dietHeroGradientStart: "#3DD68C",

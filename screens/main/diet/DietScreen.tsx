@@ -30,7 +30,7 @@ const DietScreen = () => {
           Today
         </Text>
         <View style={{
-          gap: spacing.xs,
+          gap: spacing.sm,
         }}>
           <FoodItem grams={100} image={require("../../../assets/potato.png")} name="Potatos" portion="1 portion" kudos="5" onPress={() => handleFoodItemPress("Potato")} />
           <FoodItem grams={100} image={require("../../../assets/banana.png")} name="Bananas" portion="1 portion" kudos="2" onPress={() => handleFoodItemPress("Banana")} />
@@ -62,7 +62,7 @@ const DietScreen = () => {
     
       <View style={{
         position: 'absolute',
-        bottom: 40,
+        bottom: 100,
         left: 0,
         right: 0,
         alignItems: 'center',

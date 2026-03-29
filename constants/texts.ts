@@ -65,7 +65,10 @@ export const textStyles = {
 export const dietLabels = {
     gramsUnit: "g",
     kudos: "Points",
+    recent: "Recent",
 } as const;
+
+export const dietFoodSearchPlaceholder = 'Search food, e.g. "banana"' as const;
 
 export const authCopy = {
     planReadyTitle: "Your plan is ready",

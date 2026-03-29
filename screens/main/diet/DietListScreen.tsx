@@ -1,11 +1,10 @@
 import {
-    ScrollView,
-    StyleSheet,
     Text,
     TextInput,
     View,
     TouchableOpacity,
     FlatList,
+    Alert,
 } from "react-native";
 import React from "react";
 import { colors } from "../../../constants/colors";
@@ -13,8 +12,15 @@ import { globalStyles } from "../../../constants/globalStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../constants/spacing";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FoodItem from "./components/FoodItem";
-import { textStyles } from "../../../constants/texts";
+import {
+    dietFoodSearchPlaceholder,
+    dietLabels,
+    textSizes,
+    textStyles,
+} from "../../../constants/texts";
+import { fonts } from "../../../constants/fonts";
 
 const dummyFoodItems = [
     {
@@ -53,75 +59,94 @@ const dummyFoodItems = [
 ];
 const DietListScreen = () => {
     const navigation = useNavigation();
+    const insets = useSafeAreaInsets();
 
     const renderHeader = () => {
         return (
             <View
                 style={{
-                    backgroundColor: colors.ui.componentBackground,
-                    height: 140,
-                    padding: spacing.md,
-                    borderRadius: spacing.borderRadius,
+                    backgroundColor: colors.ui.background,
+                    paddingTop: insets.top + spacing.sm,
+                    paddingBottom: spacing.md,
                 }}
             >
-                <View>
-                    <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={() => navigation.goBack()}
+                <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPress={() => navigation.goBack()}
+                    style={{
+                        backgroundColor: colors.ui.componentBackground,
+                        borderRadius: spacing.borderRadius,
+                        ...globalStyles.shadow,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        width: 44,
+                        height: 44,
+                    }}
+                >
+                    <MaterialCommunityIcons
+                        name="chevron-left"
+                        size={26}
+                        color={colors.text.primary}
+                    />
+                </TouchableOpacity>
+                <View
+                    style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginTop: spacing.md,
+                        minHeight: 56,
+                        paddingHorizontal: spacing.md,
+                        borderWidth: 1,
+                        borderColor: colors.ui.cardBorder,
+                        borderRadius: spacing.borderRadius,
+                        backgroundColor: colors.ui.white,
+                    }}
+                >
+                    <MaterialCommunityIcons
+                        name="magnify"
+                        size={24}
+                        color={colors.text.secondary}
+                    />
+                    <TextInput
+                        placeholder={dietFoodSearchPlaceholder}
+                        placeholderTextColor={colors.text.secondary}
                         style={{
-                            backgroundColor: colors.ui.componentBackground,
-                            borderRadius: spacing.borderRadius,
-                            ...globalStyles.shadow,
-                            justifyContent: "center",
-                            alignItems: "center",
-                            // alignItems: "flex-start",
-                            // padding: spacing.md,
-                            width: 40,
-                            height: 40,
+                            flex: 1,
+                            marginLeft: spacing.sm,
+                            paddingVertical: spacing.md,
+                            fontFamily: fonts.primary.regular,
+                            fontSize: textSizes.md,
+                            color: colors.text.primary,
                         }}
-                    >
-                        <MaterialCommunityIcons
-                            name="chevron-left"
-                            size={24}
-                            color="black"
-                        />
-                    </TouchableOpacity>
-                </View>
-                <View>
-                    <View
-                        style={{
-                            marginTop: spacing.md,
-                        }}
-                    >
-                        <TextInput
-                            placeholder="Search"
-                            style={{
-                                borderWidth: 0.5,
-                                borderColor: colors.ui.cardBorder,
-                                borderRadius: spacing.borderRadius,
-                                padding: spacing.md,
-                                backgroundColor: colors.ui.white,
-                            }}
-                        />
-                    </View>
+                    />
                 </View>
             </View>
         );
     };
 
-    const renderFoodItems = () => {
+    const renderRecentFoodItems = () => {
         return (
-            <View style={{
-                gap: spacing.componentGap,
-            }}>
-                <Text style={textStyles.screenSectionTitle}>
-                    List
+            <View
+                style={{
+                    flex: 1,
+                }}
+            >
+                <Text
+                    style={{
+                        ...textStyles.screenSectionTitle,
+                        marginBottom: spacing.md,
+                    }}
+                >
+                    {dietLabels.recent}
                 </Text>
                 <FlatList
+                    style={{ flex: 1 }}
                     contentContainerStyle={{
-                        gap: spacing.xs,
+                        gap: spacing.sm,
+                        paddingBottom: spacing.scrollViewBottomPadding,
                     }}
                     data={dummyFoodItems}
+                    keyExtractor={(item) => String(item.id)}
                     renderItem={({ item }) => (
                         <FoodItem
                             image={item.image}
@@ -130,6 +155,7 @@ const DietListScreen = () => {
                             portion={item.portion}
                             kudos={item.kudos}
                             grams={item.grams}
+                            icon="plus"
                         />
                     )}
                 />
@@ -137,23 +163,20 @@ const DietListScreen = () => {
         );
     };
 
-    const handleNavigateToAddDietScreen = () => {
-        navigation.navigate("AddDietScreen");
-    }
+    const handleNavigateToAddDietScreen = (_foodName?: string) => {
+        Alert.alert("Add Diet", _foodName);
+    };
     return (
         <View
             style={{
                 ...globalStyles.container,
-                gap: spacing.componentGap,
+                flex: 1,
             }}
         >
             {renderHeader()}
-
-            {renderFoodItems()}
+            {renderRecentFoodItems()}
         </View>
     );
 };
 
 export default DietListScreen;
-
-const styles = StyleSheet.create({});

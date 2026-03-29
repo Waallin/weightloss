@@ -8,7 +8,7 @@ import { textSizes } from "../../../../constants/texts";
 import { fonts } from "../../../../constants/fonts";
 
 const CIRCLE_SIZE = 200;
-const CIRCLE_WIDTH = 12;
+const CIRCLE_WIDTH = 15;
 
 export interface DietCalorieHeroComponentProps {
   dateLabel: string;
@@ -53,7 +53,7 @@ const DietCalorieHeroComponent = (
         style={{
           fontFamily: fonts.primary.medium,
           fontSize: textSizes.sm,
-          color: colors.ui.primary,
+          color: colors.text.secondary,
           textAlign: "center",
           opacity: 0.95,
           marginBottom: spacing.md,
@@ -68,29 +68,6 @@ const DietCalorieHeroComponent = (
           justifyContent: "space-between",
         }}
       >
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Text
-            style={{
-              fontFamily: fonts.primary.regular,
-              fontSize: textSizes.sm,
-              color: colors.ui.primary,
-              opacity: 0.95,
-            }}
-          >
-            Eaten
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.primary.bold,
-              fontSize: textSizes.xxl,
-              color: colors.ui.primary,
-              marginTop: spacing.xs,
-            }}
-          >
-            {eaten}
-          </Text>
-        </View>
-
         <View
           style={{
             flex: 1.35,
@@ -113,7 +90,7 @@ const DietCalorieHeroComponent = (
               width={CIRCLE_WIDTH}
               fill={progressFill}
               tintColor={colors.ui.primary}
-              backgroundColor={colors.ui.cardBorder}
+              backgroundColor={"#F3F1EC"}
               rotation={0}
               arcSweepAngle={360}
               lineCap="round"
@@ -122,20 +99,10 @@ const DietCalorieHeroComponent = (
             <View style={{ alignItems: "center", justifyContent: "center" }}>
               <Text
                 style={{
-                  fontFamily: fonts.primary.regular,
-                  fontSize: textSizes.xs,
-                  color: colors.ui.primary,
-                  opacity: 0.95,
-                }}
-              >
-                Remaining
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.primary.bold,
+                  fontWeight: 'bold',
                   fontSize: 32,
                   color: colors.ui.primary,
-                  marginVertical: spacing.xs,
+                  
                 }}
               >
                 {remaining}
@@ -144,38 +111,27 @@ const DietCalorieHeroComponent = (
                 style={{
                   fontFamily: fonts.primary.regular,
                   fontSize: textSizes.xs,
-                  color: colors.ui.primary,
+                  color: colors.text.secondary,
+                  opacity: 0.95,
+                }}
+              >
+                Pts left
+              </Text>
+              <Text
+                style={{
+                  fontFamily: fonts.primary.regular,
+                  fontSize: textSizes.xs,
+                  color: colors.text.secondary,
                   opacity: 0.92,
                 }}
               >
-                Nice! You're on track!
+                Keep it up!
               </Text>
             </View>
           </View>
         </View>
 
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Text
-            style={{
-              fontFamily: fonts.primary.regular,
-              fontSize: textSizes.sm,
-              color: colors.ui.primary,
-              opacity: 0.95,
-            }}
-          >
-            Burned
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.primary.bold,
-              fontSize: textSizes.xxl,
-              color: colors.ui.primary,
-              marginTop: spacing.xs,
-            }}
-          >
-            {burned}
-          </Text>
-        </View>
+
       </View>
     </View>
   );

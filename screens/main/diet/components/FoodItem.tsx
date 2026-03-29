@@ -3,7 +3,7 @@ import React from 'react'
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { spacing } from '../../../../constants/spacing';
 import { colors } from '../../../../constants/colors';
-import { dietLabels, textStyles } from '../../../../constants/texts';
+import { fonts } from '../../../../constants/fonts';
 import { globalStyles } from '../../../../constants/globalStyles';
 const FoodItem = (
   {
@@ -13,6 +13,7 @@ const FoodItem = (
     grams,
     onPress,
     image,
+    icon,
   }: {
     name: string;
     portion: string;
@@ -20,19 +21,21 @@ const FoodItem = (
     grams: number;
     onPress: () => void;
     image: string;
+    icon?: string | null;
   }
 ) => {
   const thumbSize = spacing.lg * 2 + spacing.sm;
 
   return (
     <TouchableOpacity
-    
+
       activeOpacity={0.8}
       onPress={onPress}
       style={{
         flexDirection: 'row',
         alignItems: 'center',
-        padding: spacing.md,
+        paddingHorizontal: spacing.md,
+        paddingVertical: spacing.sm,
         gap: spacing.md,
         borderRadius: spacing.borderRadius,
         backgroundColor: colors.ui.componentBackground,
@@ -61,18 +64,60 @@ const FoodItem = (
           flex: 1,
         }}
       >
-        <Text style={textStyles.listItemTitle} numberOfLines={1}>
+        <Text
+          numberOfLines={1}
+          style={{
+            fontWeight: 'bold',
+            fontSize: 18,
+            color: colors.text.primary,
+          }}
+        >
           {name}
         </Text>
-        <Text style={[textStyles.listItemMeta, { marginTop: spacing.xs }]}>
-          {portion} · {grams} {dietLabels.gramsUnit}
+        <Text
+          style={{
+            marginTop: spacing.xs,
+            fontFamily: fonts.primary.regular,
+            fontSize: 14,
+            color: colors.text.secondary,
+          }}
+        >
+           {grams} g · {portion}
         </Text>
         <Text style={{ marginTop: spacing.sm }}>
-          <Text style={textStyles.listItemEmphasis}>{kudos}</Text>
-          <Text style={textStyles.listItemMeta}> {dietLabels.kudos}</Text>
+          <Text
+            style={{
+              fontFamily: fonts.primary.medium,
+              fontWeight: 'bold',
+              fontSize: 14,
+              color: colors.text.primary,
+            }}
+          >
+            {kudos}
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.primary.regular,
+              fontWeight: 'bold',
+              fontSize: 14,
+              color: colors.text.primary,
+            }}
+          >
+            {' pts'}
+          </Text>
         </Text>
       </View>
-      <MaterialCommunityIcons name="chevron-right" size={24} color={colors.text.primary} />
+      {icon && (
+      <View style={{
+          backgroundColor: colors.ui.primary,
+        borderRadius: spacing.rounded,
+        padding: spacing.sm,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}>
+        <MaterialCommunityIcons name={icon} size={24} color={colors.ui.white} />
+      </View>
+      )}
     </TouchableOpacity>
   )
 }
