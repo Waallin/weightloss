@@ -44,7 +44,6 @@ const DietCalorieHeroComponent = (
         borderRadius: spacing.borderRadius,
         paddingVertical: spacing.lg,
         paddingHorizontal: spacing.md,
-        marginBottom: spacing.md,
         ...globalStyles.shadow,
         backgroundColor: colors.ui.componentBackground,
       }}
