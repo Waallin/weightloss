@@ -13,6 +13,7 @@ export const globalStyles = StyleSheet.create({
   },
 
   scrollContainer: {
+    flex: 1,
     paddingBottom: spacing.scrollViewBottomPadding,
     gap: spacing.componentGap,
     marginTop: spacing.screenMarginTop,

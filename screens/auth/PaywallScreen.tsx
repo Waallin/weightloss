@@ -3,7 +3,6 @@ import {
   SafeAreaView,
   Text,
   View,
-  TouchableOpacity,
   ScrollView,
 } from "react-native";
 import { colors } from "../../constants/colors";

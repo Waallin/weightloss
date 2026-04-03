@@ -1,50 +1,120 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, View, Text } from "react-native";
 import React from "react";
 import { globalStyles } from "../../../constants/globalStyles";
-import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { textSizes } from "../../../constants/texts";
+import SettingsItem from "./components/SettingsItem";
+import Constants from "expo-constants";
+import { colors } from "../../../constants/colors";
+import { textSizes, textStyles } from "../../../constants/texts";
 const SettingsScreen = () => {
+  const handleDeleteAccount = () => {
+    console.log("Delete Account");
+  };
 
-  const renderCommingSoonComponent = () => {
+  const handleProfile = () => {
+    console.log("Profile");
+  };
+
+  const handlePreferences = () => {
+    console.log("Preferences");
+  };
+
+  const handleLogout = () => {
+    console.log("Logout");
+  };
+
+  const renderConstants = () => {
     return (
-      <View style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingVertical: spacing.lg,
-        gap: spacing.sm,
-        backgroundColor: colors.ui.componentBackground,
-        borderRadius: spacing.borderRadius,
-        padding: spacing.md,
-        ...globalStyles.shadow,
-      }}>
+      <View
+        style={{
+          position: "absolute",
+          bottom: 150,
+          right: 0,
+        }}
+      >
+        <Text
+          style={{
+            ...textStyles.secondary,
+            fontSize: textSizes.sm,
+            color: colors.text.secondary,
+          }}
+        >
+          Version {Constants.expoConfig?.version}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderProfileSettings = () => {
+    return (
+      <View style={{ gap: spacing.sm }}>
         <Text style={{
+          ...textStyles.primary,
           fontSize: textSizes.lg,
           fontWeight: "bold",
-          color: colors.text.primary,
-        }}>Coming soon</Text>
+          marginBottom: spacing.sm,
+        }}>Profile</Text>
+      <View style={{ gap: spacing.sm }}>
+        <SettingsItem
+          title="Profile"
+          description="Manage your profile settings"
+          icon="account-outline"
+          onPress={handleProfile}
+        />
+        <SettingsItem
+          title="Preferences"
+          description="Manage your preferences"
+          icon="account-cog-outline"
+          onPress={handlePreferences}
+        />
+      </View>
+      </View>
+    );
+  };
+
+  const renderLogoutSettings = () => {
+    return (
+      <View>
         <Text style={{
-          fontSize: textSizes.sm,
-          color: colors.text.secondary,
-          textAlign: "center",
-        }}>We're working on this feature right now. Please check back soon!</Text>
+          ...textStyles.primary,
+          fontSize: textSizes.lg,
+          fontWeight: "bold",
+          marginBottom: spacing.sm,
+        }}>Account</Text>
+      <View style={{ gap: spacing.sm }}>
+        <SettingsItem
+          title="Logout"
+          description="Logout of your account"
+          icon="logout"
+          iconColor={colors.ui.delete}
+          backgroundColor={colors.ui.grey}
+          onPress={handleLogout}
+        />
+        <SettingsItem
+          title="Delete Account"
+          description="Delete your account and all your data"
+          icon="delete-outline"
+          iconColor={colors.ui.delete}
+          backgroundColor={colors.ui.grey}
+          onPress={handleDeleteAccount}
+        />
+      </View>
       </View>
     );
   };
   return (
     <ScrollView
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={globalStyles.scrollContainer}
-    style={{
-      ...globalStyles.container,
-    }}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={globalStyles.scrollContainer}
+      style={{
+        ...globalStyles.container,
+      }}
     >
-      {renderCommingSoonComponent()}
+      {renderProfileSettings()}
+      {renderLogoutSettings()}
+      {renderConstants()}
     </ScrollView>
   );
 };
 
 export default SettingsScreen;
-
-const styles = StyleSheet.create({});

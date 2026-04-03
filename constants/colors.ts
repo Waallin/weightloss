@@ -12,6 +12,8 @@ export const colors = {
     dotInactive: "#E0DEFF",
     iconContainer: "#F5F3FF",
     cardBorder: "#EDECF5",
+    delete: "#EF4444",
+    grey: "#F3F4F6",
 
     primarySoft: "#D7E3FC",  // new soft blue
     /** Calendar: weight-logged dot — saturated blue for contrast on white + goal (green) cells */
