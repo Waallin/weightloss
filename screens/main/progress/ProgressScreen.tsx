@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
@@ -7,6 +7,9 @@ import { textSizes } from "../../../constants/texts";
 import CircularProgressGaugeComponent from "../../../components/CircularProgressGaugeComponent";
 import { Calendar } from "react-native-calendars";
 import type { MarkedDates, Theme } from "react-native-calendars/src/types";
+import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { useNavigation } from "@react-navigation/native";
 
 /** Mock: dates (YYYY-MM-DD) when today's goal was completed */
 const MOCK_GOAL_COMPLETED_DATES = [
@@ -120,33 +123,37 @@ const buildProgressCalendarMarkedDates = (todayYmd: string): MarkedDates => {
 
 const ProgressScreen = () => {
   const todayYmd = useMemo(() => formatLocalYmd(new Date()), []);
+  const navigation = useNavigation();
   const calendarMarkedDates = useMemo(
     () => buildProgressCalendarMarkedDates(todayYmd),
     [todayYmd],
   );
 
+  const handleLogWeightPress = () => {
+    navigation.navigate("LogWeightScreen");
+  };
+
   const renderCalendarComponent = () => {
     return (
-    
-        <View
-          style={{
-            backgroundColor: colors.ui.componentBackground,
-            ...globalStyles.shadow,
-            padding: spacing.md,
-            borderRadius: spacing.borderRadius,
-            gap: spacing.md,
-          }}
-        >
-          <Calendar
-            current={todayYmd}
-            maxDate={todayYmd}
-            markingType="custom"
-            markedDates={calendarMarkedDates}
-  
-            firstDay={1}
-            hideExtraDays
-            enableSwipeMonths
-            theme={{
+      <View
+        style={{
+          backgroundColor: colors.ui.componentBackground,
+          ...globalStyles.shadow,
+          padding: spacing.md,
+          borderRadius: spacing.borderRadius,
+          gap: spacing.md,
+        }}
+      >
+        <Calendar
+          current={todayYmd}
+          maxDate={todayYmd}
+          markingType="custom"
+          markedDates={calendarMarkedDates}
+          firstDay={1}
+          hideExtraDays
+          enableSwipeMonths
+          theme={
+            {
               backgroundColor: "transparent",
               calendarBackground: "transparent",
               dotStyle: {
@@ -182,41 +189,64 @@ const ProgressScreen = () => {
               textInactiveColor: colors.text.secondary,
               selectedDayBackgroundColor: colors.ui.primarySoft,
               selectedDayTextColor: colors.text.primary,
-            } as Theme}
+            } as Theme
+          }
+          style={{
+            width: "100%",
+          }}
+        />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.sm,
+            justifyContent: "space-between",
+          }}
+        >
+          <View
             style={{
-              width: "100%",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.sm,
             }}
-          />
-          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm, justifyContent: "space-between" }}>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
-              <View
-                style={{
-                  width: spacing.calendarWeightDotSize,
-                  height: spacing.calendarWeightDotSize,
-                  borderRadius: spacing.calendarWeightDotSize / 2,
-                  backgroundColor: colors.ui.weightDot,
-                
-                }}
-              />
-              <Text style={{ fontSize: textSizes.sm, color: colors.text.primary }}>
-                Weight logged
-              </Text>
-            </View>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
-              <View
-                style={{
-                  width: spacing.md,
-                  height: spacing.md,
-                  backgroundColor: colors.ui.success,
-                  borderRadius: spacing.borderRadius,
-                }}
-              />
-              <Text style={{ fontSize: textSizes.sm, color: colors.text.primary }}>
-                Goal completed
-              </Text>
-            </View>
+          >
+            <View
+              style={{
+                width: spacing.calendarWeightDotSize,
+                height: spacing.calendarWeightDotSize,
+                borderRadius: spacing.calendarWeightDotSize / 2,
+                backgroundColor: colors.ui.weightDot,
+              }}
+            />
+            <Text
+              style={{ fontSize: textSizes.sm, color: colors.text.primary }}
+            >
+              Weight logged
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.sm,
+            }}
+          >
+            <View
+              style={{
+                width: spacing.md,
+                height: spacing.md,
+                backgroundColor: colors.ui.success,
+                borderRadius: spacing.borderRadius,
+              }}
+            />
+            <Text
+              style={{ fontSize: textSizes.sm, color: colors.text.primary }}
+            >
+              Goal completed
+            </Text>
           </View>
         </View>
+      </View>
     );
   };
   const renderCircularProgressGauge = () => {
@@ -253,6 +283,33 @@ const ProgressScreen = () => {
             4 / 8 kg completed
           </Text>
         </View>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={handleLogWeightPress}
+          style={{
+            width: "60%",
+            alignItems: "center",
+            justifyContent: "center",
+            borderColor: "#1FA971",
+            padding: spacing.sm,
+            borderRadius: spacing.borderRadius,
+            marginTop: spacing.md,
+            backgroundColor: "#E1F6EA",
+            flexDirection: "row",
+            gap: spacing.xs,
+          }}
+        >
+          <MaterialCommunityIcons name="plus" size={24} color="#1FA971" />
+          <Text
+            style={{
+              fontSize: textSizes.sm,
+              color: "#1FA971",
+              fontWeight: "bold",
+            }}
+          >
+            Log weight
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
@@ -367,7 +424,7 @@ const ProgressScreen = () => {
       }}
     >
       {renderCircularProgressGauge()}
-     
+
       {renderCalendarComponent()}
     </ScrollView>
   );

@@ -70,6 +70,15 @@ export const dietLabels = {
 
 export const dietFoodSearchPlaceholder = 'Search food, e.g. "banana"' as const;
 
+export const logWeightCopy = {
+    screenTitle: "Log weight",
+    question: "What's your weight today?",
+    hint: "Use your usual morning weight.",
+    placeholder: "e.g. 72.5",
+    unitKg: "kg",
+    save: "Save",
+} as const;
+
 export const authCopy = {
     planReadyTitle: "Your plan is ready",
     planReadySubtitle: "We tailored your routine to fit your body and goal—so you can focus on showing up.",
