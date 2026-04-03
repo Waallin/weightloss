@@ -12,9 +12,10 @@ export const globalStyles = StyleSheet.create({
     backgroundColor: colors.ui.background,
   },
 
-  contentContainer: {
-    gap: spacing.componentGap,
+  scrollContainer: {
     paddingBottom: spacing.scrollViewBottomPadding,
+    gap: spacing.componentGap,
+    marginTop: spacing.screenMarginTop,
   },
   
 

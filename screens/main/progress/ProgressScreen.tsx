@@ -6,7 +6,7 @@ import { spacing } from "../../../constants/spacing";
 import { textSizes } from "../../../constants/texts";
 import CircularProgressGaugeComponent from "../../../components/CircularProgressGaugeComponent";
 import { Calendar } from "react-native-calendars";
-import type { MarkedDates } from "react-native-calendars/src/types";
+import type { MarkedDates, Theme } from "react-native-calendars/src/types";
 
 /** Mock: dates (YYYY-MM-DD) when today's goal was completed */
 const MOCK_GOAL_COMPLETED_DATES = [
@@ -22,6 +22,13 @@ const MOCK_GOAL_COMPLETED_DATES = [
   "2026-03-28",
 ];
 
+const MOCK_WEIGHT_DATES = [
+  "2026-03-01",
+  "2026-03-02",
+  "2026-03-10",
+  "2026-03-18",
+];
+
 const formatLocalYmd = (d: Date): string => {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -29,49 +36,98 @@ const formatLocalYmd = (d: Date): string => {
   return `${y}-${m}-${day}`;
 };
 
-const buildGoalCompletedMarkedDates = (todayYmd: string): MarkedDates => {
+const buildProgressCalendarMarkedDates = (todayYmd: string): MarkedDates => {
+  const weightSet = new Set(MOCK_WEIGHT_DATES);
+  const goalSet = new Set(MOCK_GOAL_COMPLETED_DATES);
+  const allYmd = new Set([...MOCK_WEIGHT_DATES, ...MOCK_GOAL_COMPLETED_DATES]);
   const marked: MarkedDates = {};
-  for (const date of MOCK_GOAL_COMPLETED_DATES) {
-    if (date > todayYmd) continue;
-    marked[date] = {
-      customStyles: {
-        container: {
-          backgroundColor: colors.ui.success,
-          borderRadius: spacing.rounded,
-          alignItems: "center",
-          justifyContent: "center",
-          width: 34,
-          height: 34,
+
+  const baseText = { color: colors.text.primary };
+  /** Taller cell so the weight dot is not clipped under the day number (incl. green goal days). */
+  const goalDayContainer = {
+    backgroundColor: colors.ui.success,
+    borderRadius: spacing.borderRadius,
+    justifyContent: "center" as const,
+    alignItems: "center" as const,
+    minHeight: 35,
+    height: 35,
+  };
+
+  const todayOutline = {
+    borderWidth: spacing.calendarTodayBorderWidth,
+    backgroundColor: "#ECFDF5",
+    borderColor: "#22C55E",
+    borderRadius: spacing.borderRadius,
+  };
+
+  for (const ymd of allYmd) {
+    const hasWeight = weightSet.has(ymd);
+    const hasGoal = goalSet.has(ymd);
+
+    if (hasWeight && hasGoal) {
+      marked[ymd] = {
+        marked: true,
+        dotColor: colors.ui.weightDot,
+        customStyles: {
+          container: goalDayContainer,
+          text: baseText,
         },
-        text: {
-          color: colors.text.primary,
-          fontWeight: "700",
+      };
+    } else if (hasWeight) {
+      marked[ymd] = {
+        marked: true,
+        dotColor: colors.ui.weightDot,
+      };
+    } else {
+      marked[ymd] = {
+        customStyles: {
+          container: goalDayContainer,
+          text: baseText,
+        },
+      };
+    }
+  }
+
+  const existingToday = marked[todayYmd];
+  if (existingToday) {
+    marked[todayYmd] = {
+      ...existingToday,
+      customStyles: {
+        text: existingToday.customStyles?.text ?? baseText,
+        container: {
+          ...(existingToday.customStyles?.container ?? {}),
+          ...todayOutline,
         },
       },
     };
+  } else {
+    marked[todayYmd] = {
+      customStyles: {
+        container: {
+          ...todayOutline,
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 35,
+          height: 35,
+        },
+        text: baseText,
+      },
+    };
   }
+
   return marked;
 };
 
 const ProgressScreen = () => {
   const todayYmd = useMemo(() => formatLocalYmd(new Date()), []);
-  const goalMarkedDates = useMemo(
-    () => buildGoalCompletedMarkedDates(todayYmd),
+  const calendarMarkedDates = useMemo(
+    () => buildProgressCalendarMarkedDates(todayYmd),
     [todayYmd],
   );
 
   const renderCalendarComponent = () => {
     return (
-      <View style={{ gap: spacing.sm }}>
-        <Text
-          style={{
-            fontSize: textSizes.lg,
-            fontWeight: "bold",
-            marginBottom: spacing.xs,
-          }}
-        >
-          Calendar
-        </Text>
+    
         <View
           style={{
             backgroundColor: colors.ui.componentBackground,
@@ -85,13 +141,30 @@ const ProgressScreen = () => {
             current={todayYmd}
             maxDate={todayYmd}
             markingType="custom"
-            markedDates={goalMarkedDates}
+            markedDates={calendarMarkedDates}
+  
             firstDay={1}
             hideExtraDays
             enableSwipeMonths
             theme={{
               backgroundColor: "transparent",
               calendarBackground: "transparent",
+              dotStyle: {
+                width: spacing.calendarWeightDotSize,
+                height: spacing.calendarWeightDotSize,
+                borderRadius: spacing.calendarWeightDotSize / 2,
+                borderWidth: 2,
+                borderColor: colors.ui.white,
+                marginTop: 1,
+              },
+              "stylesheet.day.basic": {
+                base: {
+                  width: 32,
+                  height: 42,
+                  minHeight: 42,
+                  alignItems: "center",
+                },
+              },
               monthTextColor: colors.text.primary,
               textMonthFontWeight: "700",
               textMonthFontSize: textSizes.lg,
@@ -109,13 +182,41 @@ const ProgressScreen = () => {
               textInactiveColor: colors.text.secondary,
               selectedDayBackgroundColor: colors.ui.primarySoft,
               selectedDayTextColor: colors.text.primary,
-            }}
+            } as Theme}
             style={{
               width: "100%",
             }}
           />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm, justifyContent: "space-between" }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+              <View
+                style={{
+                  width: spacing.calendarWeightDotSize,
+                  height: spacing.calendarWeightDotSize,
+                  borderRadius: spacing.calendarWeightDotSize / 2,
+                  backgroundColor: colors.ui.weightDot,
+                
+                }}
+              />
+              <Text style={{ fontSize: textSizes.sm, color: colors.text.primary }}>
+                Weight logged
+              </Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+              <View
+                style={{
+                  width: spacing.md,
+                  height: spacing.md,
+                  backgroundColor: colors.ui.success,
+                  borderRadius: spacing.borderRadius,
+                }}
+              />
+              <Text style={{ fontSize: textSizes.sm, color: colors.text.primary }}>
+                Goal completed
+              </Text>
+            </View>
+          </View>
         </View>
-      </View>
     );
   };
   const renderCircularProgressGauge = () => {
@@ -140,16 +241,16 @@ const ProgressScreen = () => {
           style={{
             alignItems: "center",
             justifyContent: "center",
-            gap: spacing.sm,
+            gap: spacing.md,
           }}
         >
-          <Text style={{ fontSize: textSizes.lg, fontWeight: "bold" }}>
-            You're doing great! Keep it up!
+          <Text style={{ fontSize: textSizes.lg, fontWeight: "600" }}>
+            Halfway to your goal weight! 🎯
           </Text>
           <Text
             style={{ fontSize: textSizes.sm, color: colors.text.secondary }}
           >
-            Keep pushing, you're making fantastic progress!
+            4 / 8 kg completed
           </Text>
         </View>
       </View>
@@ -220,20 +321,53 @@ const ProgressScreen = () => {
     );
   };
 
+  const renderCommingSoonComponent = () => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: spacing.lg,
+          gap: spacing.sm,
+          backgroundColor: colors.ui.componentBackground,
+          borderRadius: spacing.borderRadius,
+          padding: spacing.md,
+          ...globalStyles.shadow,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: textSizes.lg,
+            fontWeight: "bold",
+            color: colors.text.primary,
+          }}
+        >
+          Coming soon
+        </Text>
+        <Text
+          style={{
+            fontSize: textSizes.sm,
+            color: colors.text.secondary,
+            textAlign: "center",
+          }}
+        >
+          We're working on this feature right now. Please check back soon!
+        </Text>
+      </View>
+    );
+  };
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: spacing.scrollViewBottomPadding,
-        gap: spacing.xl,
-        marginTop: spacing.xl,
-      }}
+      contentContainerStyle={globalStyles.scrollContainer}
       style={{
         ...globalStyles.container,
       }}
     >
       {renderCircularProgressGauge()}
-      {renderStreaksComponent()}
+     
       {renderCalendarComponent()}
     </ScrollView>
   );

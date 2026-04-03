@@ -9,7 +9,10 @@ export const spacing = {
   tabBarBaseHeight: 60,
   tabBarTopRadius: 18,
   borderRadius: 8,
+  calendarWeightDotSize: 6,
+  calendarTodayBorderWidth: 2,
   rounded: 100,
   componentGap: 16,
   homescreenGap: 24,
+  screenMarginTop: 25,
 };

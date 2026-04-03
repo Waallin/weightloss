@@ -22,19 +22,44 @@ const DietScreen = () => {
   const renderFoodItems = () => {
     return (
       <View>
-        <Text style={{
-          fontSize: textSizes.lg,
-          fontWeight: "bold",
-          marginBottom: spacing.md,
-        }}>
+        <Text
+          style={{
+            fontSize: textSizes.lg,
+            fontWeight: "bold",
+            marginBottom: spacing.md,
+          }}
+        >
           Today
         </Text>
-        <View style={{
-          gap: spacing.sm,
-        }}>
-          <FoodItem grams={100} image={require("../../../assets/potato.png")} name="Potatos" portion="1 portion" kudos="5" onPress={() => handleFoodItemPress("Potato")} />
-          <FoodItem grams={100} image={require("../../../assets/banana.png")} name="Bananas" portion="1 portion" kudos="2" onPress={() => handleFoodItemPress("Banana")} />
-          <FoodItem grams={100} image={require("../../../assets/egg.png")} name="Eggs" portion="3 portion" kudos="0.5" onPress={() => handleFoodItemPress("Egg")} />
+        <View
+          style={{
+            gap: spacing.sm,
+          }}
+        >
+          <FoodItem
+            grams={100}
+            image={require("../../../assets/potato.png")}
+            name="Potatos"
+            portion="1 portion"
+            kudos="5"
+            onPress={() => handleFoodItemPress("Potato")}
+          />
+          <FoodItem
+            grams={100}
+            image={require("../../../assets/banana.png")}
+            name="Bananas"
+            portion="1 portion"
+            kudos="2"
+            onPress={() => handleFoodItemPress("Banana")}
+          />
+          <FoodItem
+            grams={100}
+            image={require("../../../assets/egg.png")}
+            name="Eggs"
+            portion="3 portion"
+            kudos="0.5"
+            onPress={() => handleFoodItemPress("Egg")}
+          />
         </View>
       </View>
     );
@@ -45,10 +70,15 @@ const DietScreen = () => {
   };
 
   return (
-    <View style={{
-      flex: 1,
-    }}>
-      <ScrollView style={globalStyles.container} contentContainerStyle={globalStyles.contentContainer}>
+    <View
+      style={{
+        flex: 1,
+      }}
+    >
+      <ScrollView
+        style={globalStyles.container}
+        contentContainerStyle={globalStyles.scrollContainer}
+      >
         <DietCalorieHeroComponent
           dateLabel={getFormattedDate(new Date())}
           eaten={4}
@@ -57,19 +87,23 @@ const DietScreen = () => {
           progressFill={82}
         />
         {renderFoodItems()}
-     
       </ScrollView>
-    
-      <View style={{
-        position: 'absolute',
-        bottom: 100,
-        left: 0,
-        right: 0,
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: spacing.md,
-      }}>
-      <RoundedButtonComponent handleNext={handleNavigateToDietListScreen} icon="plus" />
+
+      <View
+        style={{
+          position: "absolute",
+          bottom: 100,
+          left: 0,
+          right: 0,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: spacing.md,
+        }}
+      >
+        <RoundedButtonComponent
+          handleNext={handleNavigateToDietListScreen}
+          icon="plus"
+        />
       </View>
     </View>
   );

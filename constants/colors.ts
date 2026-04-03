@@ -14,6 +14,8 @@ export const colors = {
     cardBorder: "#EDECF5",
 
     primarySoft: "#D7E3FC",  // new soft blue
+    /** Calendar: weight-logged dot — saturated blue for contrast on white + goal (green) cells */
+    weightDot: "#64748B",
     success: "#B7EFC5",      // new soft green
     info: "#A0CED9",         // new soft cyan
     warning: "#FFE5B4",      // new soft mint/yellow

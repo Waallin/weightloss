@@ -20,7 +20,7 @@ const CircularProgressGaugeComponent: React.FC<HalfCircularProgressGaugeProps> =
   backgroundColor,
   showPercentage = true,
   size = 120,
-  width = 20,
+  width = 25,
 }) => {
   return (
     <View
@@ -42,7 +42,7 @@ const CircularProgressGaugeComponent: React.FC<HalfCircularProgressGaugeProps> =
         duration={1000}
       />
       {showPercentage && (
-        <Text style={{ fontSize: textSizes.xl, fontWeight: 'bold', marginTop: spacing.md }}>
+        <Text style={{ fontSize: textSizes.xxxl, fontWeight: '800', marginTop: spacing.md }}>
           {fill}%
         </Text>
       )}

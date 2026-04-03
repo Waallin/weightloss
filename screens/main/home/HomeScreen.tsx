@@ -76,7 +76,6 @@ const HomeScreen = () => {
           flexDirection: "row",
           flexWrap: "wrap",
           gap: spacing.md,
-          paddingBottom: spacing.lg,
           // justifyContent: 'center',
         }}
       >
@@ -276,19 +275,13 @@ const HomeScreen = () => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: spacing.scrollViewBottomPadding,
-        gap: spacing.homescreenGap,
-      }}
-      style={{
-        ...globalStyles.container,
-      }}
+      contentContainerStyle={globalStyles.scrollContainer}
+      style={globalStyles.container}
     >
       {renderHeader()}
       {renderProgressInsight()}
       {renderProgressComponents()}
       {renderArticlesComponent()}
-
     </ScrollView>
   );
 };

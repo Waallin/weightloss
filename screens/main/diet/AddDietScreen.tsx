@@ -88,11 +88,13 @@ const AddDietScreen = () => {
         style={globalStyles.container}
         >
             <ScrollView
-                contentContainerStyle={globalStyles.contentContainer}
+                contentContainerStyle={globalStyles.scrollContainer}
+                style={{
+                    marginTop: spacing.screenMarginTop,
+                }}
             >
                 {renderHeader()}
                 {renderContent()}
-
             </ScrollView>
             <View style={{
                 position: "absolute",

@@ -27,12 +27,7 @@ const PaywallScreen: React.FC = () => {
   return (
     <SafeAreaView style={globalStyles.container}>
       <ScrollView
-        contentContainerStyle={{
-          flexGrow: 1,
-          paddingTop: spacing.xl,
-          paddingBottom: spacing.xxl,
-          justifyContent: "space-between",
-        }}
+        contentContainerStyle={globalStyles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
         <View>
