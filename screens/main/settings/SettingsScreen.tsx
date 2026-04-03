@@ -6,16 +6,20 @@ import SettingsItem from "./components/SettingsItem";
 import Constants from "expo-constants";
 import { colors } from "../../../constants/colors";
 import { textSizes, textStyles } from "../../../constants/texts";
+import { useNavigation } from "@react-navigation/native";
 const SettingsScreen = () => {
+  const navigation = useNavigation();
+  
   const handleDeleteAccount = () => {
     console.log("Delete Account");
   };
 
   const handleProfile = () => {
-    console.log("Profile");
+    navigation.navigate("ProfileScreen");
   };
 
   const handlePreferences = () => {
+    navigation.navigate("PreferencesScreen");
     console.log("Preferences");
   };
 

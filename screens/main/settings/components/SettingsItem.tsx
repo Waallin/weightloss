@@ -1,6 +1,10 @@
 import { Text, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { type ComponentProps } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+
+type MaterialIconName = NonNullable<
+  ComponentProps<typeof MaterialCommunityIcons>["name"]
+>;
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
@@ -14,7 +18,7 @@ const ICON_CONTAINER_SIZE = 48;
 interface SettingsItemProps {
   title: string;
   description: string;
-  icon: string;
+  icon: MaterialIconName;
   onPress: () => void;
   backgroundColor?: string;
   iconColor?: string;
@@ -28,8 +32,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
   backgroundColor,
   iconColor,
 }) => {
-  const iconName =
-    icon ?? ("help-circle-outline" as const);
+  const iconName: MaterialIconName = icon ?? "help-circle-outline";
 
     const handlePress = () => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -55,11 +58,15 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
         width: ICON_CONTAINER_SIZE,
         height: ICON_CONTAINER_SIZE,
         borderRadius: ICON_CONTAINER_SIZE / 2,
-        backgroundColor: "#ECFDF5",
+        backgroundColor: colors.ui.listRowIconBackground,
         alignItems: "center",
         justifyContent: "center",
       }}>
-        <MaterialCommunityIcons name={iconName} size={24} color={iconColor ?? "#22C55E"} />
+        <MaterialCommunityIcons
+          name={iconName}
+          size={24}
+          color={iconColor ?? colors.ui.listRowIconTint}
+        />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text

@@ -12,6 +12,9 @@ export const colors = {
     dotInactive: "#E0DEFF",
     iconContainer: "#F5F3FF",
     cardBorder: "#EDECF5",
+    /** Settings / profile list rows: icon circle + default icon tint (MaterialCommunityIcons) */
+    listRowIconBackground: "#ECFDF5",
+    listRowIconTint: "#22C55E",
     delete: "#EF4444",
     grey: "#F3F4F6",
 
