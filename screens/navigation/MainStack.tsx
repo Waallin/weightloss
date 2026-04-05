@@ -5,7 +5,6 @@ import DietListScreen from "../main/diet/DietListScreen";
 import AddDietScreen from "../main/diet/AddDietScreen";
 import ProfileScreen from "../main/settings/ProfileScreen";
 import PreferencesScreen from "../main/settings/PreferencesScreen";
-import ChangeSettingScreen from "../main/settings/ChangeSettingScreen";
 import LogWeightScreen from "../main/progress/LogWeightScreen";
 
 const Stack = createStackNavigator();

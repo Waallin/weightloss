@@ -66,7 +66,8 @@ const PaywallScreen: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<PaywallPlan>("yearly");
   const navigation = useNavigation();
   const handleCTAPress = () => {
-    console.log("CTA pressed");
+
+    navigation.navigate("AuthScreen");
   };
   const renderImage = () => {
     return (
