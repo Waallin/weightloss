@@ -261,7 +261,7 @@ const HowItWorkScreen: React.FC = () => {
       setActiveIndex(nextIndex);
       return;
     }
-    navigation.navigate("MainStack");
+    navigation.replace("MainStack");
   }, [activeIndex, navigation, sections.length]);
 
   const renderSlide = React.useCallback(
@@ -330,7 +330,7 @@ const HowItWorkScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Begin my plan"
           onPress={() => {
-            navigation.navigate("Paywall");
+            navigation.replace("Paywall");
           }}
         />
       )

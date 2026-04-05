@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View, ScrollView } from "react-native";
+import { Text, View, ScrollView } from "react-native";
 import React from "react";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { MotiView } from "moti";
+import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { fonts } from "../../../constants/fonts";
@@ -52,10 +53,17 @@ const HomeScreen = () => {
   const navigation = useNavigation();
   const renderHeader = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           justifyContent: "center",
-           marginTop: spacing.lg,
+          marginTop: spacing.lg,
         }}
       >
         <Text
@@ -67,18 +75,25 @@ const HomeScreen = () => {
         >
           Your day
         </Text>
-      </View>
+      </MotiView>
     );
   };
 
   const renderProgressComponents = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 160,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           flexDirection: "row",
           flexWrap: "wrap",
           gap: spacing.md,
-          // justifyContent: 'center',
         }}
       >
         <ProgressComponents
@@ -105,7 +120,7 @@ const HomeScreen = () => {
           microcopy="26 left today"
           width="100%"
         />
-      </View>
+      </MotiView>
     );
   };
 
@@ -116,7 +131,15 @@ const HomeScreen = () => {
 
   const renderArticlesComponent = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 220,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           gap: spacing.md,
         }}
@@ -148,13 +171,21 @@ const HomeScreen = () => {
             />
           ))}
         </ScrollView>
-      </View>
+      </MotiView>
     );
   };
 
   const renderProgressInsight = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 100,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           backgroundColor: colors.ui.componentBackground,
           borderRadius: spacing.borderRadius * 1.5,
@@ -238,7 +269,7 @@ const HomeScreen = () => {
             </View>
           </View>
         </View>
-      </View>
+      </MotiView>
     );
   };
 
@@ -295,5 +326,3 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
-
-const styles = StyleSheet.create({});

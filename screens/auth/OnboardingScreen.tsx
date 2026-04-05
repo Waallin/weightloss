@@ -302,7 +302,7 @@ const OnboardingScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Let’s start"
           onPress={() => {
-            navigation.navigate("ProfileDetails");
+            navigation.replace("ProfileDetails");
           }}
         />
       )

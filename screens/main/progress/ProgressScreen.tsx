@@ -1,5 +1,7 @@
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
+import { MotiView } from "moti";
+import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
@@ -7,7 +9,6 @@ import { textSizes } from "../../../constants/texts";
 import CircularProgressGaugeComponent from "../../../components/CircularProgressGaugeComponent";
 import { Calendar } from "react-native-calendars";
 import type { MarkedDates, Theme } from "react-native-calendars/src/types";
-import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -135,7 +136,15 @@ const ProgressScreen = () => {
 
   const renderCalendarComponent = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 100,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           backgroundColor: colors.ui.componentBackground,
           ...globalStyles.shadow,
@@ -246,12 +255,19 @@ const ProgressScreen = () => {
             </Text>
           </View>
         </View>
-      </View>
+      </MotiView>
     );
   };
   const renderCircularProgressGauge = () => {
     return (
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           alignItems: "center",
           justifyContent: "center",
@@ -310,7 +326,7 @@ const ProgressScreen = () => {
             Log weight
           </Text>
         </TouchableOpacity>
-      </View>
+      </MotiView>
     );
   };
   const renderStreaksComponent = () => {

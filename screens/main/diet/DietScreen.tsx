@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import React from "react";
-import { colors } from "../../../constants/colors";
+import { MotiView } from "moti";
+import { ReduceMotion } from "react-native-reanimated";
 import { spacing } from "../../../constants/spacing";
 import { globalStyles } from "../../../constants/globalStyles";
 import { textSizes } from "../../../constants/texts";
@@ -21,7 +22,16 @@ const DietScreen = () => {
 
   const renderFoodItems = () => {
     return (
-      <View>
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 100,
+          reduceMotion: ReduceMotion.Never,
+        }}
+      >
         <Text
           style={{
             fontSize: textSizes.lg,
@@ -61,7 +71,7 @@ const DietScreen = () => {
             onPress={() => handleFoodItemPress("Egg")}
           />
         </View>
-      </View>
+      </MotiView>
     );
   };
 
@@ -79,17 +89,35 @@ const DietScreen = () => {
         style={globalStyles.container}
         contentContainerStyle={globalStyles.scrollContainer}
       >
-        <DietCalorieHeroComponent
-          dateLabel={getFormattedDate(new Date())}
-          eaten={4}
-          burned={12}
-          remaining={3}
-          progressFill={82}
-        />
+        <MotiView
+          from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+          animate={{ opacity: 1, translateY: 0, scale: 1 }}
+          transition={{
+            type: "timing",
+            duration: 450,
+            reduceMotion: ReduceMotion.Never,
+          }}
+        >
+          <DietCalorieHeroComponent
+            dateLabel={getFormattedDate(new Date())}
+            eaten={4}
+            burned={12}
+            remaining={3}
+            progressFill={82}
+          />
+        </MotiView>
         {renderFoodItems()}
       </ScrollView>
 
-      <View
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 220,
+          reduceMotion: ReduceMotion.Never,
+        }}
         style={{
           position: "absolute",
           bottom: 100,
@@ -104,7 +132,7 @@ const DietScreen = () => {
           handleNext={handleNavigateToDietListScreen}
           icon="plus"
         />
-      </View>
+      </MotiView>
     </View>
   );
 };

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Text,
-  View,
   ScrollView,
   Image,
   FlatList,
@@ -18,6 +17,9 @@ import SocialProofItem, {
 import OfferButton from "./components/OfferButton";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { useNavigation } from "@react-navigation/native";
+import * as haptics from "expo-haptics";
+import { MotiText, MotiView } from "moti";
+import { ReduceMotion } from "react-native-reanimated"
 
 const IMAGE_SIZE = 150;
 
@@ -66,39 +68,67 @@ const PaywallScreen: React.FC = () => {
   const [selectedPlan, setSelectedPlan] = useState<PaywallPlan>("yearly");
   const navigation = useNavigation();
   const handleCTAPress = () => {
-
-    navigation.navigate("AuthScreen");
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    navigation.replace("AuthScreen");
   };
   const renderImage = () => {
     return (
-      <View
-        style={[
-          {
-            width: IMAGE_SIZE,
-            height: IMAGE_SIZE,
-            borderRadius: IMAGE_SIZE / 2,
-            backgroundColor: colors.ui.secondaryBackground,
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: spacing.xl,
-            ...globalStyles.shadow,
-            overflow: "hidden",
-            alignSelf: "center",
-          },
-        ]}
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          reduceMotion: ReduceMotion.Never,
+        }}
+        style={{ alignItems: "center" }}
       >
-        <Image
-          source={require("../../assets/mascot/thumbsUp.png")}
-          resizeMode="cover"
-          style={{ width: "100%", height: "100%" }}
-        />
-      </View>
+        <MotiView
+          from={{ opacity: 0, translateY: 14, scale: 0.96 }}
+          animate={{ opacity: 1, translateY: 0, scale: 1 }}
+          transition={{
+            type: "timing",
+            duration: 520,
+            delay: 60,
+            reduceMotion: ReduceMotion.Never,
+          }}
+          style={[
+            {
+              width: IMAGE_SIZE,
+              height: IMAGE_SIZE,
+              borderRadius: IMAGE_SIZE / 2,
+              backgroundColor: colors.ui.secondaryBackground,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: spacing.xl,
+              ...globalStyles.shadow,
+              overflow: "hidden",
+              alignSelf: "center",
+            },
+          ]}
+        >
+          <Image
+            source={require("../../assets/mascot/thumbsUp.png")}
+            resizeMode="cover"
+            style={{ width: "100%", height: "100%" }}
+          />
+        </MotiView>
+      </MotiView>
     );
   };
 
   const renderSocialProof = () => {
     return (
-      <View>
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 100,
+          reduceMotion: ReduceMotion.Never,
+        }}
+      >
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -107,13 +137,26 @@ const PaywallScreen: React.FC = () => {
           contentContainerStyle={{ paddingRight: spacing.md }}
           renderItem={renderSocialProofItem}
         />
-      </View>
+      </MotiView>
     );
   };
 
+  const handleOfferPress = (plan: PaywallPlan) => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    setSelectedPlan(plan);
+  };
   const renderOffers = () => {
     return (
-      <View>
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 160,
+          reduceMotion: ReduceMotion.Never,
+        }}
+      >
         <Text
           style={{
             fontFamily: fonts.primary.bold,
@@ -134,7 +177,7 @@ const PaywallScreen: React.FC = () => {
           trialBadge={paywallCopy.yearlyTrialBadge}
           premiumSelected
           selected={selectedPlan === "yearly"}
-          onPress={() => setSelectedPlan("yearly")}
+          onPress={() => handleOfferPress("yearly")}
         />
         <OfferButton
           title={paywallCopy.weeklyLabel}
@@ -142,39 +185,54 @@ const PaywallScreen: React.FC = () => {
           caption={paywallCopy.weeklySubline}
           footnote={paywallCopy.weeklyAnnualizedHint}
           selected={selectedPlan === "weekly"}
-          onPress={() => setSelectedPlan("weekly")}
+          onPress={() => handleOfferPress("weekly")}
         />
-      </View>
+      </MotiView>
     );
   };
 
   const renderCTA = () => {
     return (
-      <View>
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 220,
+          reduceMotion: ReduceMotion.Never,
+        }}
+      >
         <PrimaryButtonComponent
           color={colors.ui.white}
           backgroundColor={selectedPlan === "yearly" ? "#17AD7C" : "#16B97B"}
           title="Start free trial"
           onPress={handleCTAPress}
         />
-      </View>
+      </MotiView>
     );
   };
 
   const renderFootnote = () => {
     return (
-      <View>
-        <Text
-          style={{
-            fontFamily: fonts.primary.regular,
-            fontSize: textSizes.sm,
-            color: colors.text.secondary,
-            textAlign: "center",
-          }}
-        >
-          {paywallCopy.trialFootnote}
-        </Text>
-      </View>
+      <MotiText
+        from={{ opacity: 0, translateY: 10 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{
+          type: "timing",
+          duration: 380,
+          delay: 280,
+          reduceMotion: ReduceMotion.Never,
+        }}
+        style={{
+          fontFamily: fonts.primary.regular,
+          fontSize: textSizes.sm,
+          color: colors.text.secondary,
+          textAlign: "center",
+        }}
+      >
+        {paywallCopy.trialFootnote}
+      </MotiText>
     );
   };
 
