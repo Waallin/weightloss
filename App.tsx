@@ -14,6 +14,7 @@ import { colors } from "./constants/colors";
 import SocialProof from "./screens/auth/SocialProof";
 import PaywallScreen from "./screens/auth/PaywallScreen";
 import AuthScreen from "./screens/auth/AuthScreen";
+import PermissionScreen from "./screens/auth/PermissionScreen";
 
 export default function App() {
   const { isVisible, message } = useToastStore();
@@ -45,7 +46,7 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.ui.background}}>
       <SafeAreaView />
       <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <AuthScreen />}
+        {isAuthenticated ? <MainStack /> : <AuthNavigator />}
       </NavigationContainer>
     </View>
   );

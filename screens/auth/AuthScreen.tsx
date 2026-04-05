@@ -6,13 +6,14 @@ import { spacing } from '../../constants/spacing';
 import { Image, ScrollView } from 'react-native';
 import PrimaryButtonComponent from '../../components/PrimaryButtonComponent';
 import { textSizes, textStyles } from '../../constants/texts';
+import { useNavigation } from '@react-navigation/native';
 
 const IMAGE_SIZE = 250;
 
 const AuthScreen = () => {
-
+  const navigation = useNavigation();
   const handleCTAPress = () => {
-    console.log("CTA pressed");
+    navigation.navigate("PermissionScreen");
   };
 
   const renderImage = () => {
