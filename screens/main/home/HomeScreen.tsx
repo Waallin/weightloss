@@ -10,6 +10,7 @@ import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
@@ -48,6 +49,7 @@ const smallWins = [
 ];
 
 const HomeScreen = () => {
+  const navigation = useNavigation();
   const renderHeader = () => {
     return (
       <View
@@ -107,6 +109,11 @@ const HomeScreen = () => {
     );
   };
 
+  const handleArticlePress = (article: any) => {
+
+    navigation.navigate("ArticleScreen", { article });
+  };
+
   const renderArticlesComponent = () => {
     return (
       <View
@@ -131,7 +138,8 @@ const HomeScreen = () => {
           }}
         >
           {articles.map((article) => (
-            <ArticlesComponent
+            <ArticlesComponent  
+              onPress={() => handleArticlePress(article)}
               key={article.id}
               title={article.title}
               description={article.description}

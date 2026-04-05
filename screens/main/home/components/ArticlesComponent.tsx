@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../../constants/spacing";
@@ -17,13 +17,16 @@ const ArticlesComponent = ({
   title,
   description,
   color,
+  onPress,
 }: {
   title: string;
   description: string;
   color: string;
+  onPress: () => void;
 }) => {
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
       style={{
         width: CARD_WIDTH,
         minHeight: CARD_MIN_HEIGHT,
@@ -89,7 +92,7 @@ const ArticlesComponent = ({
           color={colors.text.primary}
         />
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
