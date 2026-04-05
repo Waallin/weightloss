@@ -4,6 +4,17 @@ export const colors = {
     background: "#F6F6F5",
     componentBackground: "white",
     primary: "#16B97B",
+    /** Paywall yearly plan — very subtle diagonal gradient when selected */
+    paywallYearlySelectedGradientStart: "#1FC593",
+    paywallYearlySelectedGradientEnd: "#119E6E",
+    /** Paywall “Try it free…” strip — selected: brighter / more filled gradient */
+    paywallTrialStripGradientStart: "rgba(255,255,255,0.58)",
+    paywallTrialStripGradientMid: "rgba(255,255,255,0.38)",
+    paywallTrialStripGradientEnd: "rgba(255,255,255,0.26)",
+    paywallTrialStripBorderSelected: "rgba(255,255,255,0.55)",
+    /** Unselected yearly card: subtle mint fill + border */
+    paywallTrialStripUnselectedFill: "rgba(22, 185, 123, 0.14)",
+    paywallTrialStripBorderUnselected: "rgba(22, 185, 123, 0.32)",
     /** Diet hero summary (gradient card) */
     dietHeroGradientStart: "#3DD68C",
     dietHeroGradientEnd: "#0A8F5E",

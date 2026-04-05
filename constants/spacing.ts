@@ -15,4 +15,6 @@ export const spacing = {
   componentGap: 16,
   homescreenGap: 24,
   screenMarginTop: 25,
+  /** Paywall horizontal testimonial cards */
+  paywallSocialProofCardWidth: 280,
 };

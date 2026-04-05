@@ -330,7 +330,7 @@ const HowItWorkScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Begin my plan"
           onPress={() => {
-            navigation.navigate("MainStack");
+            navigation.navigate("Paywall");
           }}
         />
       )

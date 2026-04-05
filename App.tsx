@@ -12,6 +12,7 @@ import 'react-native-reanimated'
 import 'react-native-gesture-handler'
 import { colors } from "./constants/colors";
 import SocialProof from "./screens/auth/SocialProof";
+import PaywallScreen from "./screens/auth/PaywallScreen";
 
 export default function App() {
   const { isVisible, message } = useToastStore();
@@ -43,7 +44,7 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.ui.background}}>
       <SafeAreaView />
       <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <MainStack />}
+        {isAuthenticated ? <MainStack /> : <PaywallScreen />}
       </NavigationContainer>
     </View>
   );

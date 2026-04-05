@@ -115,3 +115,60 @@ export const authCopy = {
         },
     ],
 } as const;
+
+/** Paywall: static SEK display until Store prices are wired */
+export const paywallCopy = {
+    title: "See real progress in 7 days",
+    subtitle:
+        "Build simple habits and finally stay consistent—without overthinking it.",
+
+    benefits: [
+        "Track your daily progress",
+        "Stay within your points",
+        "See your weight trend over time",
+    ],
+
+    socialProofRating: "4.9",
+    socialProofRatingMax: "5",
+    socialProofHeadline: "Trusted by people like you",
+    socialProofMembers: "Thousands are already seeing results",
+
+    testimonialQuote:
+        "For the first time ever, I actually stuck with it. Seeing my progress each day kept me going.",
+    testimonialAttribution: "— Anna, 23",
+
+    yearlyBadge: "Most popular",
+    yearlyLabel: "Yearly",
+    yearlyPrice: "349 kr",
+    yearlyPeriod: "/ year",
+
+    // 🔥 viktig ändring
+    yearlyPerWeekEquivalent: "Less than 1 kr/day",
+    yearlyPerWeekSubline: "Save 89% vs weekly",
+
+    // 🔥 bättre framing
+    yearlyTrialBadge: "Try it free for 3 days",
+
+    weeklyLabel: "Weekly",
+    weeklyPrice: "59 kr",
+    weeklyPeriod: "/ week",
+
+    // 🔥 mer neutral (inte för säljig)
+    weeklySubline: "Billed weekly",
+    weeklyAnnualizedHint: "", // ← ta bort denna helt (den skrämmer bort)
+
+    // 🔥 viktig CTA förbättring
+    ctaYearlyTrial: "Start free trial",
+    ctaWeekly: "Continue with weekly",
+
+    // 🔥 mycket viktig trust-text
+    trialFootnote:
+        "No payment today · Cancel anytime",
+
+    weeklyFootnote: "Cancel anytime",
+
+    restorePurchases: "Restore purchases",
+
+    // 🔥 mer emotion
+    choosePlanTitle: "Start seeing results today",
+} as const;
