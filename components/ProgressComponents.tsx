@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { colors } from "../constants/colors";
 import { fonts } from "../constants/fonts";
@@ -22,6 +22,7 @@ const ProgressComponents = ({
   goal,
   microcopy,
   width,
+  onPress,
 }: {
   title: string;
   icon: string;
@@ -29,12 +30,15 @@ const ProgressComponents = ({
   goal: number;
   microcopy?: string;
   width?: string;
+  onPress: () => void;
 }) => {
   const progressRatio =
     goal > 0 ? Math.min(1, Math.max(0, number / goal)) : 0;
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.8}
       style={{
         backgroundColor: colors.ui.componentBackground,
         borderWidth: 0,
@@ -128,7 +132,7 @@ const ProgressComponents = ({
           {microcopy}
         </Text>
       ) : null}
-    </View>
+    </TouchableOpacity>
   );
 };
 

@@ -11,6 +11,7 @@ import { Calendar } from "react-native-calendars";
 import type { MarkedDates, Theme } from "react-native-calendars/src/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
+import * as haptics from "expo-haptics";
 
 /** Mock: dates (YYYY-MM-DD) when today's goal was completed */
 const MOCK_GOAL_COMPLETED_DATES = [
@@ -131,6 +132,7 @@ const ProgressScreen = () => {
   );
 
   const handleLogWeightPress = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("LogWeightScreen");
   };
 
@@ -440,7 +442,6 @@ const ProgressScreen = () => {
       }}
     >
       {renderCircularProgressGauge()}
-
       {renderCalendarComponent()}
     </ScrollView>
   );

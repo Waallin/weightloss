@@ -12,6 +12,7 @@ import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import * as haptics from "expo-haptics";
 
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
@@ -79,6 +80,10 @@ const HomeScreen = () => {
     );
   };
 
+  const handleProgressComponentPress = (component: string) => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+  };
+
   const renderProgressComponents = () => {
     return (
       <MotiView
@@ -103,6 +108,7 @@ const HomeScreen = () => {
           goal={10}
           microcopy="Keep sipping"
           width="47%"
+          onPress={() => handleProgressComponentPress("Water")}
         />
         <ProgressComponents
           title="Steps"
@@ -111,6 +117,7 @@ const HomeScreen = () => {
           goal={10000}
           microcopy="You're on track"
           width="47%"
+          onPress={() => handleProgressComponentPress("Steps")}
         />
         <ProgressComponents
           title="Points"
@@ -119,13 +126,14 @@ const HomeScreen = () => {
           goal={31}
           microcopy="26 left today"
           width="100%"
+          onPress={() => handleProgressComponentPress("Points")}
         />
       </MotiView>
     );
   };
 
   const handleArticlePress = (article: any) => {
-
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("ArticleScreen", { article });
   };
 

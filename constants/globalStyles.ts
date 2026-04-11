@@ -13,14 +13,11 @@ export const globalStyles = StyleSheet.create({
   },
 
   scrollContainer: {
-    flex: 1,
-    paddingBottom: spacing.scrollViewBottomPadding,
+    paddingBottom: 150,
     gap: spacing.componentGap,
     marginTop: spacing.screenMarginTop,
   },
   
-
-
   shadow: {
     shadowColor: colors.ui.shadow,
     shadowOffset: { width: 0, height: 2 },

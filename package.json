@@ -19,6 +19,7 @@
     "expo-haptics": "^14.1.4",
     "expo-linear-gradient": "~14.1.5",
     "expo-status-bar": "~2.2.3",
+    "firebase": "^12.12.0",
     "install": "^0.13.0",
     "moti": "^0.30.0",
     "npx": "^10.2.2",

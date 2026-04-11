@@ -13,7 +13,7 @@ import Animated, {
   withTiming,
   withSequence,
 } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
+import * as haptics from "expo-haptics";
 import { useEffect } from "react";
 import HomeScreen from "../main/home/HomeScreen";
 import SettingsScreen from "../main/settings/SettingsScreen";
@@ -53,7 +53,6 @@ const AnimatedTabIcon = ({
     pillScale.value = withSpring(focused ? 1 : 0.86, SPRING_PREMIUM);
 
     if (focused) {
-      void Haptics.selectionAsync();
       scale.value = withSequence(
         withSpring(0.88, SPRING_BOUNCE),
         withSpring(1.06, SPRING_BOUNCE),
@@ -106,6 +105,11 @@ const MainNavigator = () => {
 
   return (
     <Tab.Navigator
+      screenListeners={{
+        tabPress: () => {
+          void haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+        },
+      }}
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
