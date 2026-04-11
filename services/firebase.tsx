@@ -1,36 +1,19 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // Importera Auth-modulen
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-import { getStorage } from "firebase/storage";
-// tysta varningar
-import { setLogLevel } from "firebase/app";
-// Ange önskad loggnivå
-setLogLevel("silent"); // Tysta loggnivån
+import { doc, getDoc } from "firebase/firestore";
+import { database } from "./firebaseConfig";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDfh94gHvxpHWlMq-8yzjp-2dfd-nXibjM",
-  authDomain: "kudoo-36de9.firebaseapp.com",
-  projectId: "kudoo-36de9",
-  storageBucket: "kudoo-36de9.firebasestorage.app",
-  messagingSenderId: "10789844466",
-  appId: "1:10789844466:web:ca6c4e916b5013686b276b",
-  measurementId: "G-EXHLTWFB7S",
+
+export const getDocument = async (collection: string, id: string) => {
+  try {
+    const docRef = doc(database, collection, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log(`No such document in ${collection} with id ${id}!`);
+      return null;
+    }
+  } catch (error) {
+    console.log(`Error getting document in ${collection} with id ${id}:`, error);
+    return null;
+  }
 };
-
-// Initialisera Firebase-appen
-const firebaseApp = initializeApp(firebaseConfig);
-
-// Hämta Firestore-databasen
-export const database = getFirestore(firebaseApp);
-
-// Hämta Storage-databasen
-export const storage = getStorage(firebaseApp);
-
-// Hämta Auth-instansen
-export const auth = getAuth(firebaseApp);
-
-

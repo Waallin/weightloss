@@ -11,16 +11,20 @@ import CustomSplashScreen from "./CustomSplashScreen";
 import 'react-native-reanimated'
 import 'react-native-gesture-handler'
 import { colors } from "./constants/colors";
+import { getDocument } from "./services/firebase";
+import useConfigStore from "./stores/useConfigStore";
 
 export default function App() {
   const { isVisible, message } = useToastStore();
   const { setUser } = useUserStore();
+  const { setConfig } = useConfigStore();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     // checkAuthStatus();
+    handleConfig();
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -30,6 +34,13 @@ export default function App() {
 
   const handleSplashFinish = () => {
     setShowSplash(false);
+  };
+
+  const handleConfig = async () => {
+    const config = await getDocument("config", "app");
+    if (config) {
+      setConfig(config);
+    }
   };
 
   // Visa splash screen tills auth är kollad
