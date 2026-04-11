@@ -1,5 +1,5 @@
-import React from "react";
-import { Image, ScrollView, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { Alert, Image, ScrollView, Text, View } from "react-native";
 import { MotiText, MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../constants/globalStyles";
@@ -9,14 +9,49 @@ import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { textSizes, textStyles } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
-
+import * as AppleAuthentication from "expo-apple-authentication";
+import { signInWithCredential, OAuthProvider } from "firebase/auth";
+import { auth } from "../../services/firebaseConfig";
 const IMAGE_SIZE = 250;
 
 const AuthScreen = () => {
+  const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
   const navigation = useNavigation();
-  const handleCTAPress = () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light); 
-    navigation.replace("PermissionScreen");
+
+  useEffect(() => {
+    if (appleToken) {
+
+      const provider = new OAuthProvider("apple.com");
+      const credential = provider.credential({ idToken: appleToken as string });
+
+      signInWithCredential(auth, credential)
+        .then((result) => console.log("Signed in with Apple:", result.user))
+        .catch((error) => {
+          console.log("Error signing in with Apple:", error);
+          Alert.alert("Fel", "Kunde inte verifiera Apple-inloggningen");
+        });
+    }
+  }, [appleToken]);
+
+  const handleAppleLogin = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      if (credential.identityToken) {
+        setAppleToken(credential.identityToken);
+      } else {
+        setAppleToken(undefined);
+      }
+    } catch (e: any) {
+      if (e.code === 'ERR_REQUEST_CANCELED') {
+      } else {
+        Alert.alert("Error", "Failed to verify Apple login");
+      } 
+    }
   };
 
   const renderImage = () => {
@@ -29,7 +64,7 @@ const AuthScreen = () => {
           duration: 450,
           reduceMotion: ReduceMotion.Never,
         }}
-        style={{ alignItems: "center", justifyContent: "center" }}
+        style={{ alignItems: "center", justifyContent: "center"}}
       >
         <MotiView
           from={{ opacity: 0, translateY: 14, scale: 0.96 }}
@@ -49,7 +84,7 @@ const AuthScreen = () => {
               alignItems: "center",
               justifyContent: "center",
               marginBottom: spacing.xl,
-              ...globalStyles.shadow,
+              ...globalStyles.shadow,           
               overflow: "hidden",
               alignSelf: "center",
             },
@@ -125,30 +160,33 @@ const AuthScreen = () => {
           delay: 220,
           reduceMotion: ReduceMotion.Never,
         }}
+        style={{ width: "100%", backgroundColor: "blue", marginBottom: 100}}
       >
-        <PrimaryButtonComponent
-          color={colors.ui.white}
-          backgroundColor={"black"}
-          title="Log in with apple"
-          onPress={handleCTAPress}
-        />
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={
+                AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
+              }
+              buttonStyle={
+                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              }
+              cornerRadius={10}
+              style={{ width: "100%", height: 50 }}
+              onPress={handleAppleLogin}
+            />
       </MotiView>
     );
   };
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        ...globalStyles.scrollContainer,
-        justifyContent: "center",
-      }}
+    <View
       style={globalStyles.container}
     >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center"}}>
       {renderImage()}
       {renderText()}
+      </View>
       {renderCTA()}
-    </ScrollView>
+    </View>
   );
 };
 

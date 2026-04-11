@@ -12,10 +12,13 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [],
+    "plugins": [
+      "expo-apple-authentication"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.devember.kudoo",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select a profile picture.",
         "NSCameraUsageDescription": "This app needs access to your camera to take a new profile picture.",
