@@ -40,9 +40,36 @@ export const colors = {
 
     gradientStart: "#FFE8F2",
     gradientEnd: "#E5F0FF",
+
+    /** Progress card — claim overlay dim */
+    progressClaimOverlay: "rgba(59, 53, 81, 0.52)",
+    /** Progress card — goal reached (text / bar on mint gradient) */
+    progressCompleteTextMuted: "rgba(255,255,255,0.9)",
+    progressCompleteIconTint: "#FFFFFF",
+    progressCompleteIconBackground: "rgba(255,255,255,0.28)",
+    progressCompleteBarTrack: "rgba(255,255,255,0.38)",
+    progressCompleteBarFill: "#FFFFFF",
   },
   text: {
     primary: "#3B3551",
     secondary: "#969598",
-  }
+  },
+  /** Celebration confetti — vivid, readable on light UI */
+  confetti: {
+    coral: "#FF6B6B",
+    sunshine: "#FFD93D",
+    mint: "#3DD68C",
+    sky: "#4D96FF",
+    violet: "#9B59B6",
+    rose: "#FF8CC8",
+  },
 };
+
+export const confettiPalette: string[] = [
+  colors.confetti.coral,
+  colors.confetti.sunshine,
+  colors.confetti.mint,
+  colors.confetti.sky,
+  colors.confetti.violet,
+  colors.confetti.rose,
+];

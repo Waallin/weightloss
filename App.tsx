@@ -1,4 +1,4 @@
-import { SafeAreaView, View } from "react-native";
+import { SafeAreaView, View, Text, TouchableOpacity } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
 import { useEffect, useState } from "react";
 import globalApi from "./services/api";
@@ -13,11 +13,14 @@ import 'react-native-gesture-handler'
 import { colors } from "./constants/colors";
 import { getDocument } from "./services/firebase";
 import useConfigStore from "./stores/useConfigStore";
-
+import ConfettiOverlay from "./components/ConfettiOverlay";
+import useConfettiStore from "./stores/useConfettiStore";
 export default function App() {
   const { isVisible, message } = useToastStore();
   const { setUser } = useUserStore();
   const { setConfig } = useConfigStore();
+  const { visibleConfetti, confettiNonce, setVisibleConfetti } =
+    useConfettiStore();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
@@ -30,7 +33,6 @@ export default function App() {
     }, 3000);
   }, []);
 
-  const checkAuthStatus = async () => {};
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -42,6 +44,7 @@ export default function App() {
       setConfig(config);
     }
   };
+  
 
   // Visa splash screen tills auth är kollad
   if (showSplash) {
@@ -50,11 +53,18 @@ export default function App() {
 
   // Navigera direkt till rätt destination
   return (
-    <View style={{ flex: 1, backgroundColor: colors.ui.background}}>
-      <SafeAreaView />
-      <NavigationContainer>
-        {isAuthenticated ? <MainStack /> : <AuthNavigator />}
-      </NavigationContainer>
+    <View style={{ flex: 1 }}>
+      <ConfettiOverlay
+        visible={visibleConfetti}
+        burstNonce={confettiNonce}
+        onComplete={() => setVisibleConfetti(false)}
+      />
+      <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
+        <SafeAreaView />
+        <NavigationContainer>
+          {isAuthenticated ? <MainStack /> : <MainStack />}
+        </NavigationContainer>
+      </View>
     </View>
   );
 }

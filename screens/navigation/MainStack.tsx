@@ -7,8 +7,9 @@ import ProfileScreen from "../main/settings/ProfileScreen";
 import PreferencesScreen from "../main/settings/PreferencesScreen";
 import LogWeightScreen from "../main/progress/LogWeightScreen";
 import ArticleScreen from "../main/home/ArticleScreen";
+import { RootStackParamList } from "./types";
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 export const MainStack = () => {
   return (

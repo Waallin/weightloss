@@ -54,6 +54,10 @@
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>This app needs access to your camera to take a new profile picture.</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to access your health data.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>Allow $(PRODUCT_NAME) to save health data.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>This app needs access to your microphone to capture photos with sound.</string>
     <key>NSPhotoLibraryUsageDescription</key>
@@ -63,6 +67,7 @@
     <key>UIRequiredDeviceCapabilities</key>
     <array>
       <string>arm64</string>
+      <string>healthkit</string>
     </array>
     <key>UIRequiresFullScreen</key>
     <false/>
@@ -84,5 +89,9 @@
     <string>Light</string>
     <key>UIViewControllerBasedStatusBarAppearance</key>
     <false/>
+    <key>healthSharePermission</key>
+    <string>This app needs access to your health data to share your activity.</string>
+    <key>healthUpdatePermission</key>
+    <string>This app needs access to your health data to update your activity.</string>
   </dict>
 </plist>
