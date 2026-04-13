@@ -1,5 +1,5 @@
 import { Text, View, ScrollView } from "react-native";
-import React from "react";
+import React, { useCallback, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -11,9 +11,16 @@ import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
-
+import useConfettiStore from "../../../stores/useConfettiStore";
+import {
+  PermissionStatus,
+  useHealthKitPermissions,
+  useTodaySteps,
+} from "../../../services/healthkit";
+import { RootStackParamList } from "../../navigation/types";
+import ConfettiOverlay from "../../../components/ConfettiOverlay";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
 const articles = [
@@ -51,7 +58,48 @@ const smallWins = [
 ];
 
 const HomeScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { status, requestPermission } = useHealthKitPermissions();
+  const todaySteps = useTodaySteps();
+  const { setVisibleConfetti } = useConfettiStore();
+  const [stepsDone, setStepsDone] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      if (status?.status === PermissionStatus.DENIED && status.canAskAgain === false) {
+        return;
+      }
+      void requestPermission();
+    }, [requestPermission, status?.status, status?.canAskAgain])
+  );
+
+  const returnStepsMicroCopy = () => {
+    const steps = todaySteps;
+  
+    if (steps >= 10000) {
+      return "10k done! Congratulations";
+    } else if (steps >= 9000) {
+      return "So close. Just a little push left";
+    } else if (steps >= 8000) {
+      return "Almost there. Keep moving";
+    } else if (steps >= 7000) {
+      return "Great pace. You're getting close";
+    } else if (steps >= 6000) {
+      return "Nice work. Keep it going";
+    } else if (steps >= 5000) {
+      return "Halfway there. Stay consistent";
+    } else if (steps >= 4000) {
+      return "Good momentum. Keep walking";
+    } else if (steps >= 3000) {
+      return "You're off to a solid start";
+    } else if (steps >= 2000) {
+      return "Nice start. Let's build on it";
+    } else if (steps >= 1000) {
+      return "Good start. Keep moving";
+    } else {
+      return "Let’s get started today";
+    }
+  };
+
   const renderHeader = () => {
     return (
       <MotiView
@@ -78,10 +126,23 @@ const HomeScreen = () => {
         </Text>
       </MotiView>
     );
-  };
+  }
+
+
+
 
   const handleProgressComponentPress = (component: string) => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handle10kSteps = () => {
+    setVisibleConfetti(true);
+  };
+
+  const handleStepsProgress = () => {
+    if (todaySteps >= 10000) {
+      setStepsDone(true);
+    }
   };
 
   const renderProgressComponents = () => {
@@ -113,11 +174,12 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Steps"
           icon="walk"
-          number={2500}
+          number={todaySteps}
           goal={10000}
-          microcopy="You're on track"
+          microcopy={returnStepsMicroCopy()}
           width="47%"
-          onPress={() => handleProgressComponentPress("Steps")}
+          onPress={() => handle10kSteps()}
+          status={true}
         />
         <ProgressComponents
           title="Points"
@@ -169,7 +231,7 @@ const HomeScreen = () => {
           }}
         >
           {articles.map((article) => (
-            <ArticlesComponent  
+            <ArticlesComponent
               onPress={() => handleArticlePress(article)}
               key={article.id}
               title={article.title}
@@ -320,6 +382,7 @@ const HomeScreen = () => {
   };
 
   return (
+
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={globalStyles.scrollContainer}

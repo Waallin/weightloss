@@ -12,9 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-      "expo-apple-authentication"
-    ],
+    "plugins": ["expo-apple-authentication", "apple-health"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.devember.kudoo",
@@ -22,7 +20,10 @@
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select a profile picture.",
         "NSCameraUsageDescription": "This app needs access to your camera to take a new profile picture.",
-        "NSMicrophoneUsageDescription": "This app needs access to your microphone to capture photos with sound."
+        "NSMicrophoneUsageDescription": "This app needs access to your microphone to capture photos with sound.",
+        "healthSharePermission": "This app needs access to your health data to share your activity.",
+        "healthUpdatePermission": "This app needs access to your health data to update your activity.",
+        "NSHealthUpdateUsageDescription": "This app needs access to your health data to update your activity."
       }
     },
     "android": {
@@ -32,9 +33,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.devember.kudoo",
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ]
+      "permissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

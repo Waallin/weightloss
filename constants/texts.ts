@@ -62,6 +62,12 @@ export const textStyles = {
     },
 };
 
+export const progressCardCopy = {
+  goalComplete: "Goal reached",
+  claim: "Claim",
+  claimHint: "Tap to claim your reward",
+} as const;
+
 export const dietLabels = {
     gramsUnit: "g",
     kudos: "Points",
