@@ -1,5 +1,5 @@
 import { Text, View, ScrollView } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -60,9 +60,13 @@ const smallWins = [
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { status, requestPermission } = useHealthKitPermissions();
-  const todaySteps = useTodaySteps();
+  const [todaySteps, setTodaySteps] = useState(0);
   const { setVisibleConfetti } = useConfettiStore();
-  const [stepsDone, setStepsDone] = useState(false);
+  const [claimStepsReward, setClaimStepsReward] = useState(false);
+  const [waterCount, setWaterCount] = useState(0);
+
+  const [overallProgress, setOverallProgress] = useState(0);
+
   useFocusEffect(
     useCallback(() => {
       if (status?.status === PermissionStatus.DENIED && status.canAskAgain === false) {
@@ -71,6 +75,12 @@ const HomeScreen = () => {
       void requestPermission();
     }, [requestPermission, status?.status, status?.canAskAgain])
   );
+
+  useEffect(() => {
+    if (todaySteps > 9999 && todaySteps < 10200) {
+      setClaimStepsReward(true);
+    }
+  }, [todaySteps]);
 
   const returnStepsMicroCopy = () => {
     const steps = todaySteps;
@@ -97,6 +107,26 @@ const HomeScreen = () => {
       return "Good start. Keep moving";
     } else {
       return "Let’s get started today";
+    }
+  };
+
+  const returnWaterMicroCopy = () => {
+    const water = waterCount;
+  
+    if (water >= 10) {
+      return "Hydration goal reached ";
+    } else if (water >= 8) {
+      return "Almost there. Keep sipping";
+    } else if (water >= 6) {
+      return "Great job. You're doing well";
+    } else if (water >= 4) {
+      return "Nice progress. Keep it up";
+    } else if (water >= 2) {
+      return "Good start. Stay hydrated";
+    } else if (water >= 1) {
+      return "Nice start ";
+    } else {
+      return "Let’s get your first glass in";
     }
   };
 
@@ -128,20 +158,32 @@ const HomeScreen = () => {
     );
   }
 
-
-
-
   const handleProgressComponentPress = (component: string) => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
   };
 
   const handle10kSteps = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
+    setClaimStepsReward(false);
+    setOverallProgress(overallProgress + 1);
     setVisibleConfetti(true);
   };
 
-  const handleStepsProgress = () => {
-    if (todaySteps >= 10000) {
-      setStepsDone(true);
+  const handleAddSteps = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
+    setTodaySteps(todaySteps + 500);
+    if (todaySteps == 4999) {
+      setOverallProgress(overallProgress + 1);
+      setVisibleConfetti(true);
+    }
+  };
+
+  const handleAddWater = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
+    setWaterCount(waterCount + 1);
+    if (waterCount == 9) {
+      setOverallProgress(overallProgress + 1);
+      setVisibleConfetti(true);
     }
   };
 
@@ -165,21 +207,22 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Water"
           icon="water"
-          number={4}
+          number={waterCount}
           goal={10}
-          microcopy="Keep sipping"
+          microcopy={returnWaterMicroCopy()}
           width="47%"
-          onPress={() => handleProgressComponentPress("Water")}
+          onPress={() => handleAddWater()}
         />
         <ProgressComponents
           title="Steps"
           icon="walk"
           number={todaySteps}
           goal={10000}
+          onPress={() => handleAddSteps()}
           microcopy={returnStepsMicroCopy()}
           width="47%"
-          onPress={() => handle10kSteps()}
-          status={true}
+          claimRewardPress={() => handle10kSteps()}
+          claimReward={claimStepsReward}
         />
         <ProgressComponents
           title="Points"
@@ -188,7 +231,8 @@ const HomeScreen = () => {
           goal={31}
           microcopy="26 left today"
           width="100%"
-          onPress={() => handleProgressComponentPress("Points")}
+          claimRewardPress={() => handleProgressComponentPress("Points")}
+          
         />
       </MotiView>
     );
@@ -316,9 +360,9 @@ const HomeScreen = () => {
                 color: colors.text.primary,
               }}
             >
-              2 of 3 done 👏
+              {overallProgress} of 3 done 👏
             </Text>
-            <Text style={{ ...textStyles.listItemEmphasis }}>1 more to go</Text>
+            <Text style={{ ...textStyles.listItemEmphasis }}>{3 - overallProgress} more to go</Text>
             <View
               style={{
                 height: 6,
@@ -330,7 +374,7 @@ const HomeScreen = () => {
             >
               <View
                 style={{
-                  width: "66.666%",
+                  width: `${(overallProgress / 3) * 100}%`,
                   height: "100%",
                   backgroundColor: colors.ui.primary,
                   borderRadius: 3,
