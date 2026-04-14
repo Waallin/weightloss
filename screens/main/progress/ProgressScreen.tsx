@@ -12,6 +12,7 @@ import type { MarkedDates, Theme } from "react-native-calendars/src/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
+import useUserStore from "../../../stores/useUserStore";
 
 /** Mock: dates (YYYY-MM-DD) when today's goal was completed */
 const MOCK_GOAL_COMPLETED_DATES = [
@@ -126,6 +127,43 @@ const buildProgressCalendarMarkedDates = (todayYmd: string): MarkedDates => {
 const ProgressScreen = () => {
   const todayYmd = useMemo(() => formatLocalYmd(new Date()), []);
   const navigation = useNavigation();
+  const { user } = useUserStore();
+  const weightLeftToGoal = useMemo(() => {
+    return Math.abs(user?.goalWeight - user?.startWeight);
+  }, [user?.goalWeight, user?.startWeight]);
+
+  const weightLost = useMemo(() => {
+    return user?.startWeight - user?.currentWeight || 0;
+  }, [user?.currentWeight, user?.goalWeight]);
+
+  const weightLostPercentage = useMemo(() => {
+    return Math.round(weightLost / weightLeftToGoal * 100);
+  }, [weightLost, weightLeftToGoal]);
+
+  const returnWeightMicroCopy = () => {
+    if (weightLostPercentage >= 95) {
+      return "So close. Finish strong 🏁";
+    } else if (weightLostPercentage >= 85) {
+      return "Final stretch ✨";
+    } else if (weightLostPercentage >= 70) {
+      return "Amazing progress 🚀";
+    } else if (weightLostPercentage >= 50) {
+      return "Halfway there 🎯";
+    } else if (weightLostPercentage >= 35) {
+      return "Great progress 💪";
+    } else if (weightLostPercentage >= 25) {
+      return "Keep it going";
+    } else if (weightLostPercentage >= 15) {
+      return "Nice momentum";
+    } else if (weightLostPercentage >= 10) {
+      return "Good start 👏";
+    } else if (weightLostPercentage > 0) {
+      return "You're on your way";
+    } else {
+      return "Let’s get started 💪";
+    }
+  };
+
   const calendarMarkedDates = useMemo(
     () => buildProgressCalendarMarkedDates(todayYmd),
     [todayYmd],
@@ -281,7 +319,7 @@ const ProgressScreen = () => {
         }}
       >
         <CircularProgressGaugeComponent
-          fill={50}
+          fill={weightLostPercentage}
           tintColor={colors.ui.primary}
           backgroundColor={colors.ui.primarySoft}
         />
@@ -293,12 +331,12 @@ const ProgressScreen = () => {
           }}
         >
           <Text style={{ fontSize: textSizes.lg, fontWeight: "600" }}>
-            Halfway to your goal weight! 🎯
+            {returnWeightMicroCopy()}
           </Text>
           <Text
             style={{ fontSize: textSizes.sm, color: colors.text.secondary }}
           >
-            4 / 8 kg completed
+            {weightLost} / {weightLeftToGoal} kg completed
           </Text>
         </View>
         <TouchableOpacity
@@ -331,6 +369,7 @@ const ProgressScreen = () => {
       </MotiView>
     );
   };
+
   const renderStreaksComponent = () => {
     return (
       <View>

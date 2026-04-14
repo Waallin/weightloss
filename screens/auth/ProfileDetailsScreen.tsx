@@ -56,7 +56,7 @@ const ProfileDetailsScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>()
     const { user,setUser } = useUserStore()
     const [birthYear, setBirthYear] = useState<number>(currentYear - 25)
-    const [weight, setWeight] = useState<number>(70)
+    const [startWeight, setStartWeight] = useState<number>(70)
     const [goalWeight, setGoalWeight] = useState<number>(70)
     const [height, setHeight] = useState<number>(175)
     const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male')
@@ -69,12 +69,12 @@ const ProfileDetailsScreen = () => {
         return computed > 0 ? computed : 0
     }, [birthYear, currentYear])
 
-    const goalDeltaKg = useMemo(() => Math.abs(weight - goalWeight), [goalWeight, weight])
+    const goalDeltaKg = useMemo(() => Math.abs(startWeight - goalWeight), [goalWeight, startWeight])
     const goalDirection = useMemo<'lose' | 'gain' | 'maintain'>(() => {
-        if (goalWeight < weight) return 'lose'
-        if (goalWeight > weight) return 'gain'
+        if (goalWeight < startWeight) return 'lose'
+        if (goalWeight > startWeight) return 'gain'
         return 'maintain'
-    }, [goalWeight, weight])
+    }, [goalWeight, startWeight])
 
 
     const renderHeader = () => {
@@ -185,12 +185,12 @@ const ProfileDetailsScreen = () => {
                 description="No pressure — just a starting point."
                 summaryIconName="person"
                 summaryLabel="Selected weight:"
-                summaryValue={`${weight} kg`}
+                summaryValue={`${startWeight} kg`}
             >
                 <WheelPicker<number>
                     data={WEIGHT_IN_KG}
-                    value={weight}
-                    onChange={setWeight}
+                        value={startWeight}
+                    onChange={setStartWeight}
                     getLabel={(y) => String(y)}
                 />
             </ProfileStepSection>
@@ -217,7 +217,7 @@ const ProfileDetailsScreen = () => {
     }
 
     const renderPlanCreated = () => {
-        const goalDeltaKg = Math.abs(user?.goalWeight - user?.weight);
+        const goalDeltaKg = Math.abs(user?.goalWeight - user?.startWeight);
         return (
             <MotiView
                 from={{ opacity: 0 }}
@@ -411,7 +411,7 @@ const ProfileDetailsScreen = () => {
             birthYear,
             gender,
             height,
-            weight,
+            startWeight,
             goalWeight,
         }
         console.log(userObj)

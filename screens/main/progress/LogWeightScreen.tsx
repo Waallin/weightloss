@@ -1,30 +1,34 @@
 import {
   Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   Text,
   TextInput,
   View,
 } from "react-native";
 import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import { logWeightCopy, textSizes, textStyles } from "../../../constants/texts";
+import * as haptics from "expo-haptics";
+import { updateDocument } from "../../../services/firebase";
+import useUserStore from "../../../stores/useUserStore";
 
 const IMAGE_SIZE = 220;
 
 const LogWeightScreen: React.FC = () => {
   const navigation = useNavigation();
   const [weightInput, setWeightInput] = useState("");
-
-  const handleSave = () => {
-    navigation.goBack();
+  const { setUser, user } = useUserStore();  
+  const handleSave = async () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    const result = await updateDocument("users", user?.id, { currentWeight: parseFloat(weightInput) });
+    if (result) {
+      setUser({ ...user, currentWeight: parseFloat(weightInput) });
+      navigation.goBack();
+    }
   };
 
   const renderForm = () => {
