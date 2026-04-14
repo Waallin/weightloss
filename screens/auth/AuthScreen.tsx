@@ -5,19 +5,22 @@ import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../constants/globalStyles";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
-import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { textSizes, textStyles } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { signInWithCredential, OAuthProvider } from "firebase/auth";
 import { auth } from "../../services/firebaseConfig";
+import useUserStore from "../../stores/useUserStore";
+import Constants from "expo-constants";
+import { setDocument } from "../../services/firebase";
 const IMAGE_SIZE = 250;
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
   const navigation = useNavigation();
-
+  const { user, setUser } = useUserStore();
   useEffect(() => {
     if (appleToken) {
 
@@ -25,7 +28,10 @@ const AuthScreen = () => {
       const credential = provider.credential({ idToken: appleToken as string });
 
       signInWithCredential(auth, credential)
-        .then((result) => console.log("Signed in with Apple:", result.user))
+        .then((result) => {
+          console.log("Signed in with Apple:", result.user);
+          handleCreateAccount(result.user.uid);
+        })
         .catch((error) => {
           console.log("Error signing in with Apple:", error);
           Alert.alert("Fel", "Kunde inte verifiera Apple-inloggningen");
@@ -34,6 +40,7 @@ const AuthScreen = () => {
   }, [appleToken]);
 
   const handleAppleLogin = async () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     try {
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -41,7 +48,7 @@ const AuthScreen = () => {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      if (credential.identityToken) {
+   if (credential.identityToken) {
         setAppleToken(credential.identityToken);
       } else {
         setAppleToken(undefined);
@@ -51,6 +58,28 @@ const AuthScreen = () => {
       } else {
         Alert.alert("Error", "Failed to verify Apple login");
       } 
+    }
+  };
+
+  const handleCreateAccount = async (id: string) => {
+    try {
+      const userObj = {
+        ...user,
+        id: id,
+        createdAt: new Date(),
+        lastActiveAt: new Date(),
+        platform: Constants.platform?.ios ? "ios" : "android",
+        version: Constants.expoConfig?.version || "",
+        totalAppsOpen: 1,
+      }
+     const result = await setDocument("users", id, userObj);
+      if (result) {
+        await AsyncStorage.setItem("user", id);
+        setUser(userObj);
+        navigation.replace("MainStack");
+      }
+    } catch (e: any) {
+      console.log("Error creating account:", e);
     }
   };
 

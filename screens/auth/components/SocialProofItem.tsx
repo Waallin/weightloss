@@ -18,7 +18,7 @@ export interface SocialProofTestimonial {
 }
 
 interface SocialProofItemProps {
-  item: SocialProofTestimonial;
+    item: SocialProofTestimonial;
 }
 
 function renderStarIcons(rating: number, ratingMax: number) {
@@ -46,7 +46,7 @@ const SocialProofItem: React.FC<SocialProofItemProps> = ({ item }) => {
   return (
     <View
       style={{
-        width: spacing.paywallSocialProofCardWidth,
+        width: "100%",
         marginRight: spacing.md,
         padding: spacing.md,
         backgroundColor: colors.ui.componentBackground,

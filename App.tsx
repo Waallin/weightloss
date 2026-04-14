@@ -8,13 +8,14 @@ import useUserStore from "./stores/useUserStore";
 import { MainStack } from "./screens/navigation/MainStack";
 import { NavigationContainer } from "@react-navigation/native";
 import CustomSplashScreen from "./CustomSplashScreen";
-import 'react-native-reanimated'
-import 'react-native-gesture-handler'
+import "react-native-reanimated";
+import "react-native-gesture-handler";
 import { colors } from "./constants/colors";
-import { getDocument } from "./services/firebase";
+import { getDocument, updateDocument } from "./services/firebase";
 import useConfigStore from "./stores/useConfigStore";
 import ConfettiOverlay from "./components/ConfettiOverlay";
 import useConfettiStore from "./stores/useConfettiStore";
+import { increment } from "firebase/firestore";
 export default function App() {
   const { isVisible, message } = useToastStore();
   const { setUser } = useUserStore();
@@ -23,16 +24,14 @@ export default function App() {
     useConfettiStore();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // checkAuthStatus();
+    checkAuthStatus();
     handleConfig();
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);
   }, []);
-
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -44,7 +43,29 @@ export default function App() {
       setConfig(config);
     }
   };
-  
+
+  const checkAuthStatus = async () => {
+    const user = await AsyncStorage.getItem("user");
+    if (user) {
+      const result = await checkInUser(user);
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  };
+
+  const checkInUser = async (user: string) => {
+    const userData = await getDocument("users", user);
+    if (userData) {
+      await updateDocument("users", user, {
+        totalAppsOpen: increment(1),
+        lastActiveAt: new Date(),
+      });
+      setUser(userData);
+    } else {
+      return false;
+    }
+  };
 
   // Visa splash screen tills auth är kollad
   if (showSplash) {
@@ -62,7 +83,7 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-          {isAuthenticated ? <MainStack /> : <MainStack />}
+          {isAuthenticated ? <MainStack /> : <AuthNavigator />}
         </NavigationContainer>
       </View>
     </View>

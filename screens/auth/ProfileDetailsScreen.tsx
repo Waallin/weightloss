@@ -12,6 +12,7 @@ import { RootStackParamList } from '../navigation/types'
 import * as haptics from "expo-haptics";
 import { MotiView } from 'moti'
 import { ReduceMotion } from 'react-native-reanimated'
+import useUserStore from '../../stores/useUserStore'
 
 const currentYear = new Date().getFullYear()
 const BIRTH_YEARS = (() => {
@@ -53,6 +54,7 @@ PaginationDot.displayName = 'PaginationDot'
 
 const ProfileDetailsScreen = () => {
     const navigation = useNavigation<NavigationProp<RootStackParamList>>()
+    const { user,setUser } = useUserStore()
     const [birthYear, setBirthYear] = useState<number>(currentYear - 25)
     const [weight, setWeight] = useState<number>(70)
     const [goalWeight, setGoalWeight] = useState<number>(70)
@@ -215,6 +217,7 @@ const ProfileDetailsScreen = () => {
     }
 
     const renderPlanCreated = () => {
+        const goalDeltaKg = Math.abs(user?.goalWeight - user?.weight);
         return (
             <MotiView
                 from={{ opacity: 0 }}
@@ -314,7 +317,7 @@ const ProfileDetailsScreen = () => {
                                 fontWeight: '700',
                                 marginBottom: spacing.xs,
                             }}>
-                                You’re just 4 kg away
+                                You’re just {goalDeltaKg} kg away
                             </Text>
                             <Text style={{
                                 ...textStyles.secondary,
@@ -386,13 +389,13 @@ const ProfileDetailsScreen = () => {
                     from={{ opacity: 0, translateY: 30 }}
                     animate={{ opacity: 1, translateY: 0 }}
                     transition={{ type: 'timing', duration: 420, delay: 380, reduceMotion: ReduceMotion.Never }}
-                    style={{ width: '100%', paddingBottom: spacing.sm }}
+                    style={{ width: '100%', paddingBottom: spacing.scrollViewBottomPadding}}
                 >
                     <PrimaryButtonComponent
-                        title="Start my plan"
+                        title="I'm ready"
                         onPress={() => {
                             haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-                            navigation.navigate('HowItWork')
+                            navigation.navigate('SocialProofScreen')
                         }}
                     />
                 </MotiView>
@@ -403,11 +406,20 @@ const ProfileDetailsScreen = () => {
 
 
     const handleNext = () => {
+
+        const userObj = {
+            birthYear,
+            gender,
+            height,
+            weight,
+            goalWeight,
+        }
+        console.log(userObj)
+        setUser(userObj)    
         haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
         if (step < 5) {
             setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4 | 5)
         } else {
-
             setCreatedPlan(true)
         }
     }

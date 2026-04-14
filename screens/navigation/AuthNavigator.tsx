@@ -2,7 +2,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import AuthScreen from "../auth/AuthScreen";
 import { MainStack } from "./MainStack";
 import OnboardingScreen from "../auth/OnboardingScreen";
-import SocialProof from "../auth/SocialProof";
+import SocialProofScreen from "../auth/SocialProofScreen";
 import ProfileDetailsScreen from "../auth/ProfileDetailsScreen";
 import PaywallScreen from "../auth/PaywallScreen";
 import HowItWorkScreen from "../auth/HowItWorkScreen";
@@ -19,8 +19,8 @@ export const AuthNavigator = () => {
         options={{ headerShown: false }}
       />
       <Stack.Screen
-        name="SocialProof"
-        component={SocialProof}
+        name="SocialProofScreen"
+        component={SocialProofScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -37,7 +37,7 @@ export const AuthNavigator = () => {
         name="HowItWork"
         component={HowItWorkScreen}
         options={{ headerShown: false }}
-      />  
+      />    
       <Stack.Screen
         name="ProfileDetails"
         component={ProfileDetailsScreen}
