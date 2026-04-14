@@ -14,7 +14,7 @@ export const useHealthKitPermissions = () => {
   return { status, requestPermission };
 };
 
-export const useTodaySteps = () => {
+export const getTodaySteps = () => {
   const startDate = new Date(new Date().setHours(0, 0, 0, 0));
   const endDate = new Date(new Date().setHours(23, 59, 59, 999));
 

@@ -16,6 +16,9 @@ import useConfigStore from "./stores/useConfigStore";
 import ConfettiOverlay from "./components/ConfettiOverlay";
 import useConfettiStore from "./stores/useConfettiStore";
 import { increment } from "firebase/firestore";
+import { calculatePoints } from "./services/dietPoints";
+import { getTodaySteps } from "./services/healthkit";
+const currentYear = new Date().getFullYear()
 export default function App() {
   const { isVisible, message } = useToastStore();
   const { setUser } = useUserStore();

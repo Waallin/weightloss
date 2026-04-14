@@ -11,16 +11,24 @@ import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
 import SmallWinComponent from "./components/SmallWinComponent";
 import { Ionicons } from "@expo/vector-icons";
-import { NavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
+import {
+  NavigationProp,
+  useFocusEffect,
+  useNavigation,
+} from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useConfettiStore from "../../../stores/useConfettiStore";
+const currentYear = new Date().getFullYear();
+import { getTodaySteps } from "../../../services/healthkit";
+
 import {
   PermissionStatus,
   useHealthKitPermissions,
-  useTodaySteps,
 } from "../../../services/healthkit";
 import { RootStackParamList } from "../../navigation/types";
 import ConfettiOverlay from "../../../components/ConfettiOverlay";
+import useUserStore from "../../../stores/useUserStore";
+import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
 const articles = [
@@ -60,23 +68,39 @@ const smallWins = [
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { status, requestPermission } = useHealthKitPermissions();
-  const [todaySteps, setTodaySteps] = useState(0);
+
   const { setVisibleConfetti } = useConfettiStore();
   const [claimStepsReward, setClaimStepsReward] = useState(false);
   const [waterCount, setWaterCount] = useState(0);
-
+  const { user } = useUserStore();
   const [overallProgress, setOverallProgress] = useState(0);
-
+  const todaySteps = getTodaySteps();
+  const [points, setPoints] = useState(0);
   useFocusEffect(
     useCallback(() => {
-      if (status?.status === PermissionStatus.DENIED && status.canAskAgain === false) {
+      if (
+        status?.status === PermissionStatus.DENIED &&
+        status.canAskAgain === false
+      ) {
         return;
       }
       void requestPermission();
-    }, [requestPermission, status?.status, status?.canAskAgain])
+    }, [requestPermission, status?.status, status?.canAskAgain]),
   );
 
   useEffect(() => {
+    const points = calculatePoints(
+      user?.currentWeight ?? 0,
+      user?.height ?? 0,
+      currentYear - user?.birthYear,
+      user?.gender ?? "Male",
+      todaySteps,
+    );
+    setPoints(points.points);
+  }, []);
+  
+  useEffect(() => {
+
     if (todaySteps > 9999 && todaySteps < 10200) {
       setClaimStepsReward(true);
     }
@@ -84,7 +108,7 @@ const HomeScreen = () => {
 
   const returnStepsMicroCopy = () => {
     const steps = todaySteps;
-  
+
     if (steps >= 10000) {
       return "10k done! Congratulations";
     } else if (steps >= 9000) {
@@ -112,7 +136,7 @@ const HomeScreen = () => {
 
   const returnWaterMicroCopy = () => {
     const water = waterCount;
-  
+
     if (water >= 10) {
       return "Hydration goal reached ";
     } else if (water >= 8) {
@@ -142,7 +166,6 @@ const HomeScreen = () => {
         }}
         style={{
           justifyContent: "center",
-          marginTop: spacing.lg,
         }}
       >
         <Text
@@ -156,7 +179,7 @@ const HomeScreen = () => {
         </Text>
       </MotiView>
     );
-  }
+  };
 
   const handleProgressComponentPress = (component: string) => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
@@ -169,14 +192,6 @@ const HomeScreen = () => {
     setVisibleConfetti(true);
   };
 
-  const handleAddSteps = () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
-    setTodaySteps(todaySteps + 500);
-    if (todaySteps == 4999) {
-      setOverallProgress(overallProgress + 1);
-      setVisibleConfetti(true);
-    }
-  };
 
   const handleAddWater = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
@@ -218,7 +233,6 @@ const HomeScreen = () => {
           icon="walk"
           number={todaySteps}
           goal={10000}
-          onPress={() => handleAddSteps()}
           microcopy={returnStepsMicroCopy()}
           width="47%"
           claimRewardPress={() => handle10kSteps()}
@@ -227,12 +241,11 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Points"
           icon="food-apple"
-          number={5}
-          goal={31}
+          number={11}
+          goal={points ?? 15}
           microcopy="26 left today"
           width="100%"
           claimRewardPress={() => handleProgressComponentPress("Points")}
-          
         />
       </MotiView>
     );
@@ -281,7 +294,6 @@ const HomeScreen = () => {
               title={article.title}
               description={article.description}
               color={article.color}
-
             />
           ))}
         </ScrollView>
@@ -338,11 +350,7 @@ const HomeScreen = () => {
               justifyContent: "center",
             }}
           >
-            <Ionicons
-              name="sparkles"
-              size={24}
-              color={colors.ui.primary}
-            />
+            <Ionicons name="sparkles" size={24} color={colors.ui.primary} />
           </View>
           <View
             style={{
@@ -362,7 +370,9 @@ const HomeScreen = () => {
             >
               {overallProgress} of 3 done 👏
             </Text>
-            <Text style={{ ...textStyles.listItemEmphasis }}>{3 - overallProgress} more to go</Text>
+            <Text style={{ ...textStyles.listItemEmphasis }}>
+              {3 - overallProgress} more to go
+            </Text>
             <View
               style={{
                 height: 6,
@@ -426,7 +436,6 @@ const HomeScreen = () => {
   };
 
   return (
-
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={globalStyles.scrollContainer}
