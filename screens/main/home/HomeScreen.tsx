@@ -90,7 +90,7 @@ const HomeScreen = () => {
 
   useEffect(() => {
     const points = calculatePoints(
-      user?.currentWeight ?? 0,
+      user?.currentWeight ?? user?.startWeight,
       user?.height ?? 0,
       currentYear - user?.birthYear,
       user?.gender ?? "Male",

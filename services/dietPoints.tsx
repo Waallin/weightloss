@@ -29,7 +29,7 @@ const calculateMaintenanceCalories = (
     age: number,
     gender: string,
     steps: number,
-    deficit = 500,
+    deficit = 800,
   ) => {
     const maintenanceCalories = calculateMaintenanceCalories(
       weight,
@@ -38,7 +38,6 @@ const calculateMaintenanceCalories = (
       gender,
       steps
     );
-  
     const targetCalories = maintenanceCalories - deficit;
   
     const points = Math.round(targetCalories / 100);

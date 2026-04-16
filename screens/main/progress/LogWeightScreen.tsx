@@ -1,7 +1,9 @@
 import {
   Image,
+  Keyboard,
   Text,
   TextInput,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import React, { useState } from "react";
@@ -130,12 +132,14 @@ const LogWeightScreen: React.FC = () => {
     );
   };
   return (
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
     <View style={{ ...globalStyles.container, alignItems: "center" }}>
       <GoBackHeaderComponent title={"Log weight"} />
       {renderImage()}
       {renderForm()}
       {renderButton()}
     </View>
+    </TouchableWithoutFeedback>
   );
 };
 
