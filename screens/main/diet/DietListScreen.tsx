@@ -21,17 +21,21 @@ import {
   textSizes,
   textStyles,
 } from "../../../constants/texts";
+import useUserStore from "../../../stores/useUserStore";
 import { fonts } from "../../../constants/fonts";
 import { getDocuments } from "../../../services/firebase";
 import { RecipeDetail, RootStackParamList } from "../../navigation/types";
+import { serverTimestamp } from "firebase/firestore";
+import { addToDiet } from "../../../services/firebase";
 
 const DietListScreen = () => {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "DietListScreen">>();
   const insets = useSafeAreaInsets();
-
+  const { user } = useUserStore();
   const [foodList, setFoodList] = useState<any[]>([]);
   const [recipesList, setRecipesList] = useState<RecipeDetail[]>([]);
+  
 
   useEffect(() => {
     getFoodList();
@@ -43,6 +47,21 @@ const DietListScreen = () => {
     setFoodList(foodList);
   };
 
+  const handleAddFoodItem = (foodItem: any) => {
+    console.log(foodItem);
+    const payload = {
+      sourceId: foodItem.id,
+      type: foodItem.mealType,
+      title: foodItem.title,
+      points: foodItem.points,
+      calories: foodItem.calories,
+      imagePath: foodItem.imagePath,
+      createdAt: serverTimestamp(),
+    }
+    addToDiet(user?.email, payload);
+
+  };
+  
   const getRecipeList = async () => {
     const recipeList = await getDocuments("recipes");
     setRecipesList((recipeList ?? []) as RecipeDetail[]);
@@ -132,7 +151,7 @@ const DietListScreen = () => {
               key={item.id}
               item={item}
               onPress={() =>
-                handleNavigateToAddDietScreen(item.title ?? item.name)
+                handleAddFoodItem(item)
               }
             />
           ))}
@@ -165,9 +184,6 @@ const DietListScreen = () => {
     );
   };
 
-  const handleNavigateToAddDietScreen = (_foodName?: string) => {
-    Alert.alert("Add Diet", _foodName);
-  };
   return (
     <View style={globalStyles.container}>
       {renderHeader()}

@@ -42,7 +42,7 @@ const ProgressComponents = ({
   claimReward?: boolean;
   onPress?: () => void;
 }) => {
-  console.log("🚀 ~ ProgressComponents ~ claimReward:", claimReward)
+  
   const progressRatio = goal > 0 ? Math.min(1, Math.max(0, number / goal)) : 0;
 
   const isCompleted = number >= goal;

@@ -23,6 +23,9 @@ import {
   textStyles,
 } from "../../../constants/texts";
 import { RootStackParamList } from "../../navigation/types";
+import { addToDiet } from "../../../services/firebase";
+import useUserStore from "../../../stores/useUserStore";
+import { serverTimestamp } from "firebase/firestore";
 
 const fallbackImage = require("../../../assets/potato.png");
 
@@ -39,7 +42,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
   const { recipe } = route.params;
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
-
+  const { user } = useUserStore();
   const imageSource: ImageSourcePropType = useMemo(() => {
     if (recipe.imageUrl?.trim()) {
       return { uri: recipe.imageUrl.trim() };
@@ -62,6 +65,22 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
 
   const scrollBottomPadding = 150 + insets.bottom;
 
+
+  const handleAddToDiet = async (recipe: any) => {
+ 
+    const payload = {
+      sourceId: recipe.id,
+      type: recipe.mealType,
+      title: recipe.title,
+      points: recipe.points,
+      calories: recipe.calories,
+      imagePath: recipe.imagePath,
+      createdAt: serverTimestamp(),
+    }
+
+   
+    addToDiet(user?.email, payload);
+  }
   const renderHeader = () => (
     <View
       style={{
@@ -285,7 +304,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
     <View style={{ marginTop: spacing.lg }}>
       <PrimaryButtonComponent
         title={recipeDetailCopy.addToDietCta}
-        onPress={() => {}}
+        onPress={() => handleAddToDiet(recipe)}
       />
     </View>
   );
