@@ -30,7 +30,7 @@ const AuthScreen = () => {
       signInWithCredential(auth, credential)
         .then((result) => {
           console.log("Signed in with Apple:", result.user);
-          handleCreateAccount(result.user.uid);
+          handleCreateAccount(result.user.email as string);
         })
         .catch((error) => {
           console.log("Error signing in with Apple:", error);
@@ -61,20 +61,20 @@ const AuthScreen = () => {
     }
   };
 
-  const handleCreateAccount = async (id: string) => {
+  const handleCreateAccount = async (email: string) => {
     try {
       const userObj = {
         ...user,
-        id: id,
+        email: email,
         createdAt: new Date(),
         lastActiveAt: new Date(),
         platform: Constants.platform?.ios ? "ios" : "android",
         version: Constants.expoConfig?.version || "",
         totalAppsOpen: 1,
       }
-     const result = await setDocument("users", id, userObj);
+     const result = await setDocument("users", email, userObj);
       if (result) {
-        await AsyncStorage.setItem("user", id);
+        await AsyncStorage.setItem("user", email);
         setUser(userObj);
         navigation.replace("MainStack");
       }

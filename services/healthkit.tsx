@@ -14,16 +14,14 @@ export const useHealthKitPermissions = () => {
   return { status, requestPermission };
 };
 
-export const getTodaySteps = () => {
-  const startDate = new Date(new Date().setHours(0, 0, 0, 0));
-  const endDate = new Date(new Date().setHours(23, 59, 59, 999));
-
+export const useTodaySteps = () => {
   const { data } = useHealthKitStatistics({
     type: "stepCount",
     aggregations: ["cumulativeSum"],
-    startDate,
-    endDate,
+    startDate: new Date(new Date().setHours(0, 0, 0, 0)),
+    endDate: new Date(new Date().setHours(23, 59, 59, 999)),
   });
+
 
   if (data == null || Array.isArray(data)) {
     return 0;

@@ -26,7 +26,7 @@ const LogWeightScreen: React.FC = () => {
   const { setUser, user } = useUserStore();  
   const handleSave = async () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    const result = await updateDocument("users", user?.id, { currentWeight: parseFloat(weightInput) });
+    const result = await updateDocument("users", user?.email as string, { currentWeight: parseFloat(weightInput) });
     if (result) {
       setUser({ ...user, currentWeight: parseFloat(weightInput) });
       navigation.goBack();

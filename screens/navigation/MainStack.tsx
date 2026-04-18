@@ -8,6 +8,7 @@ import PreferencesScreen from "../main/settings/PreferencesScreen";
 import LogWeightScreen from "../main/progress/LogWeightScreen";
 import ArticleScreen from "../main/home/ArticleScreen";
 import { RootStackParamList } from "./types";
+import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -44,6 +45,11 @@ export const MainStack = () => {
         component={LogWeightScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="RecipeDetailScreen"
+        component={RecipeDetailScreen}
+        options={{ headerShown: false }}
+      />  
       <Stack.Screen
         name="ArticleScreen"
         component={ArticleScreen}

@@ -1,44 +1,133 @@
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { database } from "./firebaseConfig";
+import { getDateKey } from "../utils/dateUtils";
+import useTodayProgressStore from "../stores/useTodayProgressStore";
+import * as haptics from "expo-haptics";  
 
-
-export const getDocument = async (collection: string, id: string) => {
+export const getDocument = async (collection: string, email: string) => {
   try {
-    const docRef = doc(database, collection, id);
+    const docRef = doc(database, collection, email);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data();
     } else {
-      console.log(`No such document in ${collection} with id ${id}!`);
+      console.log(`No such document in ${collection} with email ${email}!`);
       return null;
     }
   } catch (error) {
-    console.log(`Error getting document in ${collection} with id ${id}:`, error);
+      console.log(`Error getting document in ${collection} with email ${email}:`, error);
     return null;
   }
 };
 
-export const setDocument = async (collection: string, id: string, data: any) => {
+export const getDocuments = async (alias: string) => {
   try {
-    const docRef = doc(database, collection, id);
+        const docsRef = collection(database, alias);
+    const docsSnap = await getDocs(docsRef);
+    return docsSnap.docs.map((doc) => doc.data());
+  } catch (error) {
+    console.log(`Error getting documents in ${alias}:`, error);
+    return [];
+  }
+};
+
+export const setDocument = async (collection: string, email: string, data: any) => {
+  try {
+    const docRef = doc(database, collection, email);
     await setDoc(docRef, data);
-    console.log(`Document set in ${collection} with id ${id}`);
+    console.log(`Document set in ${collection} with email ${email}`);
     return true;
   } catch (error) {
-    console.log(`Error setting document in ${collection} with id ${id}:`, error);
+    console.log(`Error setting document in ${collection} with email ${email}:`, error);
     return false;
   }
 };
 
-
-export const updateDocument = async (collection: string, id: string, data: any) => {
+export const updateDocument = async (collection: string, email: string, data: any) => {
   try {
-    const docRef = doc(database, collection, id);
+    const docRef = doc(database, collection, email);
     await updateDoc(docRef, data);
-    console.log(`Document updated in ${collection} with id ${id}`);
+      console.log(`Document updated in ${collection} with email ${email}`);
     return true;
   } catch (error) {
-    console.log(`Error updating document in ${collection} with id ${id}:`, error);
+    console.log(`Error updating document in ${collection} with email ${email}:`, error);
     return false;
   }
 };
+
+export const updateTodayProgress = async (email: string, data: any) => {
+  try {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    const docRef = doc(database, "users", email, "days", getDateKey());
+    await updateDoc(docRef, data);
+    return true;
+  } catch (error) {
+    console.log(`Error updating today progress in users with email ${email}:`, error);
+    return false;
+  }
+};
+
+
+export const syncToday = async (email: string, steps?: number, points?: any) => {
+  try {
+    const dateKey = getDateKey();
+
+    const dayRef = doc(database, "users", email, "days", dateKey);
+    const daySnap = await getDoc(dayRef);
+
+      if (!daySnap.exists()) {
+        const newDay = {
+          dateKey,
+              
+          targets: {
+            water: 10,
+            steps: 10000,
+            points: points?.total ?? 0,
+          },
+
+          progress: {
+            water: 0,
+            steps: 0,
+            pointsUsed: 0,
+          },
+      
+          points: {
+            base: points?.base ?? 0,
+            stepBonus: points?.stepBonus ?? 0,
+            total: points?.total ?? 0,
+            used: 0,
+            left: 0,
+          },
+      
+          completion: {
+            water: false,
+            steps: false,
+            points: false,
+          },
+      
+          weight: {
+            logged: false,
+            value: null,
+          },
+      
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        };
+      
+        await setDoc(dayRef, newDay);
+        return newDay;
+    } else {
+    
+      await updateDoc(dayRef, {
+        "progress.steps": steps || 0,
+        "points.base": points?.base ?? 0,
+        "points.stepBonus": points?.stepBonus ?? 0,
+        "points.total": points?.total ?? 0,
+      });
+      return daySnap.data();
+    }
+  } catch (error) {
+    console.log("Error syncing today:", error);
+  }
+};
+

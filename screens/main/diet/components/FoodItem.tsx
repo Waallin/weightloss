@@ -1,125 +1,184 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { spacing } from '../../../../constants/spacing';
-import { colors } from '../../../../constants/colors';
-import { fonts } from '../../../../constants/fonts';
-import { globalStyles } from '../../../../constants/globalStyles';
-const FoodItem = (
-  {
-    name,
-    portion,
-    kudos,
-    grams,
-    onPress,
-    image,
-    icon,
-  }: {
-    name: string;
-    portion: string;
-    kudos: string;
-    grams: number;
-    onPress: () => void;
-    image: string;
-    icon?: string | null;
-  }
-) => {
-  const thumbSize = spacing.lg * 2 + spacing.sm;
+import { Image, ImageSourcePropType, Text, TouchableOpacity, View } from "react-native";
+import React, { useMemo } from "react";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { spacing } from "../../../../constants/spacing";
+import { colors } from "../../../../constants/colors";
+import { globalStyles } from "../../../../constants/globalStyles";
+import { dietLabels, textSizes, textStyles } from "../../../../constants/texts";
+
+export interface FoodItemData {
+  id: string;
+  title?: string;
+  name?: string;
+  description?: string;
+  points?: string;
+  kudos?: string;
+  imageUrl?: string;
+  image?: ImageSourcePropType;
+  mealType?: string;
+}
+
+interface FoodItemProps {
+  item: FoodItemData;
+  onPress: () => void;
+}
+
+const fallbackImage = require("../../../../assets/potato.png");
+
+function formatMealTypeLabel(mealType: string): string {
+  const trimmed = mealType.trim();
+  if (!trimmed) return "";
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+}
+
+const FoodItem: React.FC<FoodItemProps> = ({ item, onPress }) => {
+  const thumbSize = spacing.xl * 2 + spacing.sm;
+
+  const title = item.title ?? item.name ?? "";
+  const description = item.description?.trim() ?? "";
+  const pointsRaw = item.points ?? item.kudos;
+  const pointsLabel =
+    pointsRaw !== undefined && String(pointsRaw).trim() !== ""
+      ? String(pointsRaw).trim()
+      : null;
+
+  const imageSource: ImageSourcePropType = useMemo(() => {
+    if (item.imageUrl?.trim()) {
+      return { uri: item.imageUrl.trim() };
+    }
+    if (item.image !== undefined) {
+      return item.image;
+    }
+    return fallbackImage;
+  }, [item.image, item.imageUrl]);
+
+  const mealLabel = item.mealType ? formatMealTypeLabel(item.mealType) : "";
 
   return (
     <TouchableOpacity
-
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       onPress={onPress}
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.sm,
+        flexDirection: "row",
+        alignItems: "stretch",
+        padding: spacing.md,
         gap: spacing.md,
         borderRadius: spacing.borderRadius,
         backgroundColor: colors.ui.componentBackground,
+        borderWidth: 1,
+        borderColor: colors.ui.cardBorder,
         ...globalStyles.shadow,
       }}
     >
       <View
         style={{
           width: thumbSize,
-          height: thumbSize,
+          alignSelf: "center",
           borderRadius: spacing.borderRadius,
-          overflow: 'hidden',
-          backgroundColor: colors.ui.white,
+          overflow: "hidden",
+          backgroundColor: colors.ui.secondaryBackground,
           borderWidth: 1,
           borderColor: colors.ui.cardBorder,
         }}
       >
         <Image
-          source={image}
-          style={{ width: '100%', height: '100%' }}
+          source={imageSource}
+          style={{ width: "100%", aspectRatio: 1 }}
           resizeMode="cover"
         />
       </View>
+
       <View
         style={{
           flex: 1,
+          justifyContent: "center",
+          minWidth: 0,
         }}
       >
         <Text
-          numberOfLines={1}
+          numberOfLines={2}
           style={{
-            fontWeight: 'bold',
-            fontSize: 18,
-            color: colors.text.primary,
+            ...textStyles.listItemTitle,
+            lineHeight: 22,
           }}
         >
-          {name}
+          {title}
         </Text>
-        <Text
-          style={{
-            marginTop: spacing.xs,
-            fontFamily: fonts.primary.regular,
-            fontSize: 14,
-            color: colors.text.secondary,
-          }}
-        >
-           {grams} g · {portion}
-        </Text>
-        <Text style={{ marginTop: spacing.sm }}>
-          <Text
-            style={{
-              fontFamily: fonts.primary.medium,
-              fontWeight: 'bold',
-              fontSize: 14,
-              color: colors.text.primary,
-            }}
-          >
-            {kudos}
-          </Text>
-          <Text
-            style={{
-              fontFamily: fonts.primary.regular,
-              fontWeight: 'bold',
-              fontSize: 14,
-              color: colors.text.primary,
-            }}
-          >
-            {' pts'}
-          </Text>
-        </Text>
-      </View>
-      {icon && (
-      <View style={{
-          backgroundColor: colors.ui.primary,
-        borderRadius: spacing.rounded,
-        padding: spacing.sm,
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}>
-        <MaterialCommunityIcons name={icon} size={24} color={colors.ui.white} />
-      </View>
-      )}
-    </TouchableOpacity>
-  )
-}
 
-export default FoodItem
+        {description.length > 0 ? (
+          <Text
+            numberOfLines={2}
+            style={{
+              ...textStyles.listItemMeta,
+              marginTop: spacing.xs,
+              lineHeight: 20,
+            }}
+          >
+            {description}
+          </Text>
+        ) : null}
+
+        {(mealLabel.length > 0 || pointsLabel !== null) && (
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              alignItems: "center",
+              marginTop: spacing.sm,
+              gap: spacing.sm,
+            }}
+          >
+            {pointsLabel !== null ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "baseline",
+                  paddingHorizontal: spacing.sm,
+                  paddingVertical: spacing.xs,
+                  borderRadius: spacing.borderRadius,
+                  backgroundColor: colors.ui.foodPointsChipBackground,
+                }}
+              >
+                <Text
+                  style={{
+                    ...textStyles.listItemEmphasis,
+                    fontSize: textSizes.sm,
+                  }}
+                >
+                  {pointsLabel}
+                </Text>
+                <Text
+                  style={{
+                    ...textStyles.listItemMeta,
+                    marginLeft: spacing.xs,
+                    fontSize: textSizes.xs,
+                    color: colors.ui.primary,
+                  }}
+                >
+                  {dietLabels.pointsSuffix}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        )}
+      </View>
+
+      <View
+        style={{
+          alignSelf: "center",
+          width: 44,
+          height: 44,
+          borderRadius: spacing.rounded,
+          backgroundColor: colors.ui.primary,
+          justifyContent: "center",
+          alignItems: "center",
+          ...globalStyles.shadow,
+        }}
+      >
+        <MaterialCommunityIcons name="plus" size={22} color={colors.ui.white} />
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+export default React.memo(FoodItem);

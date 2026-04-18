@@ -1,4 +1,4 @@
-import { SafeAreaView, View, Text, TouchableOpacity } from "react-native";
+import { SafeAreaView, View, Text, TouchableOpacity, AppState } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
 import { useEffect, useState } from "react";
 import globalApi from "./services/api";
@@ -17,11 +17,17 @@ import ConfettiOverlay from "./components/ConfettiOverlay";
 import useConfettiStore from "./stores/useConfettiStore";
 import { increment } from "firebase/firestore";
 import { calculatePoints } from "./services/dietPoints";
-import { getTodaySteps } from "./services/healthkit";
+import { syncToday } from "./services/firebase";
+import useTodayProgressStore from "./stores/useTodayProgressStore";
+import { useTodaySteps } from "./services/healthkit";
 const currentYear = new Date().getFullYear()
 export default function App() {
+
   const { isVisible, message } = useToastStore();
-  const { setUser } = useUserStore();
+  const { user, setUser } = useUserStore();
+  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const steps = useTodaySteps();
+
   const { setConfig } = useConfigStore();
   const { visibleConfetti, confettiNonce, setVisibleConfetti } =
     useConfettiStore();
@@ -40,6 +46,40 @@ export default function App() {
     setShowSplash(false);
   };
 
+
+
+
+  useEffect(() => {
+    if (!user?.email) return;
+
+    handleSyncToday();
+  }, [user?.email]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active" && user?.email) {  
+        handleSyncToday();
+      }
+    });
+
+    return () => sub.remove();
+  }, [user?.email]);
+  
+  const handleSyncToday = async () => {
+    const points = calculatePoints(
+      user?.currentWeight ?? user?.startWeight,
+      user?.height ?? 0,
+      currentYear - user?.birthYear,
+      user?.gender ?? "Male",
+      steps,
+    );
+
+      
+  const syncedDay = await syncToday(user.email as string, steps, points);
+    setTodayProgress(syncedDay);
+  };
+ 
+
   const handleConfig = async () => {
     const config = await getDocument("config", "app");
     if (config) {
@@ -51,7 +91,12 @@ export default function App() {
     const user = await AsyncStorage.getItem("user");
     if (user) {
       const result = await checkInUser(user);
-      setIsAuthenticated(true);
+
+      if (result) {
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+      }
     } else {
       setIsAuthenticated(false);
     }
@@ -59,13 +104,18 @@ export default function App() {
 
   const checkInUser = async (user: string) => {
     const userData = await getDocument("users", user);
+    console.log("🚀 ~ checkInUser ~ userData:", userData)
     if (userData) {
       await updateDocument("users", user, {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
       });
       setUser(userData);
+      return true;
     } else {
+      console.log("🚀 ~ checkInUser ~ userData not found")
+      await AsyncStorage.removeItem("user");
+      setIsAuthenticated(false);
       return false;
     }
   };

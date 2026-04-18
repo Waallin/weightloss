@@ -26,6 +26,8 @@ export const colors = {
     /** Settings / profile list rows: icon circle + default icon tint (MaterialCommunityIcons) */
     listRowIconBackground: "#ECFDF5",
     listRowIconTint: "#22C55E",
+    /** Diet food row — soft fill behind points chip */
+    foodPointsChipBackground: "rgba(22, 185, 123, 0.12)",
     delete: "#EF4444",
     grey: "#F3F4F6",
 

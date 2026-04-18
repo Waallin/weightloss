@@ -1,182 +1,182 @@
 import {
-    Text,
-    TextInput,
-    View,
-    TouchableOpacity,
-    FlatList,
-    Alert,
+  Text,
+  TextInput,
+  View,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../constants/spacing";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FoodItem from "./components/FoodItem";
 import {
-    dietFoodSearchPlaceholder,
-    dietLabels,
-    textSizes,
-    textStyles,
+  dietFoodSearchPlaceholder,
+  dietLabels,
+  textSizes,
+  textStyles,
 } from "../../../constants/texts";
 import { fonts } from "../../../constants/fonts";
+import { getDocuments } from "../../../services/firebase";
+import { RecipeDetail, RootStackParamList } from "../../navigation/types";
 
-const dummyFoodItems = [
-    {
-        id: 1,
-        name: "Potato",
-        portion: "1 portion",
-        grams: 100,
-        kudos: "5",
-        image: require("../../../assets/potato.png"),
-    },
-    {
-        id: 2,
-        name: "Banana",
-        portion: "1 portion",
-        grams: 100,
-        kudos: "2",
-        image: require("../../../assets/banana.png"),
-    },
-    {
-        id: 3,
-        name: "Egg",
-        portion: "1 portion",
-        grams: 100,
-        kudos: "0.5",
-        image: require("../../../assets/egg.png"),
-    },
-
-    {
-        id: 6,
-        name: "Milk",
-        portion: "1 portion",
-        grams: 100,
-        kudos: "0.5",
-        image: require("../../../assets/milk.png"),
-    },
-];
 const DietListScreen = () => {
-    const navigation = useNavigation();
-    const insets = useSafeAreaInsets();
+  const navigation =
+    useNavigation<StackNavigationProp<RootStackParamList, "DietListScreen">>();
+  const insets = useSafeAreaInsets();
 
-    const renderHeader = () => {
-        return (
-            <View
-                style={{
-                    backgroundColor: colors.ui.background,
-                    paddingTop: insets.top + spacing.sm,
-                    paddingBottom: spacing.md,
-                }}
-            >
-                <TouchableOpacity
-                    activeOpacity={0.8}
-                    onPress={() => navigation.goBack()}
-                    style={{
-                        backgroundColor: colors.ui.componentBackground,
-                        borderRadius: spacing.borderRadius,
-                        ...globalStyles.shadow,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        width: 44,
-                        height: 44,
-                    }}
-                >
-                    <MaterialCommunityIcons
-                        name="chevron-left"
-                        size={26}
-                        color={colors.text.primary}
-                    />
-                </TouchableOpacity>
-                <View
-                    style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        marginTop: spacing.md,
-                        minHeight: 56,
-                        paddingHorizontal: spacing.md,
-                        borderWidth: 1,
-                        borderColor: colors.ui.cardBorder,
-                        borderRadius: spacing.borderRadius,
-                        backgroundColor: colors.ui.white,
-                    }}
-                >
-                    <MaterialCommunityIcons
-                        name="magnify"
-                        size={24}
-                        color={colors.text.secondary}
-                    />
-                    <TextInput
-                        placeholder={dietFoodSearchPlaceholder}
-                        placeholderTextColor={colors.text.secondary}
-                        style={{
-                            flex: 1,
-                            marginLeft: spacing.sm,
-                            paddingVertical: spacing.md,
-                            fontFamily: fonts.primary.regular,
-                            fontSize: textSizes.md,
-                            color: colors.text.primary,
-                        }}
-                    />
-                </View>
-            </View>
-        );
-    };
+  const [foodList, setFoodList] = useState<any[]>([]);
+  const [recipesList, setRecipesList] = useState<RecipeDetail[]>([]);
 
-    const renderRecentFoodItems = () => {
-        return (
-            <View
-                style={{
-                    flex: 1,
-                }}
-            >
-                <Text
-                    style={{
-                        ...textStyles.screenSectionTitle,
-                        marginBottom: spacing.md,
-                    }}
-                >
-                    {dietLabels.recent}
-                </Text>
-                <FlatList
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{
-                        gap: spacing.sm,
-                        paddingBottom: spacing.scrollViewBottomPadding,
-                    }}
-                    data={dummyFoodItems}
-                    keyExtractor={(item) => String(item.id)}
-                    renderItem={({ item }) => (
-                        <FoodItem
-                            image={item.image}
-                            onPress={() => handleNavigateToAddDietScreen(item.name)}
-                            name={item.name}
-                            portion={item.portion}
-                            kudos={item.kudos}
-                            grams={item.grams}
-                            icon="plus"
-                        />
-                    )}
-                />
-            </View>
-        );
-    };
+  useEffect(() => {
+    getFoodList();
+    getRecipeList();
+  }, []);
 
-    const handleNavigateToAddDietScreen = (_foodName?: string) => {
-        Alert.alert("Add Diet", _foodName);
-    };
+  const getFoodList = async () => {
+    const foodList = await getDocuments("food");
+    setFoodList(foodList);
+  };
+
+  const getRecipeList = async () => {
+    const recipeList = await getDocuments("recipes");
+    setRecipesList((recipeList ?? []) as RecipeDetail[]);
+  };
+
+  const handleNavigateToRecipeDetailScreen = (recipe: RecipeDetail) => {
+    navigation.navigate("RecipeDetailScreen", { recipe });
+  };
+
+  const renderHeader = () => {
     return (
-        <View
-            style={{
-                ...globalStyles.container,
-                flex: 1,
-            }}
+      <View
+        style={{
+          backgroundColor: colors.ui.background,
+          paddingTop: insets.top + spacing.sm,
+          paddingBottom: spacing.md,
+        }}
+      >
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => navigation.goBack()}
+          style={{
+            backgroundColor: colors.ui.componentBackground,
+            borderRadius: spacing.borderRadius,
+            ...globalStyles.shadow,
+            justifyContent: "center",
+            alignItems: "center",
+            width: 44,
+            height: 44,
+          }}
         >
-            {renderHeader()}
-            {renderRecentFoodItems()}
+          <MaterialCommunityIcons
+            name="chevron-left"
+            size={26}
+            color={colors.text.primary}
+          />
+        </TouchableOpacity>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: spacing.md,
+            minHeight: 56,
+            paddingHorizontal: spacing.md,
+            borderWidth: 1,
+            borderColor: colors.ui.cardBorder,
+            borderRadius: spacing.borderRadius,
+            backgroundColor: colors.ui.white,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="magnify"
+            size={24}
+            color={colors.text.secondary}
+          />
+          <TextInput
+            placeholder={dietFoodSearchPlaceholder}
+            placeholderTextColor={colors.text.secondary}
+            style={{
+              flex: 1,
+              marginLeft: spacing.sm,
+              paddingVertical: spacing.md,
+              fontFamily: fonts.primary.regular,
+              fontSize: textSizes.md,
+              color: colors.text.primary,
+            }}
+          />
         </View>
+      </View>
     );
+  };
+
+  const renderFoodItems = () => {
+    return (
+      <View>
+        <Text
+          style={{
+            ...textStyles.screenSectionTitle,
+            marginBottom: spacing.md,
+          }}
+        >
+          Food
+        </Text>
+        <View style={{ flex: 1 }}>
+          {foodList.map((item) => (
+            <FoodItem
+              key={item.id}
+              item={item}
+              onPress={() =>
+                handleNavigateToAddDietScreen(item.title ?? item.name)
+              }
+            />
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const renderRecipesItems = () => {
+    return (
+      <View>
+        <Text
+          style={{
+            ...textStyles.screenSectionTitle,
+            marginBottom: spacing.md,
+          }}
+        >
+          Recipes
+        </Text>
+        <View style={{ flex: 1 }}>
+          {recipesList.map((item) => (
+            <FoodItem
+              key={item.id}
+              item={item}
+              onPress={() => handleNavigateToRecipeDetailScreen(item)}
+            />
+          ))}
+        </View>
+      </View>
+    );
+  };
+
+  const handleNavigateToAddDietScreen = (_foodName?: string) => {
+    Alert.alert("Add Diet", _foodName);
+  };
+  return (
+    <View style={globalStyles.container}>
+      {renderHeader()}
+      <ScrollView contentContainerStyle={globalStyles.scrollContainer}>
+        {renderFoodItems()}
+        {renderRecipesItems()}
+      </ScrollView>
+    </View>
+  );
 };
 
 export default DietListScreen;

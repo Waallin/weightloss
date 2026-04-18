@@ -1,5 +1,5 @@
 import { Text, View, ScrollView } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -18,17 +18,16 @@ import {
 } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useConfettiStore from "../../../stores/useConfettiStore";
-const currentYear = new Date().getFullYear();
-import { getTodaySteps } from "../../../services/healthkit";
+import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 
 import {
   PermissionStatus,
   useHealthKitPermissions,
 } from "../../../services/healthkit";
 import { RootStackParamList } from "../../navigation/types";
-import ConfettiOverlay from "../../../components/ConfettiOverlay";
 import useUserStore from "../../../stores/useUserStore";
-import { calculatePoints } from "../../../services/dietPoints";
+import {  updateTodayProgress } from "../../../services/firebase";
+import { increment } from "firebase/firestore";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
 const articles = [
@@ -68,19 +67,34 @@ const smallWins = [
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { status, requestPermission } = useHealthKitPermissions();
+  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  console.log("🚀 ~ HomeScreen ~ todayProgress:", todayProgress);
 
   const { setVisibleConfetti } = useConfettiStore();
-  const [claimStepsReward, setClaimStepsReward] = useState(false);
-  const [waterCount, setWaterCount] = useState(0);
+  const [claimStepsReward, setClaimStepsReward] = useState(
+    todayProgress?.progress.steps >= 10000 &&
+      todayProgress?.completion.steps === false,
+  );
+  const [waterCount, setWaterCount] = useState(
+    todayProgress?.progress?.water ?? 0,
+  );
   const { user } = useUserStore();
   const [overallProgress, setOverallProgress] = useState(0);
-  const todaySteps = getTodaySteps();
-  const [points, setPoints] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      const completed = Object.values(todayProgress?.completion ?? {}).filter(
+        (completion: any) => completion === true,
+      ).length;
+      setOverallProgress(completed);
+    }, [todayProgress]),
+  );
+
   useFocusEffect(
     useCallback(() => {
       if (
         status?.status === PermissionStatus.DENIED &&
-        status.canAskAgain === false
+        status?.canAskAgain === false
       ) {
         return;
       }
@@ -88,26 +102,8 @@ const HomeScreen = () => {
     }, [requestPermission, status?.status, status?.canAskAgain]),
   );
 
-  useEffect(() => {
-    const points = calculatePoints(
-      user?.currentWeight ?? user?.startWeight,
-      user?.height ?? 0,
-      currentYear - user?.birthYear,
-      user?.gender ?? "Male",
-      todaySteps,
-    );
-    setPoints(points.points);
-  }, []);
-  
-  useEffect(() => {
-
-    if (todaySteps > 9999 && todaySteps < 10200) {
-      setClaimStepsReward(true);
-    }
-  }, [todaySteps]);
-
   const returnStepsMicroCopy = () => {
-    const steps = todaySteps;
+    const steps = todayProgress?.progress?.steps ?? 0;
 
     if (steps >= 10000) {
       return "10k done! Congratulations";
@@ -186,18 +182,24 @@ const HomeScreen = () => {
   };
 
   const handle10kSteps = () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
+    updateTodayProgress(user?.email as string, {
+      "completion.steps": true,
+    });
     setClaimStepsReward(false);
-    setOverallProgress(overallProgress + 1);
     setVisibleConfetti(true);
   };
 
-
   const handleAddWater = () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
-    setWaterCount(waterCount + 1);
+    updateTodayProgress(user?.email as string, {
+      "progress.water": increment(1),
+    });
+
+    setWaterCount((prev: number) => prev + 1);
+
     if (waterCount == 9) {
-      setOverallProgress(overallProgress + 1);
+      updateTodayProgress(user?.email as string, {
+        "completion.water": true,
+      });
       setVisibleConfetti(true);
     }
   };
@@ -231,7 +233,7 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Steps"
           icon="walk"
-          number={todaySteps}
+          number={todayProgress?.progress?.steps ?? 0}
           goal={10000}
           microcopy={returnStepsMicroCopy()}
           width="47%"
@@ -241,9 +243,9 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Points"
           icon="food-apple"
-          number={11}
-          goal={points ?? 15}
-          microcopy="26 left today"
+          number={todayProgress?.points?.used ?? 0}
+          goal={todayProgress?.points?.total ?? 0}
+          microcopy={`${todayProgress?.points?.left ?? 0} left today`}
           width="100%"
           claimRewardPress={() => handleProgressComponentPress("Points")}
         />

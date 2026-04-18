@@ -71,10 +71,18 @@ export const progressCardCopy = {
 export const dietLabels = {
     gramsUnit: "g",
     kudos: "Points",
+    /** Compact suffix next to the numeric points value on food rows */
+    pointsSuffix: "pts",
     recent: "Recent",
 } as const;
 
 export const dietFoodSearchPlaceholder = 'Search food, e.g. "banana"' as const;
+
+export const recipeDetailCopy = {
+  ingredientsSection: "Ingredients",
+  instructionsSection: "Instructions",
+  addToDietCta: "Add to diet",
+} as const;
 
 export const logWeightCopy = {
     screenTitle: "Log weight",

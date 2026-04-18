@@ -8,7 +8,6 @@ export const formatDate = (date: string): string => {
   });
 };
 
-
 export const getFormattedDate = (date: Date): string => {
   const today = new Date();
   const isToday =
@@ -19,4 +18,9 @@ export const getFormattedDate = (date: Date): string => {
   const dayNumber = date.getDate();
   const monthName = date.toLocaleDateString("sv-SE", { month: "long" });
   return `${dayString}, ${dayNumber} ${monthName}`;
+};
+
+export const getDateKey = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
 };
