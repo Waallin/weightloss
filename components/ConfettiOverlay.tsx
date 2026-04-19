@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue,
   withDelay,
   withTiming,
+  ReduceMotion,
 } from "react-native-reanimated";
 import { confettiPalette } from "../constants/colors";
 
@@ -80,6 +81,7 @@ const ConfettiPiece = React.memo(function ConfettiPiece({
       withTiming(1, {
         duration: config.duration,
         easing: Easing.out(Easing.quad),
+        reduceMotion: ReduceMotion.Never,
       }),
     );
   }, [active, config.delay, config.duration, config.id, progress]);

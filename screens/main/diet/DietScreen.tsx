@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Alert, Text, View } from "react-native";
 import React, { useCallback, useMemo } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
@@ -124,6 +124,11 @@ const DietScreen = () => {
   };
 
   const handleNavigateToDietListScreen = () => {
+
+    if (todayProgress?.completion?.points === true) {
+      Alert.alert("You have already completed the day");
+      return;
+    }
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("DietListScreen");
   };
@@ -223,7 +228,7 @@ const DietScreen = () => {
         style={{
           position: "absolute",
           bottom: 100,
-          right: 20,
+          right: 0,
           alignItems: "center",
           justifyContent: "center",
           padding: spacing.md,

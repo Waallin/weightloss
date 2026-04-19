@@ -30,6 +30,8 @@ const ProgressComponents = ({
   claimRewardPress,
   onPress,
   claimReward,
+  description,
+  completed,
 }: {
   title: string;
   icon: string;
@@ -40,15 +42,17 @@ const ProgressComponents = ({
   claimRewardPress?: () => void;
   claimReward?: boolean;
   onPress?: () => void;
+  description?: string;
+  completed?: boolean;
 }) => {
-  
+
   const progressRatio = goal > 0 ? Math.min(1, Math.max(0, number / goal)) : 0;
 
-  const isCompleted = number >= goal;
+
 
   return (
     <TouchableOpacity
-      disabled={claimReward} 
+      disabled={claimReward}
       onPress={onPress}
       activeOpacity={0.9}
       style={{
@@ -62,7 +66,25 @@ const ProgressComponents = ({
       }}
     >
 
-      {isCompleted && <View style={{
+      {!completed && description ? (
+        <View style={{
+          position: "absolute",
+    
+          right: 10,
+          bottom: 10,
+          zIndex: 1000,
+        }}>
+          <Text style={{
+            ...typography.small,
+            color: colors.text.secondary,
+
+            fontStyle: "italic",
+          }}>
+            {description}
+          </Text>
+        </View>
+      ) : null}
+      {completed && <View style={{
         position: "absolute",
         top: 10,
         right: 10
@@ -72,7 +94,7 @@ const ProgressComponents = ({
           color: colors.ui.primary,
           fontStyle: "italic",
         }}>
-         Done👏
+          Done👏
         </Text>
       </View>}
       {claimReward && (
@@ -118,7 +140,7 @@ const ProgressComponents = ({
                 color: colors.ui.white,
               }}
             >
-              Goal reached👏 
+              Goal reached👏
             </Text>
             <Text
               style={{

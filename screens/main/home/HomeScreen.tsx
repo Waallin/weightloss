@@ -1,4 +1,4 @@
-import { Text, View, ScrollView } from "react-native";
+import { Text, View, ScrollView, Alert } from "react-native";
 import React, { use, useCallback, useEffect, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
@@ -25,7 +25,7 @@ import {
 } from "../../../services/healthkit";
 import { RootStackParamList } from "../../navigation/types";
 import useUserStore from "../../../stores/useUserStore";
-import {  updateTodayProgress } from "../../../services/firebase";
+import { updateTodayProgress } from "../../../services/firebase";
 import { increment } from "firebase/firestore";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 
@@ -74,7 +74,7 @@ const HomeScreen = () => {
   const { setVisibleConfetti } = useConfettiStore();
   const [claimStepsReward, setClaimStepsReward] = useState(
     todayProgress?.progress.steps >= 10000 &&
-      todayProgress?.completion.steps === false,
+    todayProgress?.completion.steps === false,
   );
   const { user } = useUserStore();
   const [overallProgress, setOverallProgress] = useState(0);
@@ -208,11 +208,11 @@ const HomeScreen = () => {
       },
       ...(reachedGoal
         ? {
-            completion: {
-              ...todayProgress.completion,
-              water: true,
-            },
-          }
+          completion: {
+            ...todayProgress.completion,
+            water: true,
+          },
+        }
         : {}),
     });
 
@@ -224,6 +224,35 @@ const HomeScreen = () => {
     if (reachedGoal) {
       setVisibleConfetti(true);
     }
+  };
+
+  const handleClaimPointsReward = () => {
+
+    if (todayProgress?.completion?.points === true) {
+      return;
+    }
+    Alert.alert("Are you sure?", "You will not be able to change your points for today", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Complete the day",
+        onPress: () => {
+          setVisibleConfetti(true);
+          setTodayProgress({
+            ...todayProgress,
+            completion: {
+              ...todayProgress.completion,
+              points: true,
+            },
+          });
+          updateTodayProgress(user?.email as string, {
+            "completion.points": true,
+          });
+        },
+      },
+    ]);
   };
 
   const renderProgressComponents = () => {
@@ -251,6 +280,7 @@ const HomeScreen = () => {
           microcopy={returnWaterMicroCopy()}
           width="47%"
           onPress={() => handleAddWater()}
+          completed={todayProgress?.completion?.water === true}
         />
         <ProgressComponents
           title="Steps"
@@ -259,17 +289,21 @@ const HomeScreen = () => {
           goal={10000}
           microcopy={returnStepsMicroCopy()}
           width="47%"
+          completed={todayProgress?.completion?.steps === true}
           claimRewardPress={() => handle10kSteps()}
           claimReward={claimStepsReward}
         />
         <ProgressComponents
           title="Points"
           icon="food-apple"
+          completed={todayProgress?.completion?.points === true}
           number={todayProgress?.points?.used ?? 0}
           goal={todayProgress?.points?.total ?? 0}
           microcopy={returnPointsMicroCopy()}
+          onPress={() => handleClaimPointsReward()}
           width="100%"
-          claimRewardPress={() => handleProgressComponentPress("Points")}
+          description="Tap to complete the day"
+
         />
       </MotiView>
     );

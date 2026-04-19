@@ -13,7 +13,6 @@ import {
 import { deleteUser as deleteFirebaseAuthUser } from "firebase/auth";
 import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
-import useTodayProgressStore from "../stores/useTodayProgressStore";
 import * as haptics from "expo-haptics";
 
 export const getDocument = async (collection: string, email: string) => {
