@@ -117,13 +117,13 @@ const SettingsScreen = () => {
           marginBottom: spacing.sm,
         }}>Account</Text>
         <View style={{ gap: spacing.sm }}>
-          <SettingsItem
+          {/* <SettingsItem
             title="Logout"
             description="Logout of your account"
             icon="logout"
             iconColor={colors.ui.delete}
             onPress={handleLogout}
-          />
+          /> */}
           <SettingsItem
             title="Delete Account"
             description="Delete your account and all your data"

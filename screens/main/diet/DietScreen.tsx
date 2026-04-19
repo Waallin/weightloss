@@ -222,8 +222,7 @@ const DietScreen = () => {
         style={{
           position: "absolute",
           bottom: 100,
-          left: 0,
-          right: 0,
+          right: 20,
           alignItems: "center",
           justifyContent: "center",
           padding: spacing.md,
@@ -251,15 +250,7 @@ const DietScreen = () => {
         {renderEmptyState()}
       </ScrollView>
       <View
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: 0,
-          right: 0,
-          alignItems: "center",
-          justifyContent: "center",
-          padding: spacing.md,
-        }}
+
       >
         {renderButtonSection()}
       </View>

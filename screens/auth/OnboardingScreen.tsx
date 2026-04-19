@@ -1,11 +1,6 @@
 import React from "react";
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  SafeAreaView,
-  View,
-} from "react-native";
+import { Dimensions, FlatList, Image, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
 import { globalStyles } from "../../constants/globalStyles";
@@ -324,11 +319,7 @@ const OnboardingScreen: React.FC = () => {
   }, [activeIndex, sections.length]);
 
   return (
-    <SafeAreaView
-      style={
-        globalStyles.container
-      }
-    >
+
       <View
         style={{
           flex: 1,
@@ -363,13 +354,13 @@ const OnboardingScreen: React.FC = () => {
         />
         {renderPagination()}
         <View style={{
-          paddingBottom: spacing.xxl,
+          paddingBottom: spacing.ctaButtonBottomPadding,
           paddingHorizontal: spacing.md,
         }}>
           {renderButton()}
         </View>
       </View>
-    </SafeAreaView>
+
   );
 };
 

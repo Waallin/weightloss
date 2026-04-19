@@ -30,8 +30,12 @@ export const colors = {
     foodPointsChipBackground: "rgba(22, 185, 123, 0.12)",
     delete: "#EF4444",
     grey: "#F3F4F6",
+    /** Diet hero + Progress gauge — neutral ring track */
+    circularGaugeTrack: "#F3F1EC",
 
     primarySoft: "#D7E3FC",  // new soft blue
+    /** Progress calendar — subtle fill for each day in journey range (start → today) */
+    calendarDayInRangeBackground: "#EEF0F3",
     /** Calendar: weight-logged dot — saturated blue for contrast on white + goal (green) cells */
     weightDot: "#64748B",
     success: "#B7EFC5",      // new soft green

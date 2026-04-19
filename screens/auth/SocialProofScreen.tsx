@@ -107,7 +107,7 @@ const SocialProofScreen = () => {
         {renderHeader()}
         {renderSocialProof()}
       </ScrollView>
-      <View style={{ paddingBottom: spacing.scrollViewBottomPadding}}>
+      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding}}>
         {renderButton()}
       </View>
     </View>

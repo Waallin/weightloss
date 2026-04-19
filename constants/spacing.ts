@@ -10,6 +10,8 @@ export const spacing = {
   tabBarTopRadius: 18,
   borderRadius: 8,
   calendarWeightDotSize: 6,
+  /** Progress calendar — today cell (green circle behind day number) */
+  calendarTodayCircleSize: 32,
   calendarTodayBorderWidth: 2,
   rounded: 100,
   componentGap: 16,
@@ -17,4 +19,5 @@ export const spacing = {
   screenMarginTop: 25,
   /** Paywall horizontal testimonial cards */
   paywallSocialProofCardWidth: 280,
+  ctaButtonBottomPadding: 80,
 };

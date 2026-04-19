@@ -68,6 +68,26 @@ export const progressCardCopy = {
   claimHint: "Tap to claim your reward",
 } as const;
 
+/** Progress screen — calendar card */
+export const progressCalendarCopy = {
+  sectionTitle: "Your journey",
+  startedPrefix: "Started",
+  legendJourneyDays: "Journey",
+} as const;
+
+/** Progress screen — circular goal gauge (center label under %) */
+export const progressGaugeCopy = {
+  toGoalLabel: "to goal",
+} as const;
+
+/** Progress screen — start / current / goal weights under the gauge */
+export const progressWeightsCopy = {
+  startLabel: "Start weight",
+  currentLabel: "Current weight",
+  goalLabel: "Goal weight",
+  notSet: "—",
+} as const;
+
 /** Home screen — Points progress card microcopy */
 export function getHomePointsMicroCopy(total: number, used: number): string {
   const remaining = total - used;

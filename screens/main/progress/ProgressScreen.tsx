@@ -1,173 +1,181 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import React, { useMemo } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { textSizes } from "../../../constants/texts";
-import CircularProgressGaugeComponent from "../../../components/CircularProgressGaugeComponent";
+import {
+  logWeightCopy,
+  progressCalendarCopy,
+  progressGaugeCopy,
+  progressWeightsCopy,
+  textSizes,
+} from "../../../constants/texts";
 import { Calendar } from "react-native-calendars";
-import type { MarkedDates, Theme } from "react-native-calendars/src/types";
+import type { Theme } from "react-native-calendars/src/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useUserStore from "../../../stores/useUserStore";
+import {
+  formatJourneyStartedDate,
+  formatLocalYmd,
+  parseUserCreatedAt,
+} from "../../../utils/dateUtils";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
 
-/** Mock: dates (YYYY-MM-DD) when today's goal was completed */
-const MOCK_GOAL_COMPLETED_DATES = [
-  "2026-03-01",
-  "2026-03-03",
-  "2026-03-05",
-  "2026-03-07",
-  "2026-03-10",
-  "2026-03-14",
-  "2026-03-18",
-  "2026-03-21",
-  "2026-03-24",
-  "2026-03-28",
-];
+const CIRCLE_SIZE = 200;
+const CIRCLE_WIDTH = 15;
 
-const MOCK_WEIGHT_DATES = [
-  "2026-03-01",
-  "2026-03-02",
-  "2026-03-10",
-  "2026-03-18",
-];
-
-const formatLocalYmd = (d: Date): string => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-};
-
-const buildProgressCalendarMarkedDates = (todayYmd: string): MarkedDates => {
-  const weightSet = new Set(MOCK_WEIGHT_DATES);
-  const goalSet = new Set(MOCK_GOAL_COMPLETED_DATES);
-  const allYmd = new Set([...MOCK_WEIGHT_DATES, ...MOCK_GOAL_COMPLETED_DATES]);
-  const marked: MarkedDates = {};
-
-  const baseText = { color: colors.text.primary };
-  /** Taller cell so the weight dot is not clipped under the day number (incl. green goal days). */
-  const goalDayContainer = {
-    backgroundColor: colors.ui.success,
-    borderRadius: spacing.borderRadius,
-    justifyContent: "center" as const,
-    alignItems: "center" as const,
-    minHeight: 35,
-    height: 35,
-  };
-
-  const todayOutline = {
-    borderWidth: spacing.calendarTodayBorderWidth,
-    backgroundColor: "#ECFDF5",
-    borderColor: "#22C55E",
-    borderRadius: spacing.borderRadius,
-  };
-
-  for (const ymd of allYmd) {
-    const hasWeight = weightSet.has(ymd);
-    const hasGoal = goalSet.has(ymd);
-
-    if (hasWeight && hasGoal) {
-      marked[ymd] = {
-        marked: true,
-        dotColor: colors.ui.weightDot,
-        customStyles: {
-          container: goalDayContainer,
-          text: baseText,
-        },
-      };
-    } else if (hasWeight) {
-      marked[ymd] = {
-        marked: true,
-        dotColor: colors.ui.weightDot,
-      };
-    } else {
-      marked[ymd] = {
-        customStyles: {
-          container: goalDayContainer,
-          text: baseText,
-        },
-      };
-    }
+const formatKgDisplay = (value: number | null | undefined): string => {
+  if (value == null || Number.isNaN(Number(value))) {
+    return progressWeightsCopy.notSet;
   }
-
-  const existingToday = marked[todayYmd];
-  if (existingToday) {
-    marked[todayYmd] = {
-      ...existingToday,
-      customStyles: {
-        text: existingToday.customStyles?.text ?? baseText,
-        container: {
-          ...(existingToday.customStyles?.container ?? {}),
-          ...todayOutline,
-        },
-      },
-    };
-  } else {
-    marked[todayYmd] = {
-      customStyles: {
-        container: {
-          ...todayOutline,
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: 35,
-          height: 35,
-        },
-        text: baseText,
-      },
-    };
-  }
-
-  return marked;
+  const n = Number(value);
+  const str = Number.isInteger(n) ? String(n) : n.toFixed(1);
+  return `${str} ${logWeightCopy.unitKg}`;
 };
 
 const ProgressScreen = () => {
-  const todayYmd = useMemo(() => formatLocalYmd(new Date()), []);
+  const todayYmd = formatLocalYmd(new Date());
   const navigation = useNavigation();
   const { user } = useUserStore();
-  const weightLeftToGoal = useMemo(() => {
-    return Math.abs(user?.goalWeight - user?.startWeight);
-  }, [user?.goalWeight, user?.startWeight]);
 
-  const weightLost = useMemo(() => {
-    return user?.startWeight - user?.currentWeight || 0;
-  }, [user?.currentWeight, user?.goalWeight]);
+  const startYmd = useMemo(() => {
+    const d = parseUserCreatedAt(user?.createdAt);
+    let ymd = formatLocalYmd(d);
+    const today = formatLocalYmd(new Date());
+    if (ymd > today) ymd = today;
+    return ymd;
+  }, [user?.createdAt]);
 
-  const weightLostPercentage = useMemo(() => {
-    return Math.round(weightLost / weightLeftToGoal * 100);
-  }, [weightLost, weightLeftToGoal]);
-
-  const returnWeightMicroCopy = () => {
-    if (weightLostPercentage >= 95) {
-      return "So close. Finish strong 🏁";
-    } else if (weightLostPercentage >= 85) {
-      return "Final stretch ✨";
-    } else if (weightLostPercentage >= 70) {
-      return "Amazing progress 🚀";
-    } else if (weightLostPercentage >= 50) {
-      return "Halfway there 🎯";
-    } else if (weightLostPercentage >= 35) {
-      return "Great progress 💪";
-    } else if (weightLostPercentage >= 25) {
-      return "Keep it going";
-    } else if (weightLostPercentage >= 15) {
-      return "Nice momentum";
-    } else if (weightLostPercentage >= 10) {
-      return "Good start 👏";
-    } else if (weightLostPercentage > 0) {
-      return "You're on your way";
-    } else {
-      return "Let’s get started 💪";
-    }
-  };
+  const journeyStartedLabel = useMemo(() => {
+    const d = parseUserCreatedAt(user?.createdAt);
+    return formatJourneyStartedDate(d);
+  }, [user?.createdAt]);
 
   const calendarMarkedDates = useMemo(
-    () => buildProgressCalendarMarkedDates(todayYmd),
-    [todayYmd],
+    () => ({
+      [todayYmd]: {
+        customStyles: {
+          container: {
+            backgroundColor: colors.ui.primary,
+            width: spacing.calendarTodayCircleSize,
+            height: spacing.calendarTodayCircleSize,
+            borderRadius: spacing.calendarTodayCircleSize / 2,
+            alignItems: "center" as const,
+            justifyContent: "center" as const,
+          },
+          text: {
+            color: colors.ui.white,
+            fontWeight: "600" as const,
+          },
+        },
+      },
+    }),
+    [todayYmd]
   );
+
+  const totalChangeKg = useMemo(() => {
+    const start = user?.startWeight;
+    const goal = user?.goalWeight;
+    if (start == null || goal == null) return 0;
+    return Math.abs(goal - start);
+  }, [user?.startWeight, user?.goalWeight]);
+
+  const progressKg = useMemo(() => {
+    const start = user?.startWeight;
+    const goal = user?.goalWeight;
+    const current = user?.currentWeight;
+    if (start == null || goal == null || current == null) return 0;
+
+    if (goal < start) {
+      const segment = start - goal;
+      const lost = start - current;
+      return Math.min(Math.max(0, lost), segment);
+    }
+    if (goal > start) {
+      const segment = goal - start;
+      const gained = current - start;
+      return Math.min(Math.max(0, gained), segment);
+    }
+    return 0;
+  }, [user?.startWeight, user?.goalWeight, user?.currentWeight]);
+
+  const goalProgressPercentage = useMemo(() => {
+    const start = user?.startWeight;
+    const goal = user?.goalWeight;
+    const current = user?.currentWeight;
+    if (start == null || goal == null || current == null) return 0;
+
+    if (totalChangeKg > 0) {
+      const raw = (progressKg / totalChangeKg) * 100;
+      return Math.min(100, Math.max(0, Math.round(raw)));
+    }
+    return current === goal ? 100 : 0;
+  }, [totalChangeKg, progressKg, user?.startWeight, user?.goalWeight, user?.currentWeight]);
+
+  const progressSummaryLine = useMemo(() => {
+    const start = user?.startWeight;
+    const goal = user?.goalWeight;
+    const current = user?.currentWeight;
+    if (start == null || goal == null || current == null) {
+      return "Log your weight to track progress";
+    }
+    if (totalChangeKg === 0) {
+      if (current === goal) {
+        return "At your goal weight";
+      }
+      const delta = Math.abs(current - goal);
+      return `${delta} kg from goal`;
+    }
+    return `${progressKg} / ${totalChangeKg} kg completed`;
+  }, [user?.startWeight, user?.goalWeight, user?.currentWeight, totalChangeKg, progressKg]);
+
+  const returnWeightMicroCopy = () => {
+    const start = user?.startWeight;
+    const goal = user?.goalWeight;
+    const current = user?.currentWeight;
+    if (start != null && goal != null && current != null && start === goal) {
+      if (current === goal) {
+        return "You're at your goal 💪";
+      }
+      return "Every step toward your goal counts";
+    }
+    const p = goalProgressPercentage;
+    if (totalChangeKg > 0 && p >= 100) {
+      return "Goal reached 🎉";
+    }
+    if (p >= 95) {
+      return "So close. Finish strong 🏁";
+    }
+    if (p >= 85) {
+      return "Final stretch ✨";
+    }
+    if (p >= 70) {
+      return "Amazing progress 🚀";
+    }
+    if (p >= 50) {
+      return "Halfway there 🎯";
+    }
+    if (p >= 35) {
+      return "Great progress 💪";
+    }
+    if (p >= 25) {
+      return "Keep it going";
+    }
+    if (p >= 15) {
+      return "Nice momentum";
+    }
+    if (p >= 10) {
+      return "Good start 👏";
+    }
+    if (p > 0) {
+      return "You're on your way";
+    }
+    return "Let's get started 💪";
+  };
 
   const handleLogWeightPress = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
@@ -190,11 +198,26 @@ const ProgressScreen = () => {
           ...globalStyles.shadow,
           padding: spacing.md,
           borderRadius: spacing.borderRadius,
-          gap: spacing.md,
+          gap: spacing.sm,
         }}
       >
+        <View style={{ gap: spacing.xs }}>
+          <Text
+            style={{
+              fontSize: textSizes.lg,
+              fontWeight: "700",
+              color: colors.text.primary,
+            }}
+          >
+            {progressCalendarCopy.sectionTitle}
+          </Text>
+          <Text style={{ fontSize: textSizes.sm, color: colors.text.secondary }}>
+            {progressCalendarCopy.startedPrefix} {journeyStartedLabel}
+          </Text>
+        </View>
         <Calendar
           current={todayYmd}
+          minDate={startYmd}
           maxDate={todayYmd}
           markingType="custom"
           markedDates={calendarMarkedDates}
@@ -240,64 +263,11 @@ const ProgressScreen = () => {
               selectedDayTextColor: colors.text.primary,
             } as Theme
           }
-          style={{
-            width: "100%",
-          }}
         />
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: spacing.sm,
-            justifyContent: "space-between",
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: spacing.sm,
-            }}
-          >
-            <View
-              style={{
-                width: spacing.calendarWeightDotSize,
-                height: spacing.calendarWeightDotSize,
-                borderRadius: spacing.calendarWeightDotSize / 2,
-                backgroundColor: colors.ui.weightDot,
-              }}
-            />
-            <Text
-              style={{ fontSize: textSizes.sm, color: colors.text.primary }}
-            >
-              Weight logged
-            </Text>
-          </View>
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: spacing.sm,
-            }}
-          >
-            <View
-              style={{
-                width: spacing.md,
-                height: spacing.md,
-                backgroundColor: colors.ui.success,
-                borderRadius: spacing.borderRadius,
-              }}
-            />
-            <Text
-              style={{ fontSize: textSizes.sm, color: colors.text.primary }}
-            >
-              Goal completed
-            </Text>
-          </View>
-        </View>
       </MotiView>
     );
   };
+
   const renderCircularProgressGauge = () => {
     return (
       <MotiView
@@ -306,11 +276,13 @@ const ProgressScreen = () => {
         transition={{
           type: "timing",
           duration: 450,
+          delay: 100,
           reduceMotion: ReduceMotion.Never,
         }}
         style={{
           alignItems: "center",
           justifyContent: "center",
+          width: "100%",
           backgroundColor: colors.ui.componentBackground,
           ...globalStyles.shadow,
           paddingHorizontal: spacing.md,
@@ -318,26 +290,163 @@ const ProgressScreen = () => {
           borderRadius: spacing.borderRadius,
         }}
       >
-        <CircularProgressGaugeComponent
-          fill={weightLostPercentage}
-          tintColor={colors.ui.primary}
-          backgroundColor={colors.ui.primarySoft}
-        />
-        <View
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
-            gap: spacing.md,
-          }}
-        >
-          <Text style={{ fontSize: textSizes.lg, fontWeight: "600" }}>
-            {returnWeightMicroCopy()}
-          </Text>
-          <Text
-            style={{ fontSize: textSizes.sm, color: colors.text.secondary }}
+        <View style={{ alignItems: "center", width: "100%" }}>
+          <View
+            style={{
+              width: CIRCLE_SIZE,
+              height: CIRCLE_SIZE,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            {weightLost} / {weightLeftToGoal} kg completed
-          </Text>
+            <AnimatedCircularProgress
+              style={{ position: "absolute" }}
+              size={CIRCLE_SIZE}
+              width={CIRCLE_WIDTH}
+              fill={goalProgressPercentage}
+              tintColor={colors.ui.primary}
+              backgroundColor={colors.ui.circularGaugeTrack}
+              rotation={0}
+              arcSweepAngle={360}
+              lineCap="round"
+              duration={900}
+            />
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "center",
+                paddingHorizontal: spacing.sm,
+              }}
+            >
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  fontSize: 32,
+                  color: colors.ui.primary,
+                }}
+              >
+                {goalProgressPercentage}%
+              </Text>
+              <Text
+                style={{
+                  fontSize: textSizes.xs,
+                  color: colors.text.secondary,
+                  textAlign: "center",
+                  marginTop: spacing.xs,
+                }}
+              >
+                {progressGaugeCopy.toGoalLabel}
+              </Text>
+            </View>
+          </View>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              gap: spacing.sm,
+              marginTop: spacing.md,
+              paddingHorizontal: spacing.sm,
+              width: "100%",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: textSizes.lg,
+                fontWeight: "600",
+                textAlign: "center",
+                color: colors.text.primary,
+              }}
+            >
+              {returnWeightMicroCopy()}
+            </Text>
+            <Text
+              style={{
+                fontSize: textSizes.sm,
+                color: colors.text.secondary,
+                textAlign: "center",
+              }}
+            >
+              {progressSummaryLine}
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: "row",
+              width: "100%",
+              marginTop: spacing.lg,
+              paddingTop: spacing.md,
+              borderTopWidth: 1,
+              borderTopColor: colors.ui.cardBorder,
+              paddingHorizontal: spacing.xs,
+            }}
+          >
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text
+                style={{
+                  fontSize: textSizes.xs,
+                  color: colors.text.secondary,
+                  textAlign: "center",
+                }}
+              >
+                {progressWeightsCopy.startLabel}
+              </Text>
+              <Text
+                style={{
+                  fontSize: textSizes.md,
+                  fontWeight: "600",
+                  color: colors.text.primary,
+                  marginTop: spacing.xs,
+                  textAlign: "center",
+                }}
+              >
+                {formatKgDisplay(user?.startWeight)}
+              </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text
+                style={{
+                  fontSize: textSizes.xs,
+                  color: colors.text.secondary,
+                  textAlign: "center",
+                }}
+              >
+                {progressWeightsCopy.currentLabel}
+              </Text>
+              <Text
+                style={{
+                  fontSize: textSizes.md,
+                  fontWeight: "600",
+                  color: colors.ui.primary,
+                  marginTop: spacing.xs,
+                  textAlign: "center",
+                }}
+              >
+                {formatKgDisplay(user?.currentWeight)}
+              </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Text
+                style={{
+                  fontSize: textSizes.xs,
+                  color: colors.text.secondary,
+                  textAlign: "center",
+                }}
+              >
+                {progressWeightsCopy.goalLabel}
+              </Text>
+              <Text
+                style={{
+                  fontSize: textSizes.md,
+                  fontWeight: "600",
+                  color: colors.text.primary,
+                  marginTop: spacing.xs,
+                  textAlign: "center",
+                }}
+              >
+                {formatKgDisplay(user?.goalWeight)}
+              </Text>
+            </View>
+          </View>
         </View>
         <TouchableOpacity
           activeOpacity={0.8}
@@ -346,129 +455,27 @@ const ProgressScreen = () => {
             width: "60%",
             alignItems: "center",
             justifyContent: "center",
-            borderColor: "#1FA971",
+            borderColor: colors.ui.primary,
             padding: spacing.sm,
             borderRadius: spacing.borderRadius,
             marginTop: spacing.md,
-            backgroundColor: "#E1F6EA",
+            backgroundColor: colors.ui.listRowIconBackground,
             flexDirection: "row",
             gap: spacing.xs,
           }}
         >
-          <MaterialCommunityIcons name="plus" size={24} color="#1FA971" />
+          <MaterialCommunityIcons name="plus" size={24} color={colors.ui.primary} />
           <Text
             style={{
               fontSize: textSizes.sm,
-              color: "#1FA971",
+              color: colors.ui.primary,
               fontWeight: "bold",
             }}
           >
-            Log weight
+            {logWeightCopy.screenTitle}
           </Text>
         </TouchableOpacity>
       </MotiView>
-    );
-  };
-
-  const renderStreaksComponent = () => {
-    return (
-      <View>
-        <Text
-          style={{
-            fontSize: textSizes.lg,
-            fontWeight: "bold",
-            marginBottom: spacing.sm,
-          }}
-        >
-          Streaks
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            backgroundColor: colors.ui.componentBackground,
-            alignItems: "center",
-            borderRadius: spacing.borderRadius,
-            ...globalStyles.shadow,
-          }}
-        >
-          <View
-            style={{
-              ...styles.streakStatsContainer,
-            }}
-          >
-            <Text style={{ fontSize: textSizes.lg, fontWeight: "bold" }}>
-              2 days
-            </Text>
-            <Text
-              style={{ fontSize: textSizes.sm, color: colors.text.secondary }}
-            >
-              Current streak
-            </Text>
-          </View>
-          <View
-            style={{
-              width: 1,
-              position: "absolute",
-              left: "50%",
-              top: 0,
-              bottom: 0,
-              height: "100%",
-              backgroundColor: colors.ui.cardBorder,
-            }}
-          />
-          <View
-            style={{
-              ...styles.streakStatsContainer,
-            }}
-          >
-            <Text style={{ fontSize: textSizes.lg, fontWeight: "bold" }}>
-              13 days
-            </Text>
-            <Text
-              style={{ fontSize: textSizes.sm, color: colors.text.secondary }}
-            >
-              Longest streak
-            </Text>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const renderCommingSoonComponent = () => {
-    return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          paddingVertical: spacing.lg,
-          gap: spacing.sm,
-          backgroundColor: colors.ui.componentBackground,
-          borderRadius: spacing.borderRadius,
-          padding: spacing.md,
-          ...globalStyles.shadow,
-        }}
-      >
-        <Text
-          style={{
-            fontSize: textSizes.lg,
-            fontWeight: "bold",
-            color: colors.text.primary,
-          }}
-        >
-          Coming soon
-        </Text>
-        <Text
-          style={{
-            fontSize: textSizes.sm,
-            color: colors.text.secondary,
-            textAlign: "center",
-          }}
-        >
-          We're working on this feature right now. Please check back soon!
-        </Text>
-      </View>
     );
   };
 
@@ -487,13 +494,3 @@ const ProgressScreen = () => {
 };
 
 export default ProgressScreen;
-
-const styles = StyleSheet.create({
-  streakStatsContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: spacing.lg,
-    gap: spacing.sm,
-  },
-});

@@ -48,7 +48,7 @@ const AuthScreen = () => {
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-   if (credential.identityToken) {
+      if (credential.identityToken) {
         setAppleToken(credential.identityToken);
       } else {
         setAppleToken(undefined);
@@ -57,7 +57,7 @@ const AuthScreen = () => {
       if (e.code === 'ERR_REQUEST_CANCELED') {
       } else {
         Alert.alert("Error", "Failed to verify Apple login");
-      } 
+      }
     }
   };
 
@@ -72,7 +72,7 @@ const AuthScreen = () => {
         version: Constants.expoConfig?.version || "",
         totalAppsOpen: 1,
       }
-     const result = await setDocument("users", email, userObj);
+      const result = await setDocument("users", email, userObj);
       if (result) {
         await AsyncStorage.setItem("user", email);
         setUser(userObj);
@@ -93,7 +93,7 @@ const AuthScreen = () => {
           duration: 450,
           reduceMotion: ReduceMotion.Never,
         }}
-        style={{ alignItems: "center", justifyContent: "center"}}
+        style={{ alignItems: "center", justifyContent: "center" }}
       >
         <MotiView
           from={{ opacity: 0, translateY: 14, scale: 0.96 }}
@@ -113,7 +113,7 @@ const AuthScreen = () => {
               alignItems: "center",
               justifyContent: "center",
               marginBottom: spacing.xl,
-              ...globalStyles.shadow,           
+              ...globalStyles.shadow,
               overflow: "hidden",
               alignSelf: "center",
             },
@@ -189,20 +189,20 @@ const AuthScreen = () => {
           delay: 220,
           reduceMotion: ReduceMotion.Never,
         }}
-        style={{ width: "100%", marginBottom: 100}}
+        style={{ width: "100%" }}
       >
-            <AppleAuthentication.AppleAuthenticationButton
-             
-              buttonType={
-                AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
-              }
-              buttonStyle={
-                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-              }
-              cornerRadius={10}
-              style={{ width: "100%", height: 50 }}
-              onPress={handleAppleLogin}
-            />
+        <AppleAuthentication.AppleAuthenticationButton
+
+          buttonType={
+            AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
+          }
+          buttonStyle={
+            AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+          }
+          cornerRadius={10}
+          style={{ width: "100%", height: 50 }}
+          onPress={handleAppleLogin}
+        />
       </MotiView>
     );
   };
@@ -211,11 +211,13 @@ const AuthScreen = () => {
     <View
       style={globalStyles.container}
     >
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center"}}>
-      {renderImage()}
-      {renderText()}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        {renderImage()}
+        {renderText()}
       </View>
-      {renderCTA()}
+      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+        {renderCTA()}
+      </View>
     </View>
   );
 };
