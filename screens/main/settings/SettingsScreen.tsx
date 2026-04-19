@@ -8,7 +8,7 @@ import { colors } from "../../../constants/colors";
 import { textSizes, textStyles } from "../../../constants/texts";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
-import useToastStore from "../../../stores/useToastStore";  
+import useToastStore from "../../../stores/useToastStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { deleteDocument } from "../../../services/firebase";
 import useUserStore from "../../../stores/useUserStore";
@@ -16,33 +16,31 @@ import { RootStackParamList } from "../../navigation/types";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import { deleteUser } from "../../../services/firebase";
+
 const SettingsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { showToast } = useToastStore();
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const { user } = useUserStore();
-  const handleDeleteAccount =  async() => {
- 
+  const handleDeleteAccount = async () => {
+
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+
 
     Alert.alert("Delete Account", "Are you sure you want to delete your account? This action is irreversible.", [
       { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: async () => {
+      {
+        text: "Delete", style: "destructive", onPress: async () => {
 
-        await AsyncStorage.removeItem("user");  
-        await deleteUser(user?.email as string);
-        
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "Onboarding" }],
-        });
+          await AsyncStorage.removeItem("user");
+          await deleteUser(user?.email as string);
 
-        showToast("Account deleted successfully");
-      } },
+          navigation.navigate("AuthNavigator");
+          showToast("Account deleted successfully");
+        }
+      },
     ]);
-  
-    
   };
 
   const handleProfile = () => {

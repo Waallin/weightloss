@@ -319,7 +319,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
   const renderCTA = () => (
     <View style={{ marginTop: spacing.lg }}>
       <PrimaryButtonComponent
-        title={recipeDetailCopy.addToDietCta}
+        title={"Add meal"}
         onPress={() => handleAddToDiet(recipe)}
       />
     </View>

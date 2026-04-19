@@ -9,6 +9,8 @@ import LogWeightScreen from "../main/progress/LogWeightScreen";
 import ArticleScreen from "../main/home/ArticleScreen";
 import { RootStackParamList } from "./types";
 import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
+import OnboardingScreen from "../auth/OnboardingScreen";
+import { AuthNavigator } from "./AuthNavigator";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -55,6 +57,11 @@ export const MainStack = () => {
         component={ArticleScreen}
         options={{ headerShown: false }}
       />
+      <Stack.Screen
+        name="AuthNavigator"
+        component={AuthNavigator}
+        options={{ headerShown: false }}
+      />  
     </Stack.Navigator>
   );
 };

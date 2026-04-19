@@ -23,7 +23,7 @@ const IMAGE_SIZE = 220;
 const LogWeightScreen: React.FC = () => {
   const navigation = useNavigation();
   const [weightInput, setWeightInput] = useState("");
-  const { setUser, user } = useUserStore();  
+  const { setUser, user } = useUserStore();
   const handleSave = async () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     const result = await updateDocument("users", user?.email as string, { currentWeight: parseFloat(weightInput) });
@@ -77,7 +77,7 @@ const LogWeightScreen: React.FC = () => {
               textAlign: "center",
             }}
           />
- 
+
           <Text style={{ ...textStyles.secondary, fontSize: textSizes.md }}>
             {logWeightCopy.unitKg}
           </Text>
@@ -124,21 +124,25 @@ const LogWeightScreen: React.FC = () => {
           backgroundColor: colors.ui.background,
         }}
       >
-        <PrimaryButtonComponent
-          title={"Log weight"}
-          onPress={handleSave}
-        />
+
       </View>
     );
   };
   return (
     <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-    <View style={{ ...globalStyles.container, alignItems: "center" }}>
-      <GoBackHeaderComponent title={"Log weight"} />
-      {renderImage()}
-      {renderForm()}
-      {renderButton()}
-    </View>
+      <View style={{ ...globalStyles.container }}>
+        <View style={{ flex: 1, alignItems: "center" }}>
+          <GoBackHeaderComponent title={"Log weight"} />
+          {renderImage()}
+          {renderForm()}
+        </View>
+        <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+          <PrimaryButtonComponent
+            title={"Log weight"}
+            onPress={handleSave}
+          />
+        </View>
+      </View>
     </TouchableWithoutFeedback>
   );
 };

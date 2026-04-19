@@ -106,7 +106,7 @@ const DietScreen = () => {
             marginBottom: spacing.md,
           }}
         >
-          Today's Diet
+          Food
         </Text>
         <View style={{ flex: 1, gap: spacing.xs }}>
           {groupedTodayDiet.map(({ item, quantity }, index) => (

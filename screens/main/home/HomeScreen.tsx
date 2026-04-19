@@ -171,9 +171,7 @@ const HomeScreen = () => {
       >
         <Text
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.xxl,
-            fontWeight: "bold",
+            ...textStyles.screenSectionTitle,
           }}
         >
           Your day
@@ -300,9 +298,7 @@ const HomeScreen = () => {
       >
         <Text
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.lg,
-            fontWeight: "bold",
+            ...textStyles.screenSectionTitle,
           }}
         >
           Get there easier

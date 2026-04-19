@@ -1,4 +1,10 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, { useState } from "react";
 import { spacing } from "../../../constants/spacing";
 import ProfileItem from "./components/ProfileItem";
@@ -58,9 +64,23 @@ const ProfileScreen = () => {
   };
   const renderResetSection = () => {
     return (
-      <TouchableOpacity style={{ alignItems: "center", justifyContent: "center", marginTop: spacing.xl }}>
-        <Text style={{ ...textStyles.primary, textAlign: "center", textDecorationLine: "underline", color: colors.text.secondary}}>
-          Need to change something? Reset your profile.
+      <TouchableOpacity
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          marginTop: spacing.xl,
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text
+          style={{
+            ...textStyles.primary,
+            textAlign: "center",
+            textDecorationLine: "underline",
+            color: colors.text.secondary,
+          }}
+        >
+          Need to change something? Delete your account and start over.
         </Text>
       </TouchableOpacity>
     );

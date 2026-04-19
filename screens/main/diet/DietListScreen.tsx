@@ -96,7 +96,6 @@ const DietListScreen = () => {
         style={{
           backgroundColor: colors.ui.background,
           paddingTop: insets.top + spacing.sm,
-          paddingBottom: spacing.md,
         }}
       >
         <TouchableOpacity
