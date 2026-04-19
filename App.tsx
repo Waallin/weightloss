@@ -1,7 +1,6 @@
 import { SafeAreaView, View, Text, TouchableOpacity, AppState } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
 import { useEffect, useState } from "react";
-import globalApi from "./services/api";
 import useToastStore from "./stores/useToastStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useUserStore from "./stores/useUserStore";
@@ -28,9 +27,9 @@ export default function App() {
 
   const { isVisible, message } = useToastStore();
   const { user, setUser } = useUserStore();
-  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const {  setTodayProgress } = useTodayProgressStore();
   const steps = useTodaySteps();
-  const { todayDiet, setTodayDiet } = useTodayDietStore();
+  const {  setTodayDiet } = useTodayDietStore();
   const { setConfig } = useConfigStore();
   const { visibleConfetti, confettiNonce, setVisibleConfetti } =
     useConfettiStore();
@@ -77,9 +76,10 @@ export default function App() {
       steps,
     );
 
-      
-  const syncedDay = await syncToday(user.email as string, steps, points);
-    setTodayProgress(syncedDay);
+    const syncedDay = await syncToday(user.email as string, steps, points);
+    if (syncedDay != null) {
+      setTodayProgress(syncedDay);
+    }
   };
  
 
@@ -109,7 +109,6 @@ export default function App() {
     const userData = await getDocument("users", user);
     const dietRef = "users/" + user + "/days/" + getDateKey() + "/foodEntries";
     const todayDiet = await getDocuments(dietRef);
-    console.log("🚀 ~ checkInUser ~ todayDiet:", todayDiet)
     if (userData) {
       await updateDocument("users", user, {
         totalAppsOpen: increment(1),

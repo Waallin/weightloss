@@ -128,7 +128,7 @@ export const syncToday = async (
 ) => {
   try {
     const dateKey = getDateKey();
-
+   
     const dayRef = doc(database, "users", email, "days", dateKey);
     const daySnap = await getDoc(dayRef);
 
@@ -172,7 +172,8 @@ export const syncToday = async (
         "points.stepBonus": points?.stepBonus ?? 0,
         "points.total": points?.total ?? 0,
       });
-      return daySnap.data();
+      const freshSnap = await getDoc(dayRef);
+      return freshSnap.exists() ? freshSnap.data() : daySnap.data();
     }
   } catch (error) {
     console.log("Error syncing today:", error);
