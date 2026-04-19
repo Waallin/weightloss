@@ -31,8 +31,6 @@ interface AddedFoodItemProps {
   onPress: () => void;
 }
 
-const fallbackImage = require("../../../../assets/potato.png");
-
 function formatTypeLabel(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return "";
@@ -89,11 +87,11 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
       ? String(pointsRaw).trim()
       : null;
 
-  const imageSource: ImageSourcePropType = useMemo(() => {
+  const imageSource: ImageSourcePropType | null = useMemo(() => {
     if (resolvedImageUrl?.trim()) {
       return { uri: resolvedImageUrl.trim() };
     }
-    return fallbackImage;
+    return null;
   }, [resolvedImageUrl]);
 
   return (
@@ -142,6 +140,7 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
       <View
         style={{
           width: thumbSize,
+          height: thumbSize,
           alignSelf: "center",
           borderRadius: spacing.borderRadius,
           overflow: "visible",
@@ -156,11 +155,13 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
             overflow: "hidden",
           }}
         >
-          <Image
-            source={imageSource}
-            style={{ width: "100%", aspectRatio: 1 }}
-            resizeMode="cover"
-          />
+          {imageSource ? (
+            <Image
+              source={imageSource}
+              style={{ width: "100%", aspectRatio: 1 }}
+              resizeMode="cover"
+            />
+          ) : null}
         </View>
       </View>
 

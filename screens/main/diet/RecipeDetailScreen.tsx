@@ -76,7 +76,6 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     showToast(recipe.title + " successfully added to your day");
     
-
     const payload = {
       sourceId: recipe.id,
       type: recipe.mealType,
@@ -332,8 +331,8 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
       <ScrollView
       showsVerticalScrollIndicator={false}
         contentContainerStyle={[
-          globalStyles.scrollContainer,
-          { paddingBottom: scrollBottomPadding },
+     { paddingBottom: 50}
+          
         ]}
       >
         {renderHero()}

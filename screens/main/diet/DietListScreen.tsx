@@ -86,6 +86,7 @@ const DietListScreen = () => {
   };
 
   const handleNavigateToRecipeDetailScreen = (recipe: RecipeDetail) => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("RecipeDetailScreen", { recipe });
   };
 

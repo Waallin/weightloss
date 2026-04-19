@@ -6,13 +6,14 @@ import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import { globalStyles } from "../../../constants/globalStyles";
 import { textSizes, textStyles } from "../../../constants/texts";
 import { colors } from "../../../constants/colors";
-
+import useUserStore from "../../../stores/useUserStore";
 const ProfileScreen = () => {
   const [height, setHeight] = useState<number>(175);
   const [weight, setWeight] = useState<number>(70);
   const [goalWeight, setGoalWeight] = useState<number>(70);
   const [birthYear, setBirthYear] = useState<number>(2000);
   const [gender, setGender] = useState<string>("male");
+  const { user } = useUserStore();
 
   const renderProfileSection = () => {
     return (
@@ -20,31 +21,31 @@ const ProfileScreen = () => {
         <ProfileItem
           title="Height"
           suffix="cm"
-          value={height}
+          value={user?.height ?? 175}
           icon="human-male-height"
           disabled={true}
         />
         <ProfileItem
           suffix="kg"
           title="Weight"
-          value={weight}
+          value={user?.currentWeight ?? 70}
           icon="weight-kilogram"
         />
         <ProfileItem
           suffix="kg"
           title="Goal Weight"
-          value={goalWeight}
+          value={user?.goalWeight ?? 70}
           icon="target"
         />
         <ProfileItem
           title="Birth Year"
-          value={birthYear}
+          value={user?.birthYear ?? 2000}
           icon="calendar"
           disabled={true}
         />
         <ProfileItem
           title="Gender"
-          value={gender}
+          value={user?.gender ?? "male"}
           icon="gender-male-female"
           disabled={true}
         />

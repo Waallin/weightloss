@@ -8,8 +8,10 @@ import {
   updateDoc,
   addDoc,
   increment,
+  deleteDoc,
 } from "firebase/firestore";
-import { database } from "./firebaseConfig";
+import { deleteUser as deleteFirebaseAuthUser } from "firebase/auth";
+import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
 import useTodayProgressStore from "../stores/useTodayProgressStore";
 import * as haptics from "expo-haptics";
@@ -41,6 +43,71 @@ export const getDocuments = async (alias: string) => {
   } catch (error) {
     console.log(`Error getting documents in ${alias}:`, error);
     return [];
+  }
+};
+
+export const deleteDocument = async (collection: string, email: string) => {
+  try {
+    const docRef = doc(database, collection, email);
+    await deleteDoc(docRef);
+    console.log(`Document deleted in ${collection} with email ${email}`);
+    return true;
+  } catch (error) {
+    console.log(`Error deleting document in ${collection} with email ${email}:`, error);
+    return false;
+  }
+};
+
+/** Deletes all documents in a collection (single query page). */
+const deleteAllInCollection = async (colRef: ReturnType<typeof collection>) => {
+  const snapshot = await getDocs(colRef);
+  await Promise.all(snapshot.docs.map((d) => deleteDoc(d.ref)));
+};
+
+/**
+ * Removes Firestore data under users/{email}: nested foodEntries per day, then days, then the user doc.
+ * Client SDK has no recursive delete; paths must match app schema (users → days → foodEntries).
+ */
+const deleteUserFirestoreTree = async (email: string) => {
+  const daysRef = collection(database, "users", email, "days");
+  const daysSnap = await getDocs(daysRef);
+
+  for (const dayDoc of daysSnap.docs) {
+    const foodEntriesRef = collection(
+      database,
+      "users",
+      email,
+      "days",
+      dayDoc.id,
+      "foodEntries",
+    );
+    await deleteAllInCollection(foodEntriesRef);
+    await deleteDoc(dayDoc.ref);
+  }
+
+  await deleteDoc(doc(database, "users", email));
+};
+
+export const deleteUser = async (email: string) => {
+  try {
+    const current = auth.currentUser;
+    if (
+      !current?.email ||
+      current.email.toLowerCase() !== email.toLowerCase()
+    ) {
+      console.log(
+        "deleteUser: no signed-in user or email does not match current session",
+      );
+      return false;
+    }
+
+    await deleteUserFirestoreTree(email);
+    await deleteFirebaseAuthUser(current);
+    console.log(`User and Firestore data deleted for ${email}`);
+    return true;
+  } catch (error) {
+    console.log(`Error deleting user with email ${email}:`, error);
+    return false;
   }
 };
 

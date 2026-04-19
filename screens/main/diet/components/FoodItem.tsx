@@ -25,8 +25,6 @@ interface FoodItemProps {
   onIconPress: () => void;
   }
 
-const fallbackImage = require("../../../../assets/potato.png");
-
 function formatMealTypeLabel(mealType: string): string {
   const trimmed = mealType.trim();
   if (!trimmed) return "";
@@ -44,14 +42,14 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress, onIconPress }) => {
       ? String(pointsRaw).trim()
       : null;
 
-  const imageSource: ImageSourcePropType = useMemo(() => {
+  const imageSource: ImageSourcePropType | null = useMemo(() => {
     if (item.imageUrl?.trim()) {
       return { uri: item.imageUrl.trim() };
     }
     if (item.image !== undefined) {
       return item.image;
     }
-    return fallbackImage;
+    return null;
   }, [item.image, item.imageUrl]);
 
   const mealLabel = item.mealType ? formatMealTypeLabel(item.mealType) : "";
@@ -75,6 +73,7 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress, onIconPress }) => {
       <View
         style={{
           width: thumbSize,
+          height: thumbSize,
           alignSelf: "center",
           borderRadius: spacing.borderRadius,
           overflow: "hidden",
@@ -83,11 +82,13 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress, onIconPress }) => {
           borderColor: colors.ui.cardBorder,
         }}
       >
-        <Image
-          source={imageSource}
-          style={{ width: "100%", aspectRatio: 1 }}
-          resizeMode="cover"
-        />
+        {imageSource ? (
+          <Image
+            source={imageSource}
+            style={{ width: "100%", aspectRatio: 1 }}
+            resizeMode="cover"
+          />
+        ) : null}
       </View>
 
       <View

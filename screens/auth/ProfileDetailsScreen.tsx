@@ -413,8 +413,8 @@ const ProfileDetailsScreen = () => {
             height,
             startWeight,
             goalWeight,
+            currentWeight: startWeight,
         }
-        console.log(userObj)
         setUser(userObj)    
         haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
         if (step < 5) {

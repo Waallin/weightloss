@@ -23,7 +23,7 @@ import useTodayDietStore from "../../../stores/useTodayDietStore";
 import AddedFoodItem, {
   AddedFoodItemData,
 } from "./components/AddedFoodItem";
-
+import * as haptics from "expo-haptics";
 function mergeDietGroup(items: AddedFoodItemData[]): AddedFoodItemData {
   const first = items[0];
   let totalCalories = 0;
@@ -123,6 +123,7 @@ const DietScreen = () => {
   };
 
   const handleNavigateToDietListScreen = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("DietListScreen");
   };
   const renderHeroSection = () => {

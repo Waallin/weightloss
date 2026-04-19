@@ -189,9 +189,10 @@ const AuthScreen = () => {
           delay: 220,
           reduceMotion: ReduceMotion.Never,
         }}
-        style={{ width: "100%", backgroundColor: "blue", marginBottom: 100}}
+        style={{ width: "100%", marginBottom: 100}}
       >
             <AppleAuthentication.AppleAuthenticationButton
+             
               buttonType={
                 AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
               }
