@@ -4,7 +4,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { textStyles } from "../../../../constants/texts";
+import { textStyles, typography } from "../../../../constants/texts";
 
 type MaterialIconName = NonNullable<
   ComponentProps<typeof MaterialCommunityIcons>["name"]
@@ -75,8 +75,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({
       <Text
         numberOfLines={1}
         style={{
-          ...textStyles.primary,
-          fontWeight: "bold",
+          ...typography.cardTitle,
           color: colors.text.primary,
         }}
       >
@@ -85,10 +84,7 @@ const ProfileItem: React.FC<ProfileItemProps> = ({
       {suffix && (
         <Text
           style={{
-            ...textStyles.primary,
-
-            fontWeight: "bold",
-
+            ...typography.cardTitle,
             color: colors.text.primary,
           }}
         >

@@ -3,9 +3,8 @@ import React from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../../constants/spacing";
 import { colors } from "../../../../constants/colors";
-import { fonts } from "../../../../constants/fonts";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { textSizes } from "../../../../constants/texts";
+import { typography } from "../../../../constants/texts";
 
 const CARD_WIDTH = 300;
 const CARD_MIN_HEIGHT = 160;
@@ -53,10 +52,8 @@ const ArticlesComponent = ({
       >
         <Text
           style={{
-            fontFamily: fonts.primary.bold,
-            fontSize: textSizes.lg,
+            ...typography.titleBold,
             color: colors.text.primary,
-            fontWeight: "bold",
           }}
           numberOfLines={2}
           ellipsizeMode="tail"
@@ -65,8 +62,7 @@ const ArticlesComponent = ({
         </Text>
         <Text
           style={{
-            fontFamily: fonts.primary.regular,
-            fontSize: textSizes.sm,
+            ...typography.body,
             color: colors.text.primary,
             opacity: 0.92,
           }}

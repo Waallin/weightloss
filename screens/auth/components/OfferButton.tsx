@@ -4,8 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { fonts } from "../../../constants/fonts";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { typography } from "../../../constants/texts";
 import { globalStyles } from "../../../constants/globalStyles";
 
 export interface OfferButtonProps {
@@ -68,8 +67,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
         >
           <Text
             style={{
-              fontFamily: fonts.primary.semiBold,
-              fontSize: textSizes.sm,
+              ...typography.bodySemiBold,
               color: primaryText,
               flex: 1,
               paddingRight: spacing.xs,
@@ -92,8 +90,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
               >
                 <Text
                   style={{
-                    fontFamily: fonts.primary.semiBold,
-                    fontSize: textSizes.xxs,
+                    ...typography.captionSemiBold,
                     color: selected ? colors.ui.white : colors.ui.primary,
                   }}
                 >
@@ -123,8 +120,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
 
         <Text
           style={{
-            fontFamily: fonts.primary.bold,
-            fontSize: textSizes.md,
+            ...typography.cardTitle,
             color: primaryText,
             marginBottom: caption || footnote ? spacing.xs : 0,
           }}
@@ -135,8 +131,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
         {caption ? (
           <Text
             style={{
-              ...textStyles.secondary,
-              fontSize: textSizes.xs,
+              ...typography.small,
               color: secondaryText,
               marginBottom: footnote ? spacing.xs : 0,
             }}
@@ -147,9 +142,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
         {captionSubline ? (
           <Text
             style={{
-              ...textStyles.secondary,
-              fontSize: textSizes.xs,
-              fontWeight: "800",
+              ...typography.buttonSecondary,
               color: secondaryText,
               marginTop: spacing.xs,
             }}
@@ -161,8 +154,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
         {footnote ? (
           <Text
             style={{
-              fontFamily: fonts.primary.regular,
-              fontSize: textSizes.xxs,
+              ...typography.caption,
               color: mutedText,
               fontStyle: "italic",
             }}
@@ -195,8 +187,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
             >
               <Text
                 style={{
-                  fontFamily: fonts.primary.semiBold,
-                  fontSize: textSizes.sm,
+                  ...typography.bodySemiBold,
                   color: colors.ui.white,
                   textAlign: "center",
                   letterSpacing: 0.45,
@@ -221,8 +212,7 @@ const OfferButton: React.FC<OfferButtonProps> = ({
             >
               <Text
                 style={{
-                  fontFamily: fonts.primary.semiBold,
-                  fontSize: textSizes.sm,
+                  ...typography.bodySemiBold,
                   color: colors.ui.primary,
                   textAlign: "center",
                   letterSpacing: 0.35,

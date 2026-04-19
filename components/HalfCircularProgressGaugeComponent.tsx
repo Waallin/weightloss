@@ -3,7 +3,7 @@ import React from "react";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
-import { textSizes } from "../constants/texts";
+import { typography } from "../constants/texts";
 
 interface HalfCircularProgressGaugeProps {
   fill: number;
@@ -42,7 +42,7 @@ const HalfCircularProgressGaugeComponent: React.FC<HalfCircularProgressGaugeProp
         rotation={220}
       />
       {showPercentage && (
-        <Text style={{ fontSize: textSizes.xl, fontWeight: 'bold', marginTop: spacing.md }}>{fill} left</Text>
+        <Text style={{ ...typography.headline, marginTop: spacing.md }}>{fill} left</Text>
       )}
     </View>
   );

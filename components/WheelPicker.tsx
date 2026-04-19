@@ -10,7 +10,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
-import { textSizes, textStyles } from "../constants/texts";
+import { typography } from "../constants/texts";
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
@@ -134,9 +134,7 @@ function WheelPickerInner<T>({
         >
           <Animated.Text
             style={{
-              ...textStyles.primary,
-              fontSize: textSizes.xxl + 6,
-              fontWeight: "bold",
+              ...typography.wheelPickerSelected,
               color: color as unknown as string,
             }}
           >

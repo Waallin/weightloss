@@ -1,65 +1,196 @@
+import type { TextStyle } from "react-native";
 import { colors } from "./colors";
 import { fonts } from "./fonts";
 
 export const textSizes = {
-    xxs: 10,
-    xs: 12,
-    sm: 14,
-    md: 16,
-    lg: 18,
-    xl: 20,
-    xxl: 22,
-    xxxl: 26,
-};
+  xxs: 10,
+  xs: 12,
+  sm: 14,
+  md: 16,
+  lg: 18,
+  xl: 20,
+  xxl: 22,
+  xxxl: 26,
+  /** Large hero numbers (rings, gauges) */
+  display: 32,
+  /** Splash / wordmark lockup */
+  splashWordmark: 28,
+  /** Legacy layout hack: wraps vector icon inside Text on round nav button */
+  roundedNavIcon: 35,
+} as const;
+
+/**
+ * Single place for font size + weight + family. Prefer these over ad-hoc Text styles.
+ * Adjust tokens here to change typography app-wide.
+ */
+export const typography = {
+  sectionTitle: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.lg,
+    fontWeight: "600" as const,
+  },
+  cardTitle: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.md,
+    fontWeight: "600" as const,
+  },
+  body: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.sm,
+    fontWeight: "400" as const,
+  },
+  small: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.xs,
+    fontWeight: "400" as const,
+  },
+  caption: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.xxs,
+    fontWeight: "400" as const,
+  },
+  captionSemiBold: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.xxs,
+    fontWeight: "600" as const,
+  },
+  /** 16px medium — default emphasized line (former `textStyles.primary` base) */
+  titleMedium: {
+    fontFamily: fonts.primary.medium,
+    fontSize: textSizes.md,
+    fontWeight: "500" as const,
+  },
+  bodyMedium: {
+    fontFamily: fonts.primary.medium,
+    fontSize: textSizes.sm,
+    fontWeight: "500" as const,
+  },
+  /** 14px semibold — compact labels, offer rows */
+  bodySemiBold: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.sm,
+    fontWeight: "600" as const,
+  },
+  screenTitle: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xxxl,
+    fontWeight: "700" as const,
+  },
+  headline: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xl,
+    fontWeight: "700" as const,
+  },
+  headlineSemi: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.xl,
+    fontWeight: "600" as const,
+  },
+  subheadline: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.lg,
+    fontWeight: "600" as const,
+  },
+  /** Section headings that stay bold (e.g. colored cards, legacy “Small Wins”) */
+  titleBold: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.lg,
+    fontWeight: "700" as const,
+  },
+  /** Large emoji / icon label in stat rows */
+  emojiLarge: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xxxl,
+    fontWeight: "700" as const,
+  },
+  button: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xl,
+    fontWeight: "700" as const,
+  },
+  buttonSecondary: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.sm,
+    fontWeight: "700" as const,
+  },
+  displayNumeric: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.display,
+    fontWeight: "700" as const,
+  },
+  statLabel: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.xs,
+    fontWeight: "400" as const,
+  },
+  statValue: {
+    fontFamily: fonts.primary.semiBold,
+    fontSize: textSizes.md,
+    fontWeight: "600" as const,
+  },
+  splashWordmark: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.splashWordmark,
+    fontWeight: "300" as const,
+  },
+  splashTagline: {
+    fontFamily: fonts.primary.regular,
+    fontSize: textSizes.md,
+    fontWeight: "300" as const,
+  },
+  socialProofStat: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xxl,
+    fontWeight: "700" as const,
+  },
+  /** Selected row in native-style wheel pickers */
+  wheelPickerSelected: {
+    fontFamily: fonts.primary.bold,
+    fontSize: textSizes.xxl + 6,
+    fontWeight: "700" as const,
+  },
+} as const satisfies Record<string, TextStyle>;
 
 export const textStyles = {
-    primary: {
-        fontFamily: fonts.primary.medium,
-        fontSize: textSizes.md,
-        color: colors.text.primary,
-    },
+  primary: {
+    ...typography.titleMedium,
+    color: colors.text.primary,
+  },
 
-    secondary: {
-        fontFamily: fonts.primary.regular,
-        fontSize: textSizes.sm,
-        color: colors.text.secondary,
-    },
+  secondary: {
+    ...typography.body,
+    color: colors.text.secondary,
+  },
 
-    onboardingTitle: {
-        fontFamily: fonts.primary.bold,
-        fontSize: textSizes.xxxl,
-        color: colors.text.primary,
-    },
+  onboardingTitle: {
+    ...typography.screenTitle,
+    color: colors.text.primary,
+  },
 
-    onboardingBody: {
-        fontFamily: fonts.primary.regular,
-        fontSize: textSizes.sm,
-        color: colors.text.secondary,
-    },
+  onboardingBody: {
+    ...typography.body,
+    color: colors.text.secondary,
+  },
 
-    listItemTitle: {
-        fontFamily: fonts.primary.semiBold,
-        fontSize: textSizes.lg,
-        color: colors.text.primary,
-    },
+  listItemTitle: {
+    ...typography.sectionTitle,
+    color: colors.text.primary,
+  },
 
-    listItemMeta: {
-        fontFamily: fonts.primary.regular,
-        fontSize: textSizes.sm,
-        color: colors.text.secondary,
-    },
+  listItemMeta: {
+    ...typography.body,
+    color: colors.text.secondary,
+  },
 
-    listItemEmphasis: {
-        fontFamily: fonts.primary.medium,
-        fontSize: textSizes.sm,
-        color: colors.ui.primary,
-    },
+  listItemEmphasis: {
+    ...typography.bodyMedium,
+    color: colors.ui.primary,
+  },
 
-    screenSectionTitle: {
-        fontFamily: fonts.primary.bold,
-        fontSize: textSizes.lg,
-        color: colors.text.primary,
-    },
+  screenSectionTitle: {
+    ...typography.sectionTitle,
+    color: colors.text.primary,
+  },
 };
 
 export const progressCardCopy = {

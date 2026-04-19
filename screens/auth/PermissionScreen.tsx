@@ -12,7 +12,7 @@ import { globalStyles } from "../../constants/globalStyles";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
-import { textSizes, textStyles } from "../../constants/texts";
+import { typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 
 const IMAGE_SIZE = 250;
@@ -87,10 +87,9 @@ const PermissionScreen = () => {
             reduceMotion: ReduceMotion.Never,
           }}
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.xxxl,
+            ...typography.screenTitle,
+            color: colors.text.primary,
             textAlign: "center",
-            fontWeight: "bold",
             marginBottom: spacing.sm,
           }}
         >
@@ -106,8 +105,8 @@ const PermissionScreen = () => {
             reduceMotion: ReduceMotion.Never,
           }}
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.sm,
+            ...typography.body,
+            color: colors.text.secondary,
             textAlign: "center",
             marginBottom: spacing.sm,
             width: "80%",
@@ -158,11 +157,10 @@ const PermissionScreen = () => {
         >
           <Text
             style={{
-              ...textStyles.secondary,
-              fontSize: textSizes.sm,
+              ...typography.body,
+              color: colors.text.secondary,
               textAlign: "center",
               marginBottom: spacing.sm,
-              color: colors.text.secondary,
             }}
           >
             Skip for now

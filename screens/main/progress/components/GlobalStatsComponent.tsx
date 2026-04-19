@@ -3,7 +3,7 @@ import React from 'react'
 import { spacing } from '../../../../constants/spacing'
 import { colors } from '../../../../constants/colors'
 import { globalStyles } from '../../../../constants/globalStyles'
-import { textSizes } from '../../../../constants/texts'
+import { typography } from '../../../../constants/texts'
 
 const GlobalStatsComponent = ({ title, description, icon }: { title: string, description: string, icon: string }) => {
 
@@ -27,14 +27,14 @@ const GlobalStatsComponent = ({ title, description, icon }: { title: string, des
                 alignItems: 'center',
                 justifyContent: 'center',
             }}>
-                <Text style={{ fontSize: textSizes.xxxl, fontWeight: 'bold' }}>{icon}</Text>
+                <Text style={{ ...typography.emojiLarge }}>{icon}</Text>
             </View>
             <View style={{
                 flexDirection: 'column',
                 gap: spacing.sm,
             }}>
-                <Text style={{ fontSize: textSizes.lg, fontWeight: 'bold' }}>{title}</Text>
-                <Text style={{ fontSize: textSizes.sm, color: colors.text.secondary }}>{description}</Text>
+                <Text style={{ ...typography.titleBold, color: colors.text.primary }}>{title}</Text>
+                <Text style={{ ...typography.body, color: colors.text.secondary }}>{description}</Text>
 
             </View>
         </View>

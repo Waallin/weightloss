@@ -3,8 +3,7 @@ import { Text, View } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { fonts } from "../../../constants/fonts";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { textStyles, typography } from "../../../constants/texts";
 import { globalStyles } from "../../../constants/globalStyles";
 
 const STAR_SIZE = 18;
@@ -69,9 +68,7 @@ const SocialProofItem: React.FC<SocialProofItemProps> = ({ item }) => {
         </View>
         <Text
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.sm,
-            fontFamily: fonts.primary.medium,
+            ...typography.bodyMedium,
             color: colors.text.secondary,
           }}
         >
@@ -81,8 +78,7 @@ const SocialProofItem: React.FC<SocialProofItemProps> = ({ item }) => {
 
       <Text
         style={{
-          fontFamily: fonts.primary.semiBold,
-          fontSize: textSizes.lg,
+          ...typography.subheadline,
           color: colors.text.primary,
           marginBottom: spacing.sm,
         }}
@@ -92,8 +88,7 @@ const SocialProofItem: React.FC<SocialProofItemProps> = ({ item }) => {
 
       <Text
         style={{
-          ...textStyles.secondary,
-          fontSize: textSizes.sm,
+          ...typography.body,
           color: colors.text.secondary,
           fontStyle: "italic",
           lineHeight: 20,

@@ -13,7 +13,7 @@ import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
-import { logWeightCopy, textSizes, textStyles } from "../../../constants/texts";
+import { logWeightCopy, textStyles, typography } from "../../../constants/texts";
 import * as haptics from "expo-haptics";
 import { updateDocument } from "../../../services/firebase";
 import useUserStore from "../../../stores/useUserStore";
@@ -71,14 +71,13 @@ const LogWeightScreen: React.FC = () => {
               borderRadius: spacing.borderRadius,
               padding: spacing.md,
               backgroundColor: colors.ui.white,
-              ...textStyles.primary,
-              fontSize: textSizes.xl,
-              fontWeight: "700",
+              ...typography.headline,
+              color: colors.text.primary,
               textAlign: "center",
             }}
           />
 
-          <Text style={{ ...textStyles.secondary, fontSize: textSizes.md }}>
+          <Text style={{ ...typography.titleMedium, color: colors.text.secondary }}>
             {logWeightCopy.unitKg}
           </Text>
         </View>

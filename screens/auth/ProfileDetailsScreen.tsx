@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { colors } from "../../constants/colors";
-import { authCopy, textSizes, textStyles } from "../../constants/texts";
+import { authCopy, textStyles, typography } from "../../constants/texts";
 import { spacing } from "../../constants/spacing";
 import WheelPicker from "../../components/WheelPicker";
 import ProfileStepSection from "./components/ProfileStepSection";
@@ -110,9 +110,8 @@ const ProfileDetailsScreen = () => {
           >
             <Text
               style={{
-                ...textStyles.primary,
-                fontSize: textSizes.xl,
-                fontWeight: "700",
+                ...typography.headline,
+                color: colors.text.primary,
                 textDecorationLine: "underline",
               }}
             >
@@ -122,9 +121,8 @@ const ProfileDetailsScreen = () => {
         )}
         <Text
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.xxl,
-            fontWeight: "bold",
+            ...typography.socialProofStat,
+            color: colors.text.primary,
             textAlign: "center",
           }}
         >
@@ -298,9 +296,8 @@ const ProfileDetailsScreen = () => {
             >
               <Text
                 style={{
-                  ...textStyles.primary,
-                  fontSize: textSizes.xxxl,
-                  fontWeight: "bold",
+                  ...typography.screenTitle,
+                  color: colors.text.primary,
                   textAlign: "center",
                   marginBottom: spacing.sm,
                 }}
@@ -355,9 +352,8 @@ const ProfileDetailsScreen = () => {
               <View style={{ marginBottom: spacing.md }}>
                 <Text
                   style={{
-                    ...textStyles.primary,
-                    fontSize: textSizes.md,
-                    fontWeight: "700",
+                    ...typography.cardTitle,
+                    color: colors.text.primary,
                     marginBottom: spacing.xs,
                   }}
                 >
@@ -396,9 +392,7 @@ const ProfileDetailsScreen = () => {
                     >
                       <Text
                         style={{
-                          ...textStyles.primary,
-                          fontSize: textSizes.sm,
-                          fontWeight: "800",
+                          ...typography.buttonSecondary,
                           color: colors.ui.primary,
                         }}
                       >
@@ -429,9 +423,8 @@ const ProfileDetailsScreen = () => {
               >
                 <Text
                   style={{
-                    ...textStyles.primary,
-                    fontSize: textSizes.sm,
-                    fontWeight: "700",
+                    ...typography.buttonSecondary,
+                    color: colors.text.primary,
                   }}
                 >
                   {authCopy.planReadySocialProof}

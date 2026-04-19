@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
-import { textSizes, textStyles } from "../constants/texts";
+import { typography } from "../constants/texts";
 
 const PrimaryButtonComponent = ({
   title,
@@ -30,10 +30,8 @@ const PrimaryButtonComponent = ({
     >
       <Text
         style={{
-          ...textStyles.primary,
+          ...typography.button,
           color: "#F4F4F4",
-          fontWeight: "bold",
-          fontSize: textSizes.xl,
         }}
       >
         {title}

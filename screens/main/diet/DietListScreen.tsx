@@ -18,11 +18,10 @@ import FoodItem from "./components/FoodItem";
 import {
   dietFoodSearchPlaceholder,
   dietLabels,
-  textSizes,
   textStyles,
+  typography,
 } from "../../../constants/texts";
 import useUserStore from "../../../stores/useUserStore";
-import { fonts } from "../../../constants/fonts";
 import { getDocuments } from "../../../services/firebase";
 import { RecipeDetail, RootStackParamList } from "../../navigation/types";
 import { serverTimestamp } from "firebase/firestore";
@@ -142,8 +141,7 @@ const DietListScreen = () => {
               flex: 1,
               marginLeft: spacing.sm,
               paddingVertical: spacing.md,
-              fontFamily: fonts.primary.regular,
-              fontSize: textSizes.md,
+              ...typography.titleMedium,
               color: colors.text.primary,
             }}
           />

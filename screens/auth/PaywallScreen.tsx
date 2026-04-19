@@ -8,9 +8,8 @@ import {
 } from "react-native";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
-import { fonts } from "../../constants/fonts";
 import { globalStyles } from "../../constants/globalStyles";
-import { paywallCopy, textSizes } from "../../constants/texts";
+import { paywallCopy, typography } from "../../constants/texts";
 import SocialProofItem, {
   SocialProofTestimonial,
 } from "./components/SocialProofItem";
@@ -159,8 +158,7 @@ const PaywallScreen: React.FC = () => {
       >
         <Text
           style={{
-            fontFamily: fonts.primary.bold,
-            fontSize: textSizes.sm,
+            ...typography.buttonSecondary,
             color: colors.text.primary,
             marginBottom: spacing.sm,
           }}
@@ -225,8 +223,7 @@ const PaywallScreen: React.FC = () => {
           reduceMotion: ReduceMotion.Never,
         }}
         style={{
-          fontFamily: fonts.primary.regular,
-          fontSize: textSizes.sm,
+          ...typography.body,
           color: colors.text.secondary,
           textAlign: "center",
         }}

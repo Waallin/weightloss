@@ -11,7 +11,7 @@ import { getDownloadURL, ref as storageRef } from "firebase/storage";
 import { spacing } from "../../../../constants/spacing";
 import { colors } from "../../../../constants/colors";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { dietLabels, textSizes, textStyles } from "../../../../constants/texts";
+import { dietLabels, textSizes, textStyles, typography } from "../../../../constants/texts";
 import { storage } from "../../../../services/firebaseConfig";
 
 export interface AddedFoodItemData {
@@ -127,7 +127,7 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
         >
           <Text
             style={{
-              ...textStyles.listItemEmphasis,
+              ...typography.buttonSecondary,
               fontSize: textSizes.xs,
               color: colors.ui.white,
             }}
@@ -218,16 +218,14 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
               <Text
                 style={{
                   ...textStyles.listItemEmphasis,
-                  fontSize: textSizes.sm,
                 }}
               >
                 {pointsLabel}
               </Text>
               <Text
                 style={{
-                  ...textStyles.listItemMeta,
+                  ...typography.small,
                   marginLeft: spacing.xs,
-                  fontSize: textSizes.xs,
                   color: colors.ui.primary,
                 }}
               >

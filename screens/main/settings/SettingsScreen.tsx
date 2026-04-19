@@ -5,7 +5,7 @@ import { spacing } from "../../../constants/spacing";
 import SettingsItem from "./components/SettingsItem";
 import Constants from "expo-constants";
 import { colors } from "../../../constants/colors";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { typography } from "../../../constants/texts";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useToastStore from "../../../stores/useToastStore";
@@ -67,8 +67,7 @@ const SettingsScreen = () => {
       >
         <Text
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.sm,
+            ...typography.body,
             color: colors.text.secondary,
           }}
         >
@@ -82,9 +81,8 @@ const SettingsScreen = () => {
     return (
       <View style={{ gap: spacing.sm }}>
         <Text style={{
-          ...textStyles.primary,
-          fontSize: textSizes.lg,
-          fontWeight: "bold",
+          ...typography.titleBold,
+          color: colors.text.primary,
           marginBottom: spacing.sm,
         }}>Profile</Text>
         <View style={{ gap: spacing.sm }}>
@@ -109,9 +107,8 @@ const SettingsScreen = () => {
     return (
       <View>
         <Text style={{
-          ...textStyles.primary,
-          fontSize: textSizes.lg,
-          fontWeight: "bold",
+          ...typography.titleBold,
+          color: colors.text.primary,
           marginBottom: spacing.sm,
         }}>Account</Text>
         <View style={{ gap: spacing.sm }}>

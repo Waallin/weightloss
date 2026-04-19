@@ -17,8 +17,7 @@ import * as haptics from "expo-haptics";
 import { useEffect } from "react";
 import HomeScreen from "../main/home/HomeScreen";
 import SettingsScreen from "../main/settings/SettingsScreen";
-import { fonts } from "../../constants/fonts";
-import { textSizes } from "../../constants/texts";
+import { textSizes, typography } from "../../constants/texts";
 import ProgressScreen from "../main/progress/ProgressScreen";
 import DietScreen from "../main/diet/DietScreen";
 
@@ -133,8 +132,7 @@ const MainNavigator = () => {
         tabBarInactiveTintColor: colors.text.secondary,
 
         tabBarLabelStyle: {
-          fontFamily: fonts.primary.regular,
-          fontSize: textSizes.sm,
+          ...typography.body,
         },
       }}
     >

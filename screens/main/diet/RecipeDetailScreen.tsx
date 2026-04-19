@@ -13,14 +13,13 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { colors } from "../../../constants/colors";
-import { fonts } from "../../../constants/fonts";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import {
   dietLabels,
   recipeDetailCopy,
-  textSizes,
   textStyles,
+  typography,
 } from "../../../constants/texts";
 import { RootStackParamList } from "../../navigation/types";
 import { addToDiet } from "../../../services/firebase";
@@ -157,10 +156,10 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
     >
       <Text
         style={{
-          ...textStyles.listItemTitle,
-          fontSize: textSizes.xl,
+          ...typography.headline,
           flex: 1,
           lineHeight: 26,
+          color: colors.text.primary,
         }}
       >
         {title}
@@ -179,16 +178,14 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
           <Text
             style={{
               ...textStyles.listItemEmphasis,
-              fontSize: textSizes.sm,
             }}
           >
             {pointsLabel}
           </Text>
           <Text
             style={{
-              ...textStyles.listItemMeta,
+              ...typography.small,
               marginLeft: spacing.xs,
-              fontSize: textSizes.xs,
               color: colors.ui.primary,
             }}
           >
@@ -294,8 +291,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
             >
               <Text
                 style={{
-                  fontFamily: fonts.primary.semiBold,
-                  fontSize: textSizes.sm,
+                  ...typography.buttonSecondary,
                   color: colors.ui.white,
                 }}
               >

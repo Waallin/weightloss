@@ -11,6 +11,7 @@ import {
   getDietCalorieHeroMicroCopy,
   textSizes,
   textStyles,
+  typography,
 } from "../../../constants/texts";
 import { ScrollView } from "react-native-gesture-handler";
 import { getFormattedDate } from "../../../utils/dateUtils";
@@ -185,8 +186,8 @@ const DietScreen = () => {
           />
           <Text
             style={{
-              ...textStyles.listItemTitle,
-              fontSize: textSizes.md,
+              ...typography.cardTitle,
+              color: colors.text.primary,
               marginTop: spacing.md,
               textAlign: "center",
             }}

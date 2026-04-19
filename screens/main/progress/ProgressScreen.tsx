@@ -11,6 +11,7 @@ import {
   progressGaugeCopy,
   progressWeightsCopy,
   textSizes,
+  typography,
 } from "../../../constants/texts";
 import { Calendar } from "react-native-calendars";
 import type { Theme } from "react-native-calendars/src/types";
@@ -69,7 +70,7 @@ const ProgressScreen = () => {
           },
           text: {
             color: colors.ui.white,
-            fontWeight: "600" as const,
+            fontWeight: typography.cardTitle.fontWeight,
           },
         },
       },
@@ -204,14 +205,13 @@ const ProgressScreen = () => {
         <View style={{ gap: spacing.xs }}>
           <Text
             style={{
-              fontSize: textSizes.lg,
-              fontWeight: "700",
+              ...typography.sectionTitle,
               color: colors.text.primary,
             }}
           >
             {progressCalendarCopy.sectionTitle}
           </Text>
-          <Text style={{ fontSize: textSizes.sm, color: colors.text.secondary }}>
+          <Text style={{ ...typography.body, color: colors.text.secondary }}>
             {progressCalendarCopy.startedPrefix} {journeyStartedLabel}
           </Text>
         </View>
@@ -320,8 +320,7 @@ const ProgressScreen = () => {
             >
               <Text
                 style={{
-                  fontWeight: "bold",
-                  fontSize: 32,
+                  ...typography.displayNumeric,
                   color: colors.ui.primary,
                 }}
               >
@@ -329,7 +328,7 @@ const ProgressScreen = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: textSizes.xs,
+                  ...typography.small,
                   color: colors.text.secondary,
                   textAlign: "center",
                   marginTop: spacing.xs,
@@ -351,8 +350,7 @@ const ProgressScreen = () => {
           >
             <Text
               style={{
-                fontSize: textSizes.lg,
-                fontWeight: "600",
+                ...typography.subheadline,
                 textAlign: "center",
                 color: colors.text.primary,
               }}
@@ -361,7 +359,7 @@ const ProgressScreen = () => {
             </Text>
             <Text
               style={{
-                fontSize: textSizes.sm,
+                ...typography.body,
                 color: colors.text.secondary,
                 textAlign: "center",
               }}
@@ -383,7 +381,7 @@ const ProgressScreen = () => {
             <View style={{ flex: 1, alignItems: "center" }}>
               <Text
                 style={{
-                  fontSize: textSizes.xs,
+                  ...typography.statLabel,
                   color: colors.text.secondary,
                   textAlign: "center",
                 }}
@@ -392,8 +390,7 @@ const ProgressScreen = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: textSizes.md,
-                  fontWeight: "600",
+                  ...typography.statValue,
                   color: colors.text.primary,
                   marginTop: spacing.xs,
                   textAlign: "center",
@@ -405,7 +402,7 @@ const ProgressScreen = () => {
             <View style={{ flex: 1, alignItems: "center" }}>
               <Text
                 style={{
-                  fontSize: textSizes.xs,
+                  ...typography.statLabel,
                   color: colors.text.secondary,
                   textAlign: "center",
                 }}
@@ -414,8 +411,7 @@ const ProgressScreen = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: textSizes.md,
-                  fontWeight: "600",
+                  ...typography.statValue,
                   color: colors.ui.primary,
                   marginTop: spacing.xs,
                   textAlign: "center",
@@ -427,7 +423,7 @@ const ProgressScreen = () => {
             <View style={{ flex: 1, alignItems: "center" }}>
               <Text
                 style={{
-                  fontSize: textSizes.xs,
+                  ...typography.statLabel,
                   color: colors.text.secondary,
                   textAlign: "center",
                 }}
@@ -436,8 +432,7 @@ const ProgressScreen = () => {
               </Text>
               <Text
                 style={{
-                  fontSize: textSizes.md,
-                  fontWeight: "600",
+                  ...typography.statValue,
                   color: colors.text.primary,
                   marginTop: spacing.xs,
                   textAlign: "center",
@@ -467,9 +462,8 @@ const ProgressScreen = () => {
           <MaterialCommunityIcons name="plus" size={24} color={colors.ui.primary} />
           <Text
             style={{
-              fontSize: textSizes.sm,
+              ...typography.buttonSecondary,
               color: colors.ui.primary,
-              fontWeight: "bold",
             }}
           >
             {logWeightCopy.screenTitle}

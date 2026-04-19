@@ -5,7 +5,7 @@ import { MotiView, MotiText } from 'moti';
 import { colors } from '../../../constants/colors';
 import { spacing } from '../../../constants/spacing';
 import { ReduceMotion } from 'react-native-reanimated';
-import { textSizes, textStyles } from '../../../constants/texts';
+import { typography } from '../../../constants/texts';
 
 interface ProfileStepSectionProps {
   title: string;
@@ -53,9 +53,8 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'timing', duration: 450, delay: 120, reduceMotion: ReduceMotion.Never }}
             style={{
-              ...textStyles.primary,
-              fontSize: textSizes.xxl,
-              fontWeight: 'bold',
+              ...typography.socialProofStat,
+              color: colors.text.primary,
               textAlign: 'center',
             }}
           >
@@ -81,8 +80,7 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'timing', duration: 440, delay: 230, reduceMotion: ReduceMotion.Never }}
               style={{
-                ...textStyles.secondary,
-                fontSize: textSizes.md,
+                ...typography.titleMedium,
                 color: colors.text.primary,
                 textAlign: 'center',
               }}
@@ -131,17 +129,15 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'timing', duration: 420, delay: 350, reduceMotion: ReduceMotion.Never }}
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.md,
+            ...typography.titleMedium,
             color: colors.text.secondary,
           }}
         >
           {summaryLabel}{' '}
           <Text
             style={{
-              ...textStyles.primary,
-              fontSize: textSizes.md,
-              fontWeight: 'bold',
+              ...typography.cardTitle,
+              color: colors.text.primary,
             }}
           >
             {summaryValue}

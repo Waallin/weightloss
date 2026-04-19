@@ -4,9 +4,8 @@ import { RouteProp } from "@react-navigation/native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
-import { fonts } from "../../../constants/fonts";
 import { spacing } from "../../../constants/spacing";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { textStyles, typography } from "../../../constants/texts";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 
 const ICON_CONTAINER_SIZE = 52;
@@ -114,8 +113,7 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
           <View style={{ flex: 1, minWidth: 0, gap: spacing.xs }}>
             <Text
               style={{
-                fontFamily: fonts.primary.bold,
-                fontSize: textSizes.xl,
+                ...typography.headline,
                 color: colors.text.primary,
               }}
             >
@@ -139,8 +137,7 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
           <Text
             key={`p-${index}`}
             style={{
-              fontFamily: fonts.primary.regular,
-              fontSize: textSizes.md,
+              ...typography.titleMedium,
               color: colors.text.primary,
               lineHeight: 24,
             }}

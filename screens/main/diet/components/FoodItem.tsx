@@ -4,7 +4,7 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../../constants/spacing";
 import { colors } from "../../../../constants/colors";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { dietLabels, textSizes, textStyles } from "../../../../constants/texts";
+import { dietLabels, textStyles, typography } from "../../../../constants/texts";
 
 export interface FoodItemData {
   id: string;
@@ -145,16 +145,14 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress, onIconPress }) => {
                 <Text
                   style={{
                     ...textStyles.listItemEmphasis,
-                    fontSize: textSizes.sm,
                   }}
                 >
                   {pointsLabel}
                 </Text>
                 <Text
                   style={{
-                    ...textStyles.listItemMeta,
+                    ...typography.small,
                     marginLeft: spacing.xs,
-                    fontSize: textSizes.xs,
                     color: colors.ui.primary,
                   }}
                 >

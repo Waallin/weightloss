@@ -1,5 +1,6 @@
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
+import { textSizes } from '../constants/texts'
 import { spacing } from '../constants/spacing'
 import { colors } from '../constants/colors'
 import { fonts } from '../constants/fonts'
@@ -36,7 +37,7 @@ const RoundedButtonComponent = ({ handleNext, icon }: { handleNext: () => void, 
             <Text
               style={{
                 fontFamily: fonts.primary.medium,
-                fontSize: 35,
+                fontSize: textSizes.roundedNavIcon,
                 color: colors.ui.background,
               }}
             >

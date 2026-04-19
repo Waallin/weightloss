@@ -3,10 +3,9 @@ import React from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { colors } from "../constants/colors";
-import { fonts } from "../constants/fonts";
 import { globalStyles } from "../constants/globalStyles";
 import { spacing } from "../constants/spacing";
-import { textSizes, textStyles } from "../constants/texts";
+import { textSizes, textStyles, typography } from "../constants/texts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 
@@ -69,7 +68,7 @@ const ProgressComponents = ({
         right: 10
       }}>
         <Text style={{
-          fontSize: textSizes.xs,
+          ...typography.small,
           color: colors.ui.primary,
           fontStyle: "italic",
         }}>
@@ -114,9 +113,8 @@ const ProgressComponents = ({
           >
             <Text
               style={{
-                fontSize: textSizes.sm,
+                ...typography.buttonSecondary,
                 textAlign: "center",
-                fontWeight: "bold",
                 color: colors.ui.white,
               }}
             >
@@ -124,9 +122,8 @@ const ProgressComponents = ({
             </Text>
             <Text
               style={{
-                fontSize: textSizes.sm,
+                ...typography.body,
                 textAlign: "center",
-                fontWeight: "normal",
                 color: colors.ui.white,
               }}
             >
@@ -159,9 +156,8 @@ const ProgressComponents = ({
         </View>
         <Text
           style={{
-            ...textStyles.primary,
-            fontWeight: "bold",
-            fontSize: textSizes.md,
+            ...typography.cardTitle,
+            color: colors.text.primary,
           }}
         >
           {title}
@@ -176,9 +172,7 @@ const ProgressComponents = ({
       >
         <Text
           style={{
-            ...textStyles.primary,
-            fontFamily: fonts.primary.semiBold,
-            fontSize: textSizes.md,
+            ...typography.cardTitle,
             color: colors.text.primary,
           }}
         >
@@ -187,7 +181,6 @@ const ProgressComponents = ({
         <Text
           style={{
             ...textStyles.secondary,
-            fontSize: textSizes.sm,
           }}
         >
           {` / ${formatAmount(goal)}`}
@@ -213,8 +206,8 @@ const ProgressComponents = ({
       {microcopy ? (
         <Text
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.xs,
+            ...typography.small,
+            color: colors.text.secondary,
             lineHeight: textSizes.xs * 1.35,
           }}
         >

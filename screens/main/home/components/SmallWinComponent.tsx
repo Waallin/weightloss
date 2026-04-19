@@ -3,7 +3,7 @@ import React from 'react'
 import { colors } from '../../../../constants/colors'
 import { spacing } from '../../../../constants/spacing'
 import { globalStyles } from '../../../../constants/globalStyles'
-import { textSizes, textStyles } from '../../../../constants/texts'
+import { typography } from '../../../../constants/texts'
 
 const SmallWinComponent = ({ title, description }: { title: string, description: string }) => {
     return (
@@ -19,7 +19,7 @@ const SmallWinComponent = ({ title, description }: { title: string, description:
             gap: spacing.sm,
         }}>
             <View>
-                <Text style={{ fontSize: textSizes.xxxl }}>
+                <Text style={{ ...typography.emojiLarge }}>
                     👏
                 </Text>
             </View>
@@ -27,8 +27,8 @@ const SmallWinComponent = ({ title, description }: { title: string, description:
                 flexDirection: 'column',
                 gap: spacing.xs,
             }}>
-                <Text style={{ ...textStyles.primary, fontSize: textSizes.md, fontWeight: 'bold', textAlign: 'center' }}>{title}</Text>
-                <Text style={{ ...textStyles.secondary, fontSize: textSizes.sm, textAlign: 'center' }}   >{description}</Text>
+                <Text style={{ ...typography.cardTitle, color: colors.text.primary, textAlign: 'center' }}>{title}</Text>
+                <Text style={{ ...typography.body, color: colors.text.secondary, textAlign: 'center' }}>{description}</Text>
             </View>
         </View>
     )

@@ -5,8 +5,7 @@ import { spacing } from "../../constants/spacing";
 import { ReduceMotion } from "react-native-reanimated";
 import SocialProofItem from "./components/SocialProofItem";
 import { globalStyles } from "../../constants/globalStyles";
-import { textSizes, textStyles } from "../../constants/texts";
-import { fonts } from "../../constants/fonts";
+import { typography } from "../../constants/texts";
 import { colors } from "../../constants/colors";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { useNavigation } from "@react-navigation/native";
@@ -45,10 +44,8 @@ const SocialProofScreen = () => {
     >
       <Text
         style={{
-          ...textStyles.primary,
-          fontSize: textSizes.xxl,
-          fontWeight: "bold",
-          fontFamily: fonts.primary.semiBold,
+          ...typography.socialProofStat,
+          color: colors.text.primary,
           textAlign: "center",
           marginBottom: spacing.xs,
         }}
@@ -57,9 +54,7 @@ const SocialProofScreen = () => {
       </Text>
       <Text
         style={{
-          ...textStyles.secondary,
-          fontSize: textSizes.sm,
-          fontFamily: fonts.primary.medium,
+          ...typography.bodyMedium,
           color: colors.text.secondary,
           textAlign: "center",
         }}

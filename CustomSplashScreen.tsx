@@ -2,6 +2,7 @@ import { Image, View } from "react-native";
 import React, { useEffect } from "react";
 import { MotiText, MotiView } from "moti";
 import { colors } from "./constants/colors";
+import { typography } from "./constants/texts";
 import { ReduceMotion } from "react-native-reanimated";
 
 interface CustomSplashScreenProps {
@@ -51,8 +52,7 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 650, delay: 150, reduceMotion: ReduceMotion.Never }}
           style={{
-            fontSize: 28,
-            fontWeight: "300",
+            ...typography.splashWordmark,
             color: colors.text.primary,
             letterSpacing: 2,
           }}
@@ -64,8 +64,7 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: "timing", duration: 650, delay: 250, reduceMotion: ReduceMotion.Never }}
           style={{
-            fontSize: 16,
-            fontWeight: "300",
+            ...typography.splashTagline,
             color: colors.text.secondary,
             letterSpacing: 2,
           }}

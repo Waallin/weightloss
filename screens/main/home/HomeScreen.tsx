@@ -4,8 +4,7 @@ import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
-import { fonts } from "../../../constants/fonts";
-import { getHomePointsMicroCopy, textSizes, textStyles } from "../../../constants/texts";
+import { getHomePointsMicroCopy, textStyles, typography } from "../../../constants/texts";
 import ProgressComponents from "../../../components/ProgressComponents";
 import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
@@ -346,8 +345,8 @@ const HomeScreen = () => {
       >
         <Text
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.xxs,
+            ...typography.caption,
+            color: colors.text.secondary,
             letterSpacing: 0.8,
             textTransform: "uppercase",
             opacity: 0.55,
@@ -385,9 +384,7 @@ const HomeScreen = () => {
           >
             <Text
               style={{
-                ...textStyles.primary,
-                fontFamily: fonts.primary.semiBold,
-                fontSize: textSizes.lg,
+                ...typography.subheadline,
                 color: colors.text.primary,
               }}
             >
@@ -430,9 +427,8 @@ const HomeScreen = () => {
       >
         <Text
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.lg,
-            fontWeight: "bold",
+            ...typography.titleBold,
+            color: colors.text.primary,
           }}
         >
           Small Wins

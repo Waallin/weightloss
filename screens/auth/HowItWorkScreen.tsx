@@ -9,7 +9,7 @@ import {
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
 import { globalStyles } from "../../constants/globalStyles";
-import { authCopy, textSizes, textStyles } from "../../constants/texts";
+import { authCopy, textStyles, typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import RoundedButtonComponent from "../../components/RoundedButtonComponent";
@@ -161,8 +161,7 @@ const HowItWorkSlide = React.memo(
               reduceMotion: ReduceMotion.Never,
             }}
             style={{
-              fontWeight: "bold",
-              fontSize: textSizes.xxxl,
+              ...typography.screenTitle,
               color: colors.text.primary,
               textAlign: "center",
               marginBottom: spacing.sm,

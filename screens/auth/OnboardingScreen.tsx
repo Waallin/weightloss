@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
 import { globalStyles } from "../../constants/globalStyles";
-import { textSizes, textStyles } from "../../constants/texts";
+import { textStyles, typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import RoundedButtonComponent from "../../components/RoundedButtonComponent";
 import { MotiText, MotiView } from "moti";
@@ -136,8 +136,7 @@ const OnboardingSlide = React.memo(
             animate={{ opacity: isActive ? 1 : 0, translateY: isActive ? 0 : 10 }}
             transition={{ type: "timing", duration: 380, delay: 120, reduceMotion: ReduceMotion.Never }}
             style={{
-              fontWeight: "bold",
-              fontSize: textSizes.xxxl,
+              ...typography.screenTitle,
               color: colors.text.primary,
               textAlign: "center",
               marginBottom: spacing.sm,

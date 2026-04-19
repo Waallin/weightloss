@@ -5,7 +5,7 @@ import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../constants/globalStyles";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
-import { textSizes, textStyles } from "../../constants/texts";
+import { typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import * as AppleAuthentication from "expo-apple-authentication";
@@ -147,10 +147,9 @@ const AuthScreen = () => {
             reduceMotion: ReduceMotion.Never,
           }}
           style={{
-            ...textStyles.primary,
-            fontSize: textSizes.xxxl,
+            ...typography.screenTitle,
+            color: colors.text.primary,
             textAlign: "center",
-            fontWeight: "bold",
             marginBottom: spacing.sm,
           }}
         >
@@ -166,8 +165,8 @@ const AuthScreen = () => {
             reduceMotion: ReduceMotion.Never,
           }}
           style={{
-            ...textStyles.secondary,
-            fontSize: textSizes.sm,
+            ...typography.body,
+            color: colors.text.secondary,
             textAlign: "center",
             marginBottom: spacing.sm,
           }}

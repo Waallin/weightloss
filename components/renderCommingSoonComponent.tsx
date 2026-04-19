@@ -3,7 +3,7 @@ import React from 'react'
 import { colors } from '../constants/colors';
 import { spacing } from '../constants/spacing';
 import { globalStyles } from '../constants/globalStyles';
-import { textSizes } from '../constants/texts';
+import { typography } from '../constants/texts';
 
 const renderCommingSoonComponent = () => {
     return (
@@ -19,12 +19,11 @@ const renderCommingSoonComponent = () => {
         ...globalStyles.shadow,
       }}>
         <Text style={{
-          fontSize: textSizes.lg,
-          fontWeight: "bold",
+          ...typography.titleBold,
           color: colors.text.primary,
         }}>Coming soon</Text>
         <Text style={{
-          fontSize: textSizes.sm,
+          ...typography.body,
           color: colors.text.secondary,
           textAlign: "center",
         }}>We're working on this feature right now. Please check back soon!</Text>

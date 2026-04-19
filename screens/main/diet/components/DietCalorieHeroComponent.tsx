@@ -4,8 +4,7 @@ import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { dietLabels, textSizes } from "../../../../constants/texts";
-import { fonts } from "../../../../constants/fonts";
+import { dietLabels, textSizes, typography } from "../../../../constants/texts";
 
 const CIRCLE_SIZE = 200;
 const CIRCLE_WIDTH = 15;
@@ -58,8 +57,7 @@ const DietCalorieHeroComponent = (
     >
       <Text
         style={{
-          fontFamily: fonts.primary.medium,
-          fontSize: textSizes.sm,
+          ...typography.bodyMedium,
           color: colors.text.secondary,
           textAlign: "center",
           opacity: 0.95,
@@ -103,8 +101,7 @@ const DietCalorieHeroComponent = (
           >
             <Text
               style={{
-                fontWeight: "bold",
-                fontSize: 32,
+                ...typography.displayNumeric,
                 color: colors.ui.primary,
               }}
             >
@@ -112,8 +109,7 @@ const DietCalorieHeroComponent = (
             </Text>
             <Text
               style={{
-                fontFamily: fonts.primary.regular,
-                fontSize: textSizes.xs,
+                ...typography.small,
                 color: colors.text.secondary,
                 opacity: 0.95,
                 textAlign: "center",
@@ -127,8 +123,7 @@ const DietCalorieHeroComponent = (
         </View>
         <Text
           style={{
-            fontFamily: fonts.primary.regular,
-            fontSize: textSizes.xs,
+            ...typography.small,
             lineHeight: Math.round(textSizes.xs * 1.45),
             color: colors.text.primary,
             textAlign: "center",
