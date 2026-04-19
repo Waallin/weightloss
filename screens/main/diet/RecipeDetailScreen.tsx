@@ -26,9 +26,11 @@ import { RootStackParamList } from "../../navigation/types";
 import { addToDiet } from "../../../services/firebase";
 import useUserStore from "../../../stores/useUserStore";
 import { serverTimestamp } from "firebase/firestore";
-
+import useTodayDietStore from "../../../stores/useTodayDietStore";
+import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 const fallbackImage = require("../../../assets/potato.png");
-
+import useToastStore from "../../../stores/useToastStore";
+import * as haptics from "expo-haptics";
 type RecipeDetailScreenRouteProp = RouteProp<
   RootStackParamList,
   "RecipeDetailScreen"
@@ -43,6 +45,9 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { user } = useUserStore();
+  const { todayDiet, setTodayDiet } = useTodayDietStore();
+  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const { showToast } = useToastStore();
   const imageSource: ImageSourcePropType = useMemo(() => {
     if (recipe.imageUrl?.trim()) {
       return { uri: recipe.imageUrl.trim() };
@@ -68,6 +73,10 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
 
   const handleAddToDiet = async (recipe: any) => {
  
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    showToast(recipe.title + " successfully added to your day");
+    
+
     const payload = {
       sourceId: recipe.id,
       type: recipe.mealType,
@@ -78,8 +87,16 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
       createdAt: serverTimestamp(),
     }
 
-   
+    setTodayProgress({
+      ...todayProgress,
+      points: {
+        ...todayProgress.points,
+        used: todayProgress.points.used + payload.points,
+      },
+    });
+    setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
+    navigation.goBack();
   }
   const renderHeader = () => (
     <View

@@ -27,6 +27,10 @@ import { getDocuments } from "../../../services/firebase";
 import { RecipeDetail, RootStackParamList } from "../../navigation/types";
 import { serverTimestamp } from "firebase/firestore";
 import { addToDiet } from "../../../services/firebase";
+import useTodayDietStore from "../../../stores/useTodayDietStore";
+import useTodayProgressStore from "../../../stores/useTodayProgressStore";
+import useToastStore from "../../../stores/useToastStore";
+import * as haptics from "expo-haptics";
 
 const DietListScreen = () => {
   const navigation =
@@ -35,8 +39,9 @@ const DietListScreen = () => {
   const { user } = useUserStore();
   const [foodList, setFoodList] = useState<any[]>([]);
   const [recipesList, setRecipesList] = useState<RecipeDetail[]>([]);
-  
-
+  const { todayDiet, setTodayDiet } = useTodayDietStore();
+  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const { showToast } = useToastStore();
   useEffect(() => {
     getFoodList();
     getRecipeList();
@@ -48,7 +53,10 @@ const DietListScreen = () => {
   };
 
   const handleAddFoodItem = (foodItem: any) => {
-    console.log(foodItem);
+
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    showToast(foodItem.title + " successfully added to your day");
+    
     const payload = {
       sourceId: foodItem.id,
       type: foodItem.mealType,
@@ -58,10 +66,20 @@ const DietListScreen = () => {
       imagePath: foodItem.imagePath,
       createdAt: serverTimestamp(),
     }
+    setTodayProgress({
+      ...todayProgress,
+      points: {
+        ...todayProgress.points,
+        used: todayProgress.points.used + foodItem.points,
+      },
+    });
+
+    setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
 
+    navigation.pop(2);
   };
-  
+
   const getRecipeList = async () => {
     const recipeList = await getDocuments("recipes");
     setRecipesList((recipeList ?? []) as RecipeDetail[]);
@@ -150,7 +168,8 @@ const DietListScreen = () => {
             <FoodItem
               key={item.id}
               item={item}
-              onPress={() =>
+              onPress={() => console.log(item)}
+              onIconPress={() =>
                 handleAddFoodItem(item)
               }
             />
@@ -177,6 +196,9 @@ const DietListScreen = () => {
               key={item.id}
               item={item}
               onPress={() => handleNavigateToRecipeDetailScreen(item)}
+              onIconPress={() =>
+                handleAddFoodItem(item)
+              }
             />
           ))}
         </View>

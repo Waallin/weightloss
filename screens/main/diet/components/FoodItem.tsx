@@ -16,12 +16,14 @@ export interface FoodItemData {
   imageUrl?: string;
   image?: ImageSourcePropType;
   mealType?: string;
+  onIconPress: () => void;
 }
 
 interface FoodItemProps {
   item: FoodItemData;
   onPress: () => void;
-}
+  onIconPress: () => void;
+  }
 
 const fallbackImage = require("../../../../assets/potato.png");
 
@@ -31,7 +33,7 @@ function formatMealTypeLabel(mealType: string): string {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
 }
 
-const FoodItem: React.FC<FoodItemProps> = ({ item, onPress }) => {
+const FoodItem: React.FC<FoodItemProps> = ({ item, onPress, onIconPress }) => {
   const thumbSize = spacing.xl * 2 + spacing.sm;
 
   const title = item.title ?? item.name ?? "";
@@ -163,7 +165,8 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress }) => {
         )}
       </View>
 
-      <View
+      <TouchableOpacity
+      onPress={onIconPress}
         style={{
           alignSelf: "center",
           width: 44,
@@ -176,7 +179,7 @@ const FoodItem: React.FC<FoodItemProps> = ({ item, onPress }) => {
         }}
       >
         <MaterialCommunityIcons name="plus" size={22} color={colors.ui.white} />
-      </View>
+      </TouchableOpacity>
     </TouchableOpacity>
   );
 };

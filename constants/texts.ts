@@ -68,12 +68,63 @@ export const progressCardCopy = {
   claimHint: "Tap to claim your reward",
 } as const;
 
+/** Home screen — Points progress card microcopy */
+export function getHomePointsMicroCopy(total: number, used: number): string {
+  const remaining = total - used;
+  if (total > 0 && remaining > 0) {
+    return `${remaining} left today`;
+  }
+  if (total > 0) {
+    return "You've eaten over your limit today";
+  }
+  return "Your daily points will show here";
+}
+
+/**
+ * Diet calorie hero — encouraging line under the big remaining number.
+ * Avoids repeating the remaining count (shown large above).
+ */
+export function getDietCalorieHeroMicroCopy(total: number, used: number): string {
+  const remaining = total - used;
+  if (total <= 0) {
+    return "Your daily points will show here";
+  }
+  if (remaining < 0) {
+    return "Over budget today. Fresh start tomorrow.";
+  }
+  if (remaining === 0) {
+    return "Right on target. Nice work";
+  }
+  const ratio = remaining / total;
+  if (ratio >= 0.6) {
+    return "Plenty of room today. Enjoy your meals";
+  }
+  if (ratio >= 0.35) {
+    return "Solid pace. Keep choosing well";
+  }
+  if (ratio >= 0.15) {
+    return "Getting close. Eat mindfully";
+  }
+  return "Almost there. Make it count";
+}
+
 export const dietLabels = {
+    /** Diet home — empty list below "Today's diet" */
+    emptyDietTitle: "Nothing logged yet",
+    emptyDietSubtitle: "Tap + to add food and track your day.",
     gramsUnit: "g",
     kudos: "Points",
     /** Compact suffix next to the numeric points value on food rows */
     pointsSuffix: "pts",
+    /** Unit shown after calorie values on diet list rows */
+    caloriesUnit: "kcal",
     recent: "Recent",
+    /** Label under the hero ring number (remaining points) */
+    heroPointsLeftLabel: "pts left",
+    /** When remaining points are negative */
+    heroPointsOverLabel: "over budget",
+    /** If parent omits microcopy on the diet hero */
+    heroMicrocopyFallback: "Keep it up!",
 } as const;
 
 export const dietFoodSearchPlaceholder = 'Search food, e.g. "banana"' as const;

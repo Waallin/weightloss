@@ -11,7 +11,7 @@ import CustomSplashScreen from "./CustomSplashScreen";
 import "react-native-reanimated";
 import "react-native-gesture-handler";
 import { colors } from "./constants/colors";
-import { getDocument, updateDocument } from "./services/firebase";
+import { getDocument, getDocuments, updateDocument } from "./services/firebase";
 import useConfigStore from "./stores/useConfigStore";
 import ConfettiOverlay from "./components/ConfettiOverlay";
 import useConfettiStore from "./stores/useConfettiStore";
@@ -20,6 +20,9 @@ import { calculatePoints } from "./services/dietPoints";
 import { syncToday } from "./services/firebase";
 import useTodayProgressStore from "./stores/useTodayProgressStore";
 import { useTodaySteps } from "./services/healthkit";
+import { getDateKey } from "./utils/dateUtils";
+import useTodayDietStore from "./stores/useTodayDietStore";
+import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
 export default function App() {
 
@@ -27,7 +30,7 @@ export default function App() {
   const { user, setUser } = useUserStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const steps = useTodaySteps();
-
+  const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { setConfig } = useConfigStore();
   const { visibleConfetti, confettiNonce, setVisibleConfetti } =
     useConfettiStore();
@@ -104,12 +107,15 @@ export default function App() {
 
   const checkInUser = async (user: string) => {
     const userData = await getDocument("users", user);
-    console.log("🚀 ~ checkInUser ~ userData:", userData)
+    const dietRef = "users/" + user + "/days/" + getDateKey() + "/foodEntries";
+    const todayDiet = await getDocuments(dietRef);
+    console.log("🚀 ~ checkInUser ~ todayDiet:", todayDiet)
     if (userData) {
       await updateDocument("users", user, {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
       });
+      setTodayDiet(todayDiet);
       setUser(userData);
       return true;
     } else {
@@ -128,6 +134,7 @@ export default function App() {
   // Navigera direkt till rätt destination
   return (
     <View style={{ flex: 1 }}>
+      {isVisible && <Toast title={message} />}
       <ConfettiOverlay
         visible={visibleConfetti}
         burstNonce={confettiNonce}

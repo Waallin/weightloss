@@ -5,7 +5,7 @@ import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { fonts } from "../../../constants/fonts";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { getHomePointsMicroCopy, textSizes, textStyles } from "../../../constants/texts";
 import ProgressComponents from "../../../components/ProgressComponents";
 import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
@@ -64,19 +64,18 @@ const smallWins = [
   },
 ];
 
+
+
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { status, requestPermission } = useHealthKitPermissions();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
-  console.log("🚀 ~ HomeScreen ~ todayProgress:", todayProgress);
+
 
   const { setVisibleConfetti } = useConfettiStore();
   const [claimStepsReward, setClaimStepsReward] = useState(
     todayProgress?.progress.steps >= 10000 &&
       todayProgress?.completion.steps === false,
-  );
-  const [waterCount, setWaterCount] = useState(
-    todayProgress?.progress?.water ?? 0,
   );
   const { user } = useUserStore();
   const [overallProgress, setOverallProgress] = useState(0);
@@ -130,8 +129,14 @@ const HomeScreen = () => {
     }
   };
 
+  const returnPointsMicroCopy = () => {
+    const total = todayProgress?.points?.total ?? 0;
+    const used = todayProgress?.points?.used ?? 0;
+    return getHomePointsMicroCopy(total, used);
+  };
+
   const returnWaterMicroCopy = () => {
-    const water = waterCount;
+    const water = todayProgress?.progress?.water ?? 0;
 
     if (water >= 10) {
       return "Hydration goal reached ";
@@ -190,16 +195,36 @@ const HomeScreen = () => {
   };
 
   const handleAddWater = () => {
-    updateTodayProgress(user?.email as string, {
-      "progress.water": increment(1),
+    if (!todayProgress?.progress) {
+      return;
+    }
+
+    const currentWater = todayProgress.progress.water ?? 0;
+    const nextWater = currentWater + 1;
+    const reachedGoal = nextWater >= 10;
+
+    setTodayProgress({
+      ...todayProgress,
+      progress: {
+        ...todayProgress.progress,
+        water: nextWater,
+      },
+      ...(reachedGoal
+        ? {
+            completion: {
+              ...todayProgress.completion,
+              water: true,
+            },
+          }
+        : {}),
     });
 
-    setWaterCount((prev: number) => prev + 1);
+    updateTodayProgress(user?.email as string, {
+      "progress.water": increment(1),
+      ...(reachedGoal ? { "completion.water": true } : {}),
+    });
 
-    if (waterCount == 9) {
-      updateTodayProgress(user?.email as string, {
-        "completion.water": true,
-      });
+    if (reachedGoal) {
       setVisibleConfetti(true);
     }
   };
@@ -224,7 +249,7 @@ const HomeScreen = () => {
         <ProgressComponents
           title="Water"
           icon="water"
-          number={waterCount}
+          number={todayProgress?.progress?.water ?? 0}
           goal={10}
           microcopy={returnWaterMicroCopy()}
           width="47%"
@@ -245,7 +270,7 @@ const HomeScreen = () => {
           icon="food-apple"
           number={todayProgress?.points?.used ?? 0}
           goal={todayProgress?.points?.total ?? 0}
-          microcopy={`${todayProgress?.points?.left ?? 0} left today`}
+          microcopy={returnPointsMicroCopy()}
           width="100%"
           claimRewardPress={() => handleProgressComponentPress("Points")}
         />

@@ -4,7 +4,7 @@ import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
 import { globalStyles } from "../../../../constants/globalStyles";
-import { textSizes } from "../../../../constants/texts";
+import { dietLabels, textSizes } from "../../../../constants/texts";
 import { fonts } from "../../../../constants/fonts";
 
 const CIRCLE_SIZE = 200;
@@ -17,6 +17,8 @@ export interface DietCalorieHeroComponentProps {
   remaining: number;
   /** 0–100 for ring fill */
   progressFill: number;
+  /** Dynamic encouragement; falls back to dietLabels.heroMicrocopyFallback */
+  microcopy?: string;
 }
 
 const defaultProps: DietCalorieHeroComponentProps = {
@@ -25,6 +27,7 @@ const defaultProps: DietCalorieHeroComponentProps = {
   burned: 0,
   remaining: 0,
   progressFill: 0,
+  microcopy: undefined,
 };
 
 const DietCalorieHeroComponent = (
@@ -36,7 +39,12 @@ const DietCalorieHeroComponent = (
     burned,
     remaining,
     progressFill,
+    microcopy,
   } = { ...defaultProps, ...(props ?? {}) };
+  const heroMicrocopy =
+    microcopy !== undefined && microcopy !== ""
+      ? microcopy
+      : dietLabels.heroMicrocopyFallback;
   return (
     <View
       style={{
@@ -62,75 +70,76 @@ const DietCalorieHeroComponent = (
       </Text>
       <View
         style={{
-          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
+          width: "100%",
         }}
       >
         <View
           style={{
-            flex: 1.35,
+            width: CIRCLE_SIZE,
+            height: CIRCLE_SIZE,
             alignItems: "center",
             justifyContent: "center",
-            minWidth: CIRCLE_SIZE,
           }}
         >
+          <AnimatedCircularProgress
+            style={{ position: "absolute" }}
+            size={CIRCLE_SIZE}
+            width={CIRCLE_WIDTH}
+            fill={progressFill}
+            tintColor={colors.ui.primary}
+            backgroundColor={"#F3F1EC"}
+            rotation={0}
+            arcSweepAngle={360}
+            lineCap="round"
+            duration={900}
+          />
           <View
             style={{
-              width: CIRCLE_SIZE,
-              height: CIRCLE_SIZE,
               alignItems: "center",
               justifyContent: "center",
+              paddingHorizontal: spacing.sm,
             }}
           >
-            <AnimatedCircularProgress
-              style={{ position: "absolute" }}
-              size={CIRCLE_SIZE}
-              width={CIRCLE_WIDTH}
-              fill={progressFill}
-              tintColor={colors.ui.primary}
-              backgroundColor={"#F3F1EC"}
-              rotation={0}
-              arcSweepAngle={360}
-              lineCap="round"
-              duration={900}
-            />
-            <View style={{ alignItems: "center", justifyContent: "center" }}>
-              <Text
-                style={{
-                  fontWeight: 'bold',
-                  fontSize: 32,
-                  color: colors.ui.primary,
-                  
-                }}
-              >
-                {remaining}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.primary.regular,
-                  fontSize: textSizes.xs,
-                  color: colors.text.secondary,
-                  opacity: 0.95,
-                }}
-              >
-                Pts left
-              </Text>
-              <Text
-                style={{
-                  fontFamily: fonts.primary.regular,
-                  fontSize: textSizes.xs,
-                  color: colors.text.secondary,
-                  opacity: 0.92,
-                }}
-              >
-                Keep it up!
-              </Text>
-            </View>
+            <Text
+              style={{
+                fontWeight: "bold",
+                fontSize: 32,
+                color: colors.ui.primary,
+              }}
+            >
+              {remaining}
+            </Text>
+            <Text
+              style={{
+                fontFamily: fonts.primary.regular,
+                fontSize: textSizes.xs,
+                color: colors.text.secondary,
+                opacity: 0.95,
+                textAlign: "center",
+              }}
+            >
+              {remaining < 0
+                ? dietLabels.heroPointsOverLabel
+                : dietLabels.heroPointsLeftLabel}
+            </Text>
           </View>
         </View>
-
-
+        <Text
+          style={{
+            fontFamily: fonts.primary.regular,
+            fontSize: textSizes.xs,
+            lineHeight: Math.round(textSizes.xs * 1.45),
+            color: colors.text.primary,
+            textAlign: "center",
+            marginTop: spacing.md,
+            paddingHorizontal: spacing.md,
+            width: "100%",
+            maxWidth: 320,
+          }}
+        >
+          {heroMicrocopy}
+        </Text>
       </View>
     </View>
   );
