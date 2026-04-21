@@ -19,10 +19,6 @@ import * as haptics from "expo-haptics";
 import useConfettiStore from "../../../stores/useConfettiStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 
-import {
-  PermissionStatus,
-  useHealthKitPermissions,
-} from "../../../services/healthkit";
 import { RootStackParamList } from "../../navigation/types";
 import useUserStore from "../../../stores/useUserStore";
 import { updateTodayProgress } from "../../../services/firebase";
@@ -67,7 +63,6 @@ const smallWins = [
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { status, requestPermission } = useHealthKitPermissions();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
 
 
@@ -86,18 +81,6 @@ const HomeScreen = () => {
       ).length;
       setOverallProgress(completed);
     }, [todayProgress]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      if (
-        status?.status === PermissionStatus.DENIED &&
-        status?.canAskAgain === false
-      ) {
-        return;
-      }
-      void requestPermission();
-    }, [requestPermission, status?.status, status?.canAskAgain]),
   );
 
   const returnStepsMicroCopy = () => {

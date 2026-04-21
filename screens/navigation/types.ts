@@ -17,11 +17,13 @@ export type RecipeDetail = {
 
 export type RootStackParamList = {
   MainNavigator: undefined;
+  AuthNavigator: undefined;
   DietListScreen: undefined;
   AddDietScreen: undefined;
   ProfileScreen: undefined;
   PreferencesScreen: undefined;
   LogWeightScreen: undefined;
+  SocialProofScreen: undefined;
   ArticleScreen: {
     article?: {
       id: number;
@@ -31,6 +33,18 @@ export type RootStackParamList = {
     };
   };
   RecipeDetailScreen: { recipe: RecipeDetail };
+};
+
+export type AuthStackParamList = {
+  Onboarding: undefined;
+  SocialProofScreen: undefined;
+  Paywall: undefined;
+  AuthScreen: undefined;
+  HowItWork: undefined;
+  ProfileDetails: undefined;
+  Auth: undefined;
+  PermissionScreen: undefined;
+  MainStack: undefined;
 };
 
 declare global {

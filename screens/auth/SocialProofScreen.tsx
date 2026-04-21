@@ -5,10 +5,13 @@ import { spacing } from "../../constants/spacing";
 import { ReduceMotion } from "react-native-reanimated";
 import SocialProofItem from "./components/SocialProofItem";
 import { globalStyles } from "../../constants/globalStyles";
-import { typography } from "../../constants/texts";
+import { planBuildingCopy, typography } from "../../constants/texts";
 import { colors } from "../../constants/colors";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import PlanBuildingLoader from "./components/PlanBuildingLoader";
+import { PermissionStatus, useHealthKitPermissions } from "../../services/healthkit";
+import { getNotificationToken } from "../../services/notifications";
 
 
 const dummySocialProof = [
@@ -18,7 +21,7 @@ const dummySocialProof = [
     ratingMax: 5,
     headline: "Down 4kg in the first week",
     quote:
-      "“I didn’t change everything, just followed the plan. The progress started faster than I expected.”",
+      "“I just followed the recipes and tracked points instead of calories. It’s so much easier to stick to.”",
   },
   {
     name: "Marcus, 45",
@@ -26,13 +29,50 @@ const dummySocialProof = [
     ratingMax: 5,
     headline: "Finally seeing progress",
     quote:
-      "“After one week I could already see changes. It feels simple, which makes me stick with it.”",
+      "“Not having to count calories changed everything. The points system just makes sense.”",
+  },
+  {
+    name: "Emma, 27",
+    rating: 5,
+    ratingMax: 5,
+    headline: "Lost 6kg without overthinking",
+    quote:
+      "“I don’t think about food all day anymore. I just follow the points and it works.”",
+  },
+  {
+    name: "Jonas, 38",
+    rating: 4.9,
+    ratingMax: 5,
+    headline: "Actually started moving more",
+    quote:
+      "“Seeing my steps affect my points made it fun to move more. I’ve never been this consistent.”",
+  },
+  {
+    name: "Sofia, 34",
+    rating: 5,
+    ratingMax: 5,
+    headline: "So simple compared to calories",
+    quote:
+      "“Counting calories always stressed me out. Points are way easier and less overwhelming.”",
   },
 ];
 
 const SocialProofScreen = () => {
-
   const navigation = useNavigation();
+  const [isPlanReady, setIsPlanReady] = React.useState(false);
+  const { requestPermission } = useHealthKitPermissions();
+
+
+
+  const handleGetPermissions = async () => {
+
+    navigation.navigate("Paywall");
+    return;    
+    await getNotificationToken()
+    await requestPermission();
+
+  };
+
   const renderHeader = () => (
     <View
       style={{
@@ -74,7 +114,7 @@ const SocialProofScreen = () => {
         delay: 100,
         reduceMotion: ReduceMotion.Never,
       }}
-      style={{ gap: spacing.md, width: "100%" }}
+      style={{ gap: spacing.listItemGap, width: "100%" }}
     >
       {dummySocialProof.map((item, index) => (
         <SocialProofItem key={index} item={item} />
@@ -84,9 +124,15 @@ const SocialProofScreen = () => {
 
   const renderButton = () => (
     <View>
-      <PrimaryButtonComponent title="Start my plan" onPress={() => navigation.navigate('AuthScreen')} />
+      <PrimaryButtonComponent
+        title={planBuildingCopy.cta}
+        // onPress={() => navigation.navigate("AuthScreen" as never)}
+        onPress={handleGetPermissions}
+      />
     </View>
   );
+
+  const renderLoadingComponent = () => <PlanBuildingLoader onComplete={() => setIsPlanReady(true)} />;
 
   return (
     <View style={{ ...globalStyles.container }}>
@@ -102,8 +148,8 @@ const SocialProofScreen = () => {
         {renderHeader()}
         {renderSocialProof()}
       </ScrollView>
-      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding}}>
-        {renderButton()}
+      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+        {isPlanReady ? renderButton() : renderLoadingComponent()}
       </View>
     </View>
   );

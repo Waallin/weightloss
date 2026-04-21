@@ -20,4 +20,5 @@ export const spacing = {
   /** Paywall horizontal testimonial cards */
   paywallSocialProofCardWidth: 280,
   ctaButtonBottomPadding: 80,
+  listItemGap: 8,
 };

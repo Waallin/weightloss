@@ -23,7 +23,8 @@ const BIRTH_YEARS = (() => {
 
 const WEIGHT_IN_KG = (() => {
   const list: number[] = [];
-  for (let w = 40; w <= 120; w += 1) list.push(w);
+  // Use integer tenths to avoid float drift (e.g. 0.1 + 0.2 !== 0.3)
+  for (let w10 = 400; w10 <= 1200; w10 += 1) list.push(w10 / 10);
   return list;
 })();
 
@@ -77,6 +78,12 @@ const ProfileDetailsScreen = () => {
     () => Math.abs(startWeight - goalWeight),
     [goalWeight, startWeight],
   );
+
+  const formatKgNumber = (value: number): string => {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return "0";
+    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+  };
   const goalDirection = useMemo<"lose" | "gain" | "maintain">(() => {
     if (goalWeight < startWeight) return "lose";
     if (goalWeight > startWeight) return "gain";
@@ -196,13 +203,14 @@ const ProfileDetailsScreen = () => {
         description="No pressure — just a starting point."
         summaryIconName="person"
         summaryLabel="Selected weight:"
-        summaryValue={`${startWeight} kg`}
+        summaryValue={`${formatKgNumber(startWeight)} kg`}
       >
         <WheelPicker<number>
           data={WEIGHT_IN_KG}
           value={startWeight}
           onChange={setStartWeight}
-          getLabel={(y) => String(y)}
+          getKey={(w) => w.toFixed(1)}
+          getLabel={(w) => formatKgNumber(w)}
         />
       </ProfileStepSection>
     );
@@ -215,20 +223,21 @@ const ProfileDetailsScreen = () => {
         description="You can always adjust this later."
         summaryIconName="person"
         summaryLabel="Selected goal weight:"
-        summaryValue={`${goalWeight} kg`}
+        summaryValue={`${formatKgNumber(goalWeight)} kg`}
       >
         <WheelPicker<number>
           data={WEIGHT_IN_KG}
           value={goalWeight}
           onChange={setGoalWeight}
-          getLabel={(y) => String(y)}
+          getKey={(w) => w.toFixed(1)}
+          getLabel={(w) => formatKgNumber(w)}
         />
       </ProfileStepSection>
     );
   };
 
   const renderPlanCreated = () => {
-    const goalDeltaKg = Math.abs(user?.goalWeight - user?.startWeight);
+    const goalDeltaKg = Math.abs((user?.goalWeight ?? 0) - (user?.startWeight ?? 0));
     return (
       <View style={globalStyles.container}>
    
@@ -357,7 +366,7 @@ const ProfileDetailsScreen = () => {
                     marginBottom: spacing.xs,
                   }}
                 >
-                  You’re just {goalDeltaKg} kg away
+                  You’re just {formatKgNumber(goalDeltaKg)} kg away
                 </Text>
                 <Text
                   style={{
@@ -449,7 +458,7 @@ const ProfileDetailsScreen = () => {
         </MotiView>
         <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
           <PrimaryButtonComponent
-            title="I'm ready"
+            title="Create my plan"
             onPress={() => {
               haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
               navigation.navigate("SocialProofScreen");

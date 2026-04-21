@@ -295,6 +295,17 @@ export const logWeightCopy = {
     save: "Save",
 } as const;
 
+export const planBuildingCopy = {
+  title: "Building your plan",
+  subtitle: "This takes a moment. We’re tailoring it to you.",
+  steps: [
+    "Analyzing your goal…",
+    "Building your habits…",
+    "Finalizing your plan…",
+  ],
+  cta: "Continue",
+} as const;
+
 export const authCopy = {
     planReadyTitle: "Your plan is ready",
     planReadySubtitle: "We tailored your routine to fit your body and goal—so you can focus on showing up.",
