@@ -19,6 +19,16 @@ export const textSizes = {
   roundedNavIcon: 35,
 } as const;
 
+export const lineHeights = {
+  caption: 14,
+  small: 18,
+  body: 22,
+  title: 24,
+  headline: 28,
+  /** Article reading body (more comfortable) */
+  article: 26,
+} as const;
+
 /**
  * Single place for font size + weight + family. Prefer these over ad-hoc Text styles.
  * Adjust tokens here to change typography app-wide.

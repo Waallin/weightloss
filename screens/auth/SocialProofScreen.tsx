@@ -66,7 +66,7 @@ const SocialProofScreen = () => {
 
   const handleGetPermissions = async () => {
 
-    navigation.navigate("Paywall");
+    navigation.navigate("Auth");
     return;    
     await getNotificationToken()
     await requestPermission();

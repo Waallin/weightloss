@@ -182,7 +182,7 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
           {title}
         </Text>
 
-        {metaLine.length > 0 ? (
+      
           <Text
             numberOfLines={2}
             style={{
@@ -191,9 +191,9 @@ const AddedFoodItem: React.FC<AddedFoodItemProps> = ({
               lineHeight: 20,
             }}
           >
-            {metaLine}
+            {item.type}
           </Text>
-        ) : null}
+ 
 
         {pointsLabel !== null ? (
           <View

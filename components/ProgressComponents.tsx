@@ -21,6 +21,7 @@ function formatAmount(value: number): string {
 }
 
 const ProgressComponents = ({
+  type,
   title,
   icon,
   number,
@@ -33,6 +34,7 @@ const ProgressComponents = ({
   description,
   completed,
 }: {
+  type: "water" | "steps" | "points";
   title: string;
   icon: string;
   number: number;
@@ -69,7 +71,7 @@ const ProgressComponents = ({
       {!completed && description ? (
         <View style={{
           position: "absolute",
-    
+
           right: 10,
           bottom: 10,
           zIndex: 1000,
@@ -187,25 +189,34 @@ const ProgressComponents = ({
       </View>
       <View
         style={{
+        }}
+      >
+        <View style={{
           flexDirection: "row",
           flexWrap: "wrap",
           alignItems: "baseline",
-        }}
-      >
-        <Text
-          style={{
-            ...typography.cardTitle,
-            color: colors.text.primary,
-          }}
-        >
-          {formatAmount(number)}
-        </Text>
-        <Text
-          style={{
-            ...textStyles.secondary,
-          }}
-        >
-          {` / ${formatAmount(goal)}`}
+        }}>
+          <Text
+            style={{
+              ...typography.cardTitle,
+              color: colors.text.primary,
+            }}
+          >
+            {formatAmount(number)}
+          </Text>
+          <Text
+            style={{
+              ...textStyles.secondary,
+            }}
+          >
+            {` / ${formatAmount(goal)}`}
+          </Text>
+        </View>
+        <Text style={{
+          ...typography.small,
+          color: colors.text.secondary,
+        }}>
+          {type === "water" ? "glasses" : type === "steps" ? "steps" : "points"}
         </Text>
       </View>
       <View

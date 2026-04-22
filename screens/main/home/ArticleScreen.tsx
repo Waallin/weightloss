@@ -5,53 +5,13 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { textStyles, typography } from "../../../constants/texts";
+import { lineHeights, textStyles, typography } from "../../../constants/texts";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 
 const ICON_CONTAINER_SIZE = 52;
 
-/** Placeholder article — swap for API data when ready */
-const dummyArticle = {
-  title: "How to drink more water daily",
-  description: "Simple tricks that make it automatic",
-  /** Matches home list card tint for article id 2 */
-  accentColor: "#6BAFB2",
-  content: `Stay within your points without thinking
-
-Making progress doesn’t have to mean tracking every calorie or constantly doing math in your head.
-
-In fact, the simpler your system is, the more likely you are to stick with it.
-
-That’s where points come in.
-
-Instead of overthinking every meal, points give you a clear and flexible way to stay on track. Each food has a value, and your goal is simply to stay within your daily range. No stress. No perfection needed.
-
-You don’t have to get it right every time.
-
-What matters is consistency over time.
-
-Some days will be better than others—and that’s okay. With a points system, you always know where you stand, and small adjustments become easy.
-
-Had a bigger meal? No problem. You can balance it out later.
-
-This approach removes the mental load. You’re not constantly asking yourself:
-“Is this too much?” or “Did I ruin my day?”
-
-You just follow the structure—and keep going.
-
-Over time, this builds something much more powerful than short-term results:
-a sustainable routine.
-
-And that’s where real progress happens.`,
-};
-
 export type ArticleScreenParams = {
-  article?: {
-    id: number;
-    title: string;
-    description: string;
-    color: string;
-  };
+    article: any;
 };
 
 type ArticleScreenRouteProp = RouteProp<
@@ -62,10 +22,9 @@ type ArticleScreenRouteProp = RouteProp<
 const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
   route: _route,
 }) => {
-  const paragraphs = dummyArticle.content
-    .split(/\n\n+/)
-    .map((block) => block.trim())
-    .filter(Boolean);
+  const article = _route.params.article;
+  const content =
+    typeof article?.content === "string" ? normalizeArticleContent(article.content) : "";
 
   return (
     <ScrollView
@@ -73,7 +32,7 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
       contentContainerStyle={globalStyles.scrollContainer}
       style={{ ...globalStyles.container }}
     >
-      <GoBackHeaderComponent title={dummyArticle.title} />
+      <GoBackHeaderComponent title={article?.title || ""} />
 
       <View
         style={{
@@ -98,7 +57,7 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
               width: ICON_CONTAINER_SIZE,
               height: ICON_CONTAINER_SIZE,
               borderRadius: ICON_CONTAINER_SIZE / 2,
-              backgroundColor: dummyArticle.accentColor,
+              backgroundColor: article?.color || "",
               alignItems: "center",
               justifyContent: "center",
               opacity: 0.95,
@@ -117,10 +76,10 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
                 color: colors.text.primary,
               }}
             >
-              {dummyArticle.title}
+              {article?.title || ""}
             </Text>
-            <Text style={{ ...textStyles.secondary, lineHeight: 22 }}>
-              {dummyArticle.description}
+            <Text style={{ ...textStyles.secondary, lineHeight: lineHeights.body }}>
+              {article?.description || ""}
             </Text>
           </View>
         </View>
@@ -133,21 +92,48 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
           }}
         />
 
-        {paragraphs.map((paragraph, index) => (
+        {article?.content && (
           <Text
-            key={`p-${index}`}
             style={{
-              ...typography.titleMedium,
+              ...typography.body,
               color: colors.text.primary,
-              lineHeight: 24,
+              lineHeight: lineHeights.article,
+              letterSpacing: 0.2,
+              textAlign: "left",
             }}
           >
-            {paragraph}
+            {content}
           </Text>
-        ))}
+        )}
       </View>
     </ScrollView>
   );
 };
+
+function normalizeArticleContent(input: string): string {
+  // Remove template-literal indentation and normalize paragraph spacing.
+  const lines = input
+    .replace(/\r\n/g, "\n")
+    .split("\n")
+    .map((line) => line.trim());
+
+  const collapsed: string[] = [];
+  let previousWasEmpty = true;
+
+  for (const line of lines) {
+    const isEmpty = line.length === 0;
+    if (isEmpty) {
+      if (!previousWasEmpty) {
+        collapsed.push("");
+      }
+      previousWasEmpty = true;
+      continue;
+    }
+    collapsed.push(line);
+    previousWasEmpty = false;
+  }
+
+  return collapsed.join("\n").trim();
+}
 
 export default ArticleScreen;

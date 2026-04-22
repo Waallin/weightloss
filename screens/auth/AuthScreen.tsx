@@ -76,7 +76,7 @@ const AuthScreen = () => {
       if (result) {
         await AsyncStorage.setItem("user", email);
         setUser(userObj);
-        navigation.replace("MainStack");
+        navigation.replace("Paywall");
       }
     } catch (e: any) {
       console.log("Error creating account:", e);

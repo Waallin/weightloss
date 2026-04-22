@@ -13,24 +13,20 @@ const ICON_CONTAINER_SIZE = 48;
 const ICON_GLASS_BG = "rgba(255, 255, 255, 0.25)";
 
 const ArticlesComponent = ({
-  title,
-  description,
-  color,
+  article,
   onPress,
 }: {
-  title: string;
-  description: string;
-  color: string;
-  onPress: () => void;
+  article: any;
+  onPress: (article: any) => void;
 }) => {
   return (
     <TouchableOpacity
-      onPress={onPress}
+      onPress={() => onPress(article)}
       style={{
         width: CARD_WIDTH,
         minHeight: CARD_MIN_HEIGHT,
         borderRadius: spacing.borderRadius * 1.5,
-        backgroundColor: color,
+        backgroundColor: article.color,
         padding: spacing.md,
         flexDirection: "row",
         alignItems: "center",
@@ -58,7 +54,7 @@ const ArticlesComponent = ({
           numberOfLines={2}
           ellipsizeMode="tail"
         >
-          {title}
+          {article.title}
         </Text>
         <Text
           style={{
@@ -69,7 +65,7 @@ const ArticlesComponent = ({
           numberOfLines={3}
           ellipsizeMode="tail"
         >
-          {description}
+          {article.description}
         </Text>
       </View>
       <View
