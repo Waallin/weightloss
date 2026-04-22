@@ -55,6 +55,19 @@ export const colors = {
     progressCompleteIconBackground: "rgba(255,255,255,0.28)",
     progressCompleteBarTrack: "rgba(255,255,255,0.38)",
     progressCompleteBarFill: "#FFFFFF",
+
+    /** Paywall — dark “Snapchat-like” theme tokens */
+    paywallBackgroundDark: "#0B0C0E",
+    paywallSurfaceDark: "#14161A",
+    paywallSurfaceBorderDark: "rgba(255,255,255,0.10)",
+    paywallDividerDark: "rgba(255,255,255,0.08)",
+    paywallTextPrimaryOnDark: "rgba(255,255,255,0.92)",
+    paywallTextSecondaryOnDark: "rgba(255,255,255,0.64)",
+    /** Snapchat-inspired CTA yellow (adjusted slightly for readability) */
+    paywallCtaYellow: "#FFFC00",
+    paywallCtaTextOnYellow: "#0B0C0E",
+    paywallSelectedOutline: "rgba(255,255,255,0.22)",
+    paywallBadgeFill: "rgba(255,255,255,0.10)",
   },
   text: {
     primary: "#3B3551",

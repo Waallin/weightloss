@@ -5,6 +5,9 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  /** Paywall */
+  paywallMascotSize: 140,
+  paywallPlanRowHeight: 74,
   scrollViewBottomPadding: 100,
   tabBarBaseHeight: 60,
   tabBarTopRadius: 18,

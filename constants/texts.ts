@@ -362,7 +362,7 @@ export const authCopy = {
 export const paywallCopy = {
   title: "See real progress in 7 days",
   subtitle:
-    "Build simple habits and finally stay consistent—without overthinking it.",
+    "Join 5,000+ people already seeing results",
 
   benefits: [
     "Track your daily progress",
@@ -400,7 +400,7 @@ export const paywallCopy = {
   weeklyAnnualizedHint: "", // ← ta bort denna helt (den skrämmer bort)
 
   // 🔥 viktig CTA förbättring
-  ctaYearlyTrial: "Start free trial",
+  ctaYearlyTrial: "Continue with yearly",
   ctaWeekly: "Continue with weekly",
 
   // 🔥 mycket viktig trust-text
@@ -412,6 +412,14 @@ export const paywallCopy = {
 
   // 🔥 mer emotion
   choosePlanTitle: "Start seeing results today",
+
+  /** Snapchat-like offer framing */
+  specialOfferPill: "SPECIAL OFFER",
+  specialOfferHeadline: "Save 89% on Yearly",
+
+  /** Variant-specific microcopy */
+  urgencyLine: "Offer ends soon — lock in the yearly price today",
+  freeTrialUnderCta: "Free for 7 days",
 } as const;
 
 export const reminderPaywallCopy = {

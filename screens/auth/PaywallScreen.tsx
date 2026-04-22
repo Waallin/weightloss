@@ -1,7 +1,7 @@
 import React from "react";
 import { Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import DefaultPaywall from "./components/DefaultPaywall";
+import DefaultPaywall from "./Paywalls/DefaultPaywall";
 import ReminderPaywall from "./Paywalls/ReminderPaywall";
 import useConfigStore from "../../stores/useConfigStore";
 import { colors } from "../../constants/colors";
@@ -23,6 +23,8 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "reminder") {
     return <ReminderPaywall onCTAPress={handleCTAPress} />;
   }
+
+  return <DefaultPaywall onCTAPress={handleCTAPress} />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.ui.background }}>
