@@ -22,6 +22,7 @@ import { useTodaySteps } from "./services/healthkit";
 import { getDateKey } from "./utils/dateUtils";
 import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
+import PaywallScreen from "./screens/auth/PaywallScreen";
 const currentYear = new Date().getFullYear()
 export default function App() {
 
@@ -142,7 +143,7 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-          {isAuthenticated ? <MainStack /> : <AuthNavigator />}
+          {isAuthenticated ? <MainStack /> : <PaywallScreen />}
         </NavigationContainer>
       </View>
     </View>
