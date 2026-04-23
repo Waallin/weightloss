@@ -245,3 +245,36 @@ export const syncToday = async (
     console.log("Error syncing today:", error);
   }
 };
+
+export const getDaysProgress = async (email: string) => {
+  try {
+    const daysRef = collection(database, "users", email, "days");
+    const daysSnap = await getDocs(daysRef);
+    const days = daysSnap.docs.map((doc) => doc.data());
+
+    // Return only arrays with dateKey values
+    const allDone: string[] = [];
+    const someDone: string[] = [];
+
+    for (const day of days) {
+      const completion = day.completion || {};
+      const completionValues = Object.values(completion);
+
+      if (completionValues.length === 0) continue;
+
+      const allTrue = completionValues.every((v) => v === true);
+      const anyTrue = completionValues.some((v) => v === true);
+
+      if (allTrue) {
+        allDone.push(day.dateKey);
+      } else if (anyTrue) {
+        someDone.push(day.dateKey);
+      }
+    }
+
+    return { allDone, someDone };
+  } catch (error) {
+    console.log(`Error getting days in users with email ${email}:`, error);
+    return { allDone: [], someDone: [] };
+  }
+};

@@ -1,5 +1,5 @@
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-import React, { useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -16,7 +16,7 @@ import {
 import { Calendar } from "react-native-calendars";
 import type { Theme } from "react-native-calendars/src/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useUserStore from "../../../stores/useUserStore";
 import {
@@ -25,9 +25,15 @@ import {
   parseUserCreatedAt,
 } from "../../../utils/dateUtils";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { getDaysProgress } from "../../../services/firebase";
 
 const CIRCLE_SIZE = 200;
 const CIRCLE_WIDTH = 15;
+
+type DaysProgress = {
+  allDone: string[];
+  someDone: string[];
+};
 
 const formatKgDisplay = (value: number | null | undefined): string => {
   if (value == null || Number.isNaN(Number(value))) {
@@ -42,7 +48,19 @@ const ProgressScreen = () => {
   const todayYmd = formatLocalYmd(new Date());
   const navigation = useNavigation();
   const { user } = useUserStore();
+  const [daysProgress, setDaysProgress] = useState<DaysProgress>({
+    allDone: [],
+    someDone: [],
+  });
 
+  useFocusEffect(useCallback(() => {
+    const fetchDays = async () => {
+      if (!user?.email) return;
+      const daysProgress = await getDaysProgress(user?.email as string);
+      setDaysProgress(daysProgress);
+    };
+    fetchDays();
+  }, [user?.email]));
   const startYmd = useMemo(() => {
     const d = parseUserCreatedAt(user?.createdAt);
     let ymd = formatLocalYmd(d);
@@ -57,25 +75,79 @@ const ProgressScreen = () => {
   }, [user?.createdAt]);
 
   const calendarMarkedDates = useMemo(
-    () => ({
-      [todayYmd]: {
-        customStyles: {
-          container: {
-            backgroundColor: colors.ui.primary,
-            width: spacing.calendarTodayCircleSize,
-            height: spacing.calendarTodayCircleSize,
-            borderRadius: spacing.calendarTodayCircleSize / 2,
-            alignItems: "center" as const,
-            justifyContent: "center" as const,
+    () => {
+      const baseContainer = {
+        width: spacing.calendarTodayCircleSize,
+        height: spacing.calendarTodayCircleSize,
+        borderRadius: spacing.calendarTodayCircleSize / 2,
+        alignItems: "center" as const,
+        justifyContent: "center" as const,
+      };
+
+      const marked: Record<string, { customStyles: { container: object; text: object } }> =
+        {};
+
+      for (const ymd of daysProgress.someDone) {
+        marked[ymd] = {
+          customStyles: {
+            container: {
+              ...baseContainer,
+              backgroundColor: colors.ui.progressCalendarSomeDone,
+            },
+            text: {
+              color: colors.text.primary,
+              fontWeight: typography.cardTitle.fontWeight,
+            },
           },
-          text: {
-            color: colors.ui.white,
-            fontWeight: typography.cardTitle.fontWeight,
+        };
+      }
+
+      for (const ymd of daysProgress.allDone) {
+        marked[ymd] = {
+          customStyles: {
+            container: {
+              ...baseContainer,
+              backgroundColor: colors.ui.progressCalendarAllDone,
+            },
+            text: {
+              color: colors.ui.white,
+              fontWeight: typography.cardTitle.fontWeight,
+            },
+          },
+        };
+      }
+
+      if (!marked[todayYmd]) {
+        marked[todayYmd] = {
+          customStyles: {
+            container: {
+              ...baseContainer,
+              backgroundColor: "transparent",
+            },
+            text: {
+              color: colors.ui.primary,
+              fontWeight: typography.cardTitle.fontWeight,
+            },
+          },
+        };
+      }
+
+      // Always show today's green border, even if today is allDone/someDone.
+      marked[todayYmd] = {
+        ...marked[todayYmd],
+        customStyles: {
+          ...marked[todayYmd].customStyles,
+          container: {
+            ...(marked[todayYmd].customStyles.container as object),
+            borderWidth: spacing.calendarTodayBorderWidth,
+            borderColor: colors.text.primary,
           },
         },
-      },
-    }),
-    [todayYmd]
+      };
+
+      return marked;
+    },
+    [daysProgress.allDone, daysProgress.someDone, todayYmd]
   );
 
   const totalChangeKg = useMemo(() => {
@@ -131,7 +203,7 @@ const ProgressScreen = () => {
       const delta = Math.abs(current - goal);
       return `${delta} kg from goal`;
     }
-    return `${progressKg} / ${totalChangeKg} kg completed`;
+    return `${progressKg.toFixed(1)} / ${totalChangeKg.toFixed(1)} kg completed`;
   }, [user?.startWeight, user?.goalWeight, user?.currentWeight, totalChangeKg, progressKg]);
 
   const returnWeightMicroCopy = () => {
@@ -238,10 +310,11 @@ const ProgressScreen = () => {
               },
               "stylesheet.day.basic": {
                 base: {
-                  width: 32,
-                  height: 42,
-                  minHeight: 42,
+                  width: spacing.calendarTodayCircleSize,
+                  height: spacing.calendarTodayCircleSize,
+                  minHeight: spacing.calendarTodayCircleSize,
                   alignItems: "center",
+                  justifyContent: "center",
                 },
               },
               monthTextColor: colors.text.primary,

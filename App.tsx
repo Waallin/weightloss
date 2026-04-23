@@ -143,7 +143,7 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-          {isAuthenticated ? <MainStack /> : <PaywallScreen />}
+          {isAuthenticated ? <MainStack /> : <AuthNavigator />}
         </NavigationContainer>
       </View>
     </View>

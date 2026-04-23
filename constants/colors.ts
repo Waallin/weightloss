@@ -36,6 +36,9 @@ export const colors = {
     primarySoft: "#D7E3FC",  // new soft blue
     /** Progress calendar — subtle fill for each day in journey range (start → today) */
     calendarDayInRangeBackground: "#EEF0F3",
+    /** Progress calendar — day completion states */
+    progressCalendarAllDone: "#0EA371",
+    progressCalendarSomeDone: "#CFF5E5",
     /** Calendar: weight-logged dot — saturated blue for contrast on white + goal (green) cells */
     weightDot: "#64748B",
     success: "#B7EFC5",      // new soft green
