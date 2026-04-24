@@ -16,11 +16,13 @@ import Constants from "expo-constants";
 import { setDocument } from "../../services/firebase";
 const IMAGE_SIZE = 250;
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import useConfigStore from "../../stores/useConfigStore";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
   const navigation = useNavigation();
   const { user, setUser } = useUserStore();
+  const { config } = useConfigStore();
   useEffect(() => {
     if (appleToken) {
 
@@ -61,7 +63,7 @@ const AuthScreen = () => {
     }
   };
 
-  const handleCreateAccount = async (email: string) => {
+  const handleCreateAccount = async (email: string) => {   
     try {
       const userObj = {
         ...user,
@@ -76,7 +78,12 @@ const AuthScreen = () => {
       if (result) {
         await AsyncStorage.setItem("user", email);
         setUser(userObj);
+
+        if (!config?.showPaywall) {
+          navigation.replace("MainStack");
+        } else {
         navigation.replace("Paywall");
+        }
       }
     } catch (e: any) {
       console.log("Error creating account:", e);

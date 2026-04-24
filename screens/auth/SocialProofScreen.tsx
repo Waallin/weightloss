@@ -16,15 +16,15 @@ import { getNotificationToken } from "../../services/notifications";
 
 const dummySocialProof = [
   {
-    name: "Lisa, 31",
+    name: "Kudoo user",
     rating: 4.9,
     ratingMax: 5,
-    headline: "Down 4kg in the first week",
+    headline: "Feeling lighter in the first week",
     quote:
       "“I just followed the recipes and tracked points instead of calories. It’s so much easier to stick to.”",
   },
   {
-    name: "Marcus, 45",
+    name: "Kudoo user",
     rating: 5,
     ratingMax: 5,
     headline: "Finally seeing progress",
@@ -32,7 +32,7 @@ const dummySocialProof = [
       "“Not having to count calories changed everything. The points system just makes sense.”",
   },
   {
-    name: "Emma, 27",
+    name: "Kudoo user",
     rating: 5,
     ratingMax: 5,
     headline: "Lost 6kg without overthinking",
@@ -40,7 +40,7 @@ const dummySocialProof = [
       "“I don’t think about food all day anymore. I just follow the points and it works.”",
   },
   {
-    name: "Jonas, 38",
+    name: "Kudoo user",
     rating: 4.9,
     ratingMax: 5,
     headline: "Actually started moving more",
@@ -48,7 +48,7 @@ const dummySocialProof = [
       "“Seeing my steps affect my points made it fun to move more. I’ve never been this consistent.”",
   },
   {
-    name: "Sofia, 34",
+    name: "Kudoo user",
     rating: 5,
     ratingMax: 5,
     headline: "So simple compared to calories",
@@ -66,11 +66,9 @@ const SocialProofScreen = () => {
 
   const handleGetPermissions = async () => {
 
-    navigation.navigate("Auth");
-    return;    
-    await getNotificationToken()
     await requestPermission();
-
+    
+    navigation.replace("Auth");
   };
 
   const renderHeader = () => (

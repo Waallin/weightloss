@@ -27,7 +27,6 @@ import useUserStore from "../../../stores/useUserStore";
 import { serverTimestamp } from "firebase/firestore";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
-const fallbackImage = require("../../../assets/potato.png");
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
 type RecipeDetailScreenRouteProp = RouteProp<
@@ -47,12 +46,12 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const { showToast } = useToastStore();
-  const imageSource: ImageSourcePropType = useMemo(() => {
+  const imageSource: ImageSourcePropType | null = useMemo(() => {
     if (recipe.imageUrl?.trim()) {
       return { uri: recipe.imageUrl.trim() };
     }
-    return fallbackImage;
-  }, [recipe.imageUrl]);
+    return null;
+  }, [recipe.imageUrl]);  
 
   const title = recipe.title ?? recipe.name ?? "";
   const pointsRaw = recipe.points ?? recipe.kudos;

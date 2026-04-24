@@ -1,5 +1,5 @@
 import { Text, View, ScrollView, Alert } from "react-native";
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion, steps } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -13,7 +13,6 @@ import {
 import ProgressComponents from "../../../components/ProgressComponents";
 import { spacing } from "../../../constants/spacing";
 import ArticlesComponent from "./components/ArticlesComponent";
-import SmallWinComponent from "./components/SmallWinComponent";
 import { Ionicons } from "@expo/vector-icons";
 import {
   NavigationProp,
@@ -32,6 +31,7 @@ import { useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 import { syncToday } from "../../../services/firebase";
+import { PermissionStatus } from "../../../services/healthkit";
 
 const articles = [
   {
@@ -41,8 +41,8 @@ const articles = [
 
     description: "A simple way to stay on track without counting calories.",
 
-    content: 
-    `Instead of tracking calories, we use a simple point system.
+    content:
+      `Instead of tracking calories, we use a simple point system.
 
 Each meal has a point value based on how it affects your progress. At the start of the day, you get a set number of points.
 
@@ -68,11 +68,11 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   },
   {
     id: 2,
-  
+
     title: "Stay within your points",
-  
+
     description: "Simple habits that make it easy to stay on track.",
-  
+
     content: `Staying within your points doesn’t have to be hard.
   
   It’s not about being perfect. It’s about making simple choices throughout the day.
@@ -102,16 +102,16 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   If something goes off plan, just get back on track with your next choice.
   
   That’s how progress happens.`,
-  
+
     color: "#6FCF97",
   },
   {
     id: 3,
-  
+
     title: "Went over your points?",
-  
+
     description: "What to do when things don’t go as planned.",
-  
+
     content: `Went over your points today?
   
   It’s okay.
@@ -139,16 +139,16 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   Just continue.
   
   You’re still on track.`,
-  
+
     color: "#56CCF2",
   },
   {
     id: 4,
-  
+
     title: "Consistency beats perfection",
-  
+
     description: "Why small wins every day lead to real results.",
-  
+
     content: `You don’t need to be perfect to see results.
   
   You just need to be consistent.
@@ -180,17 +180,17 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   That’s how it works.
   
   And that’s how you win.`,
-  
+
     color: "#BB6BD9",
-  }, 
+  },
   {
 
     id: 5,
-  
+
     title: "Reach 10k steps easily",
-  
+
     description: "Simple ways to move more without overthinking it.",
-  
+
     content: `Reaching 10,000 steps doesn’t have to be hard.
   
   You don’t need long workouts or a strict routine. Small movements throughout the day add up quickly.
@@ -218,11 +218,11 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   It’s about moving a little more than yesterday.
   
   That’s enough.`,
-  
-    
-  
+
+
+
     color: "#27AE60",
-  
+
   }
 ];
 
@@ -234,8 +234,10 @@ const HomeScreen = () => {
   const todaySteps = useTodaySteps();
   const [claimStepsReward, setClaimStepsReward] = useState(
     todayProgress?.progress.steps >= 10000 &&
-      todayProgress?.completion.steps === false,
+    todayProgress?.completion.steps === false,
   );
+
+  const overConsumedPoints = todayProgress?.points?.used > todayProgress?.points?.total;
   const { user } = useUserStore();
   const [overallProgress, setOverallProgress] = useState(0);
 
@@ -253,8 +255,8 @@ const HomeScreen = () => {
       handleSyncToday();
     }, []),
   );
-  
-  
+
+
   const handleSyncToday = async () => {
     const points = calculatePoints(
       user?.currentWeight ?? user?.startWeight,
@@ -269,7 +271,7 @@ const HomeScreen = () => {
       setTodayProgress(syncedDay);
     }
   };
-  
+
   const returnStepsMicroCopy = () => {
     const steps = todayProgress?.progress?.steps ?? 0;
 
@@ -349,9 +351,6 @@ const HomeScreen = () => {
     );
   };
 
-  const handleProgressComponentPress = (component: string) => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-  };
 
   const handle10kSteps = () => {
     updateTodayProgress(user?.email as string, {
@@ -378,11 +377,11 @@ const HomeScreen = () => {
       },
       ...(reachedGoal
         ? {
-            completion: {
-              ...todayProgress.completion,
-              water: true,
-            },
-          }
+          completion: {
+            ...todayProgress.completion,
+            water: true,
+          },
+        }
         : {}),
     });
 
@@ -398,6 +397,18 @@ const HomeScreen = () => {
 
   const handleClaimPointsReward = () => {
     if (todayProgress?.completion?.points === true) {
+      return;
+    }
+
+    if (overConsumedPoints) {
+      Alert.alert(
+        "Over your points",
+        "You’ve used more points than planned today. That’s okay — it happens. You can go for a walk to earn more points, or just continue and get back on track tomorrow.",
+        [
+         
+          { text: "Continue"},
+        ]
+      );
       return;
     }
     Alert.alert(
@@ -451,7 +462,7 @@ const HomeScreen = () => {
           number={todayProgress?.progress?.water ?? 0}
           goal={10}
           microcopy={returnWaterMicroCopy()}
-          width="48%"
+          width="47%"
           type="water"
           onPress={() => handleAddWater()}
           completed={todayProgress?.completion?.water === true}
@@ -462,7 +473,7 @@ const HomeScreen = () => {
           number={todayProgress?.progress?.steps ?? 0}
           goal={10000}
           microcopy={returnStepsMicroCopy()}
-          width="48%"
+          width="47%"
           type="steps"
           completed={todayProgress?.completion?.steps === true}
           claimRewardPress={() => handle10kSteps()}
@@ -478,7 +489,7 @@ const HomeScreen = () => {
           type="points"
           onPress={() => handleClaimPointsReward()}
           width="100%"
-          description="Mark today as done"
+          description={"Mark today as done"}
         />
       </MotiView>
     );
