@@ -11,6 +11,7 @@ import { RootStackParamList } from "./types";
 import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 import OnboardingScreen from "../auth/OnboardingScreen";
 import { AuthNavigator } from "./AuthNavigator";
+import PaywallScreen from "../auth/PaywallScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -62,6 +63,11 @@ export const MainStack = () => {
         component={AuthNavigator}
         options={{ headerShown: false }}
       />  
+      <Stack.Screen
+        name="Paywall"
+        component={PaywallScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 };

@@ -7,6 +7,7 @@ import ProfileDetailsScreen from "../auth/ProfileDetailsScreen";
 import PaywallScreen from "../auth/PaywallScreen";
 import HowItWorkScreen from "../auth/HowItWorkScreen";
 import PermissionScreen from "../auth/PermissionScreen";
+import MainNavigator from "./MainNavigator";
 
 const Stack = createStackNavigator();
 
@@ -56,6 +57,11 @@ export const AuthNavigator = () => {
       <Stack.Screen
         name="MainStack"
         component={MainStack}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MainNavigator"
+        component={MainNavigator}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

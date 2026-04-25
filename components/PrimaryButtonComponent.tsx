@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React from "react";
 import { colors } from "../constants/colors";
 import { spacing } from "../constants/spacing";
@@ -9,11 +9,13 @@ const PrimaryButtonComponent = ({
   onPress,
   color,
   backgroundColor,
+  loading,
 }: {
   title: string;
   onPress: () => void;
   color?: string;
   backgroundColor?: string;
+  loading?: boolean;
   }) => {
   return (
     <TouchableOpacity
@@ -28,14 +30,18 @@ const PrimaryButtonComponent = ({
         width: "100%",
       }}
     >
-      <Text
-        style={{
-          ...typography.button,
-          color: "#F4F4F4",
-        }}
-      >
-        {title}
-      </Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={colors.ui.white} />
+      ) : (
+        <Text
+          style={{
+            ...typography.button,
+            color: "#F4F4F4",
+          }}
+        >
+          {title}
+        </Text>
+      )}
     </TouchableOpacity>
   );
 };

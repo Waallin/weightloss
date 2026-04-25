@@ -1,5 +1,5 @@
 import { Text, View, ScrollView, Alert } from "react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion, steps } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -31,8 +31,7 @@ import { useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 import { syncToday } from "../../../services/firebase";
-import { PermissionStatus } from "../../../services/healthkit";
-
+import { isCustomerPremium } from "../../../services/revenuecat";
 const articles = [
   {
     id: 1,
@@ -255,6 +254,21 @@ const HomeScreen = () => {
       handleSyncToday();
     }, []),
   );
+
+  useEffect(() => {
+    const checkPremium = async () => {
+      const isPremium = await isCustomerPremium();
+      
+      if (!isPremium) {
+      alert("You need to upgrade to premium to continue");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "AuthNavigator" as never }],
+      });
+      }
+    }
+    checkPremium();
+  }, []);
 
 
   const handleSyncToday = async () => {

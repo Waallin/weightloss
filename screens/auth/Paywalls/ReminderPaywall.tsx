@@ -9,10 +9,11 @@ import { useNavigation } from "@react-navigation/native";
 import { reminderPaywallCopy, typography } from "../../../constants/texts";
 
 type ReminderPaywallProps = {
-    onCTAPress?: () => void;
+        onCTAPress?: () => void;
+        loading?: boolean;
 };
 
-const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress }) => {
+const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }) => {
     const [activeScreen, setActiveScreen] = useState(0);
     const navigation = useNavigation();
     const ctaPulse = useRef(new Animated.Value(1)).current;
@@ -288,6 +289,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress }) => {
                             }
                             setActiveScreen((prev) => prev + 1);
                         }}
+                        loading={loading}
                     />
                 </Animated.View>
                 <View

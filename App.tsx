@@ -22,8 +22,8 @@ import { useTodaySteps } from "./services/healthkit";
 import { getDateKey } from "./utils/dateUtils";
 import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
-import PaywallScreen from "./screens/auth/PaywallScreen";
 const currentYear = new Date().getFullYear()
+import { initRevenueCat } from "./services/revenuecat";
 export default function App() {
 
   const { isVisible, message } = useToastStore();
@@ -39,7 +39,8 @@ export default function App() {
 
   useEffect(() => {
     checkAuthStatus();
-    handleConfig();
+    handleConfig(); 
+    initRevenueCat(); 
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -105,6 +106,8 @@ export default function App() {
       setIsAuthenticated(false);
     }
   };
+
+
 
   const checkInUser = async (user: string) => {
     const userData = await getDocument("users", user);

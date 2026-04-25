@@ -8,7 +8,7 @@ import { spacing } from "../../../constants/spacing";
 type PlanKey = "yearly" | "weekly";
 
 type Props = {
-    onCTAPress: () => void;
+    onCTAPress: (plan: "weekly" | "annual") => void;
 };
 
 const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
@@ -229,7 +229,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
 
                     <View style={{ gap: spacing.md }}>
                         <Pressable
-                            onPress={onCTAPress}
+                            onPress={() => onCTAPress(selectedPlan === "yearly" ? "annual" : "weekly")}
                             style={{
                                 backgroundColor: colors.ui.primary,
                                 borderRadius: 999,
