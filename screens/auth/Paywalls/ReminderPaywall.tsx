@@ -1,24 +1,81 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Text, TouchableOpacity, View } from "react-native";
+import { Animated, Easing, Pressable, Text, TouchableOpacity, View } from "react-native";
 import { globalStyles } from "../../../constants/globalStyles";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { Entypo } from "@expo/vector-icons";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import { useNavigation } from "@react-navigation/native";
-import { reminderPaywallCopy, typography } from "../../../constants/texts";
+import { paywallCopy, reminderPaywallCopy, typography } from "../../../constants/texts";
+import useConfigStore from "../../../stores/useConfigStore";
 
-type ReminderPaywallProps = {
-        onCTAPress?: () => void;
-        loading?: boolean;
+type RevenueCatPackage = {
+    identifier: string;
+    product: {
+        price?: number;
+        priceString?: string;
+        currencyCode?: string;
+        subscriptionPeriod?: {
+            unit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+            value?: number;
+        } | null;
+    };
 };
 
-const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }) => {
+type ReminderPaywallProps = {
+    onCTAPress?: (plan: "weekly" | "annual") => void;
+    loading?: boolean;
+    products?: {
+        weekly?: RevenueCatPackage | null;
+        annual?: RevenueCatPackage | null;
+    } | null;
+};
+
+type PlanKey = "yearly" | "weekly";
+
+const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, products }) => {
     const [activeScreen, setActiveScreen] = useState(0);
+    const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
     const navigation = useNavigation();
     const ctaPulse = useRef(new Animated.Value(1)).current;
-
+    const { config } = useConfigStore();
     const benefits = useMemo(() => reminderPaywallCopy.screen3.benefits, []);
+
+    const getPeriodLabel = useMemo(() => {
+        return (pkg?: RevenueCatPackage | null): string | null => {
+            const unit = pkg?.product?.subscriptionPeriod?.unit;
+            if (!unit) return null;
+            if (unit === "WEEK") return "/ week";
+            if (unit === "MONTH") return "/ month";
+            if (unit === "YEAR") return "/ year";
+            if (unit === "DAY") return "/ day";
+            return null;
+        };
+    }, []);
+
+    const weeklyPrice = products?.weekly?.product?.priceString ?? paywallCopy.weeklyPrice;
+    const weeklyPeriod = getPeriodLabel(products?.weekly) ?? paywallCopy.weeklyPeriod;
+
+    const yearlyPrice = products?.annual?.product?.priceString ?? paywallCopy.yearlyPrice;
+    const yearlyPeriod = getPeriodLabel(products?.annual) ?? paywallCopy.yearlyPeriod;
+
+    const yearlyPerWeekEquivalent = paywallCopy.yearlyPerWeekEquivalent({
+        yearlyPrice: products?.annual?.product?.price,
+        currencyCode: products?.annual?.product?.currencyCode,
+        periodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+        periodValue: products?.annual?.product?.subscriptionPeriod?.value,
+    });
+
+    const yearlyPerWeekSubline = paywallCopy.yearlyPerWeekSubline({
+        weeklyPrice: products?.weekly?.product?.price,
+        weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
+        weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
+        yearlyPrice: products?.annual?.product?.price,
+        yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+        yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
+    });
+
+
 
     useEffect(() => {
         if (activeScreen !== 2) {
@@ -71,7 +128,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
 
     const titleStyle = useMemo(
         () => ({
-            ...typography.headline,
+            ...typography.screenTitle,
             color: colors.text.primary,
             textAlign: "center" as const,
             marginBottom: spacing.sm,
@@ -162,9 +219,9 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
                     >
                         <Entypo name="leaf" size={58} color={colors.ui.primary} />
                     </View>
-                    <Text style={titleStyle}>{reminderPaywallCopy.screen1.headline}</Text>
+                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_1}</Text>
                     <Text style={subheadlineStyle}>
-                        {reminderPaywallCopy.screen1.subheadline}
+                        {config?.reminderPaywallPhrases?.sub_1}
                     </Text>
                 </View>
             </View>
@@ -175,21 +232,19 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
         return (
             <View style={contentWrapperStyle}>
                 <View style={cardStyle}>
-                    <Text style={titleStyle}>{reminderPaywallCopy.screen2.headline}</Text>
                     <View
                         style={{
                             width: 120,
                             height: 120,
-                            borderRadius: spacing.rounded,
-                            backgroundColor: colors.ui.white,
                             alignItems: "center",
                             justifyContent: "center",
-                            marginVertical: spacing.md,
+                            marginBottom: spacing.md,
                         }}
                     >
                         <Entypo name="bell" size={60} color={colors.ui.primary} />
                     </View>
-                    <Text style={bodyStyle}>{reminderPaywallCopy.screen2.body}</Text>
+                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_2}</Text>
+                    <Text style={subheadlineStyle}>{config?.reminderPaywallPhrases?.sub_2}</Text>
                 </View>
             </View>
         );
@@ -199,11 +254,11 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
         return (
             <View style={contentWrapperStyle}>
                 <View style={cardStyle}>
-                    <Text style={titleStyle}>{reminderPaywallCopy.screen3.headline}</Text>
+                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_3}</Text>
                     <View style={{ width: "100%", marginTop: spacing.sm }}>
-                        {benefits.map((text) => (
-                            <BenefitRow key={text} text={text} />
-                        ))}
+                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_1} />
+                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_2} />
+                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_3} />
                     </View>
                 </View>
             </View>
@@ -222,6 +277,8 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
         return (
             <View style={{ paddingTop: spacing.md, paddingBottom: spacing.sm }}>
                 <TouchableOpacity
+                    activeOpacity={0.8}
+                    disabled={activeScreen === 0}
                     onPress={handleGoBack}
                     hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     style={{ alignSelf: "flex-start" }}
@@ -231,6 +288,126 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
             </View>
         );
     };
+
+    const renderPlanRow = (plan: {
+        key: PlanKey;
+        label: string;
+        price: string;
+        period: string;
+        subline: string;
+        badge?: string;
+        rightHint?: string;
+    }) => {
+        const isSelected = selectedPlan === plan.key;
+        const isYearly = plan.key === "yearly";
+        const mainPriceLine = isYearly && plan.rightHint ? plan.rightHint : plan.price;
+        const secondaryRightHint = isYearly && plan.rightHint ? `${plan.price} ${plan.period}` : plan.rightHint;
+
+        return (
+            <Pressable
+                onPress={() => setSelectedPlan(plan.key)}
+                style={{
+                    height: spacing.paywallPlanRowHeight,
+                    borderRadius: 14,
+                    paddingHorizontal: spacing.lg,
+                    paddingVertical: spacing.md,
+                    backgroundColor: isSelected
+                        ? colors.ui.listRowIconBackground
+                        : colors.ui.componentBackground,
+                    borderWidth: 1,
+                    borderColor: isSelected ? colors.ui.primary : colors.ui.cardBorder,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: spacing.md,
+                    ...(isSelected
+                        ? {
+                              shadowColor: colors.ui.shadow,
+                              shadowOpacity: 0.12,
+                              shadowRadius: 12,
+                              shadowOffset: { width: 0, height: 6 },
+                              elevation: 2,
+                          }
+                        : null),
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+            >
+                <View style={{ flex: 1, gap: 2 }}>
+                    <View
+                        style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: spacing.sm,
+                        }}
+                    >
+                        <Text
+                            style={{
+                                ...typography.bodySemiBold,
+                                color: colors.text.primary,
+                            }}
+                        >
+                            {plan.label}
+                        </Text>
+                        {!!plan.badge && (
+                            <View
+                                style={{
+                                    paddingHorizontal: spacing.sm,
+                                    paddingVertical: 4,
+                                    borderRadius: 999,
+                                    backgroundColor: colors.ui.listRowIconBackground,
+                                    borderWidth: 1,
+                                    borderColor: colors.ui.cardBorder,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        ...typography.captionSemiBold,
+                                        color: colors.text.primary,
+                                    }}
+                                >
+                                    {config?.reminderPaywallPhrases?.badge}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                    <Text
+                        style={{
+                            ...(isYearly ? typography.bodySemiBold : typography.small),
+                            color: isYearly ? colors.ui.primary : colors.text.secondary,
+                        }}
+                    >
+                        {plan.subline}
+                    </Text>
+                </View>
+
+                <View style={{ alignItems: "flex-end", gap: 2 }}>
+                    <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
+                        {mainPriceLine}
+                        {!isYearly && (
+                            <Text style={{ ...typography.small, color: colors.text.secondary }}>
+                                {" "}
+                                {plan.period}
+                            </Text>
+                        )}
+                    </Text>
+                    {!!secondaryRightHint && (
+                        <Text
+                            style={{
+                                ...typography.caption,
+                                color: colors.ui.primary,
+                                fontSize: 12,
+                                lineHeight: 16,
+                            }}
+                        >
+                            {secondaryRightHint}
+                        </Text>
+                    )}
+                </View>
+            </Pressable>
+        );
+    };
+
     const renderFooter = () => {
         const isLastScreen = activeScreen === 2;
         return (
@@ -239,28 +416,59 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
                     <View
                         style={{ width: "100%", gap: spacing.sm, marginBottom: spacing.md }}
                     >
+                        <View style={{ alignItems: "center" }}>
+                            <View
+                                style={{
+                                    paddingHorizontal: spacing.md,
+                                    paddingVertical: spacing.xs,
+                                    borderRadius: 999,
+                                    backgroundColor: colors.ui.componentBackground,
+                                    borderWidth: 1,
+                                    borderColor: colors.ui.cardBorder,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        ...typography.captionSemiBold,
+                                        color: colors.text.primary,
+                                        letterSpacing: 0.6,
+                                    }}
+                                >
+                                    {reminderPaywallCopy.freeTrialLabel}
+                                </Text>
+                            </View>
+                        </View>
+
+                        <View style={{ width: "100%", gap: spacing.sm }}>
+                            {renderPlanRow({
+                                key: "yearly",
+                                label: paywallCopy.yearlyLabel,
+                                badge: paywallCopy.yearlyTrialBadge,
+                                price: yearlyPrice,
+                                period: yearlyPeriod,
+                                subline: yearlyPerWeekSubline,
+                                rightHint: yearlyPerWeekEquivalent,
+                            })}
+
+                            {renderPlanRow({
+                                key: "weekly",
+                                label: paywallCopy.weeklyLabel,
+                                price: weeklyPrice,
+                                period: weeklyPeriod,
+                                subline: paywallCopy.weeklySubline,
+                            })}
+                        </View>
+
                         <Text
                             style={{
-                                ...typography.bodySemiBold,
+                                ...typography.small,
                                 textAlign: "center",
-                                color: colors.text.primary,
+                                color: colors.text.secondary,
+                                marginTop: spacing.xs,
                             }}
                         >
-                            {reminderPaywallCopy.socialProof.headline}
+                            {reminderPaywallCopy.trialFootnote}
                         </Text>
-                        <Text style={bodyStyle}>
-                            {reminderPaywallCopy.socialProof.testimonial}
-                        </Text>
-                        <Text
-                            style={{
-                                ...typography.bodySemiBold,
-                                textAlign: "center",
-                                color: colors.text.primary,
-                            }}
-                        >
-                            {reminderPaywallCopy.urgencyLine}
-                        </Text>
-                        <Text style={bodyStyle}>{reminderPaywallCopy.pricingLine}</Text>
                     </View>
                 ) : (
                     <Text
@@ -281,10 +489,17 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
                     }
                 >
                     <PrimaryButtonComponent
-                        title={isLastScreen ? reminderPaywallCopy.cta : "Continue"}
+                        title={
+                            isLastScreen
+                                ? config?.reminderPaywallPhrases?.cta_3
+                                : activeScreen === 1
+                                ? config?.reminderPaywallPhrases?.cta_2
+                                : config?.reminderPaywallPhrases?.cta_1
+                        }
+                   
                         onPress={() => {
                             if (activeScreen === 2) {
-                                onCTAPress?.();
+                                onCTAPress?.(selectedPlan === "yearly" ? "annual" : "weekly");
                                 return;
                             }
                             setActiveScreen((prev) => prev + 1);
@@ -307,24 +522,25 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
                         activeOpacity={0.8}
                         style={{ alignSelf: "center" }}
                     >
-                        <Text style={{ ...typography.body, textAlign: "center", color: colors.text.secondary }}>
-                            {reminderPaywallCopy.restoreCta}
+                        <Text style={{ ...typography.small, textAlign: "center", color: colors.text.secondary }}>
+                            Restore purchase
                         </Text>
                     </TouchableOpacity>
                     <Text
                         style={{
-                            ...typography.body,
+                            ...typography.small,
                             color: colors.text.secondary,
                             marginBottom: spacing.sm,
                             textAlign: "center",
                         }}
                     >
-                        {reminderPaywallCopy.autoRenewLine}
+                        Subscription renews automatically unless canceled.
                     </Text>
-                    <Text style={{ ...typography.body, textAlign: "center", color: colors.text.secondary }}>
-                        {reminderPaywallCopy.cancelLine}
+                    <Text style={{ ...typography.small, textAlign: "center", color: colors.text.secondary }}>
+                        Cancel anytime in your App Store settings.
                     </Text>
                 </View>
+        
             </View>
         );
     };
@@ -332,7 +548,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading }
     const renderScreens = () => {
         return (
             <View style={{ flex: 1 }}>
-                {activeScreen > 0 && renderHeader()}
+                {renderHeader()}
                 <View style={{ flex: 1 }}>
                     {activeScreen === 0 && renderFirstScreen()}
                     {activeScreen === 1 && renderSecondScreen()}

@@ -21,8 +21,9 @@ export async function isCustomerPremium() {
 
 export async function getProducts() {
   const offerings = await Purchases.getOfferings();
-  const product = offerings?.current?.availablePackages[0];
-  return product;
+  const weeklyProduct = offerings.current?.availablePackages.find(pkg => pkg.identifier === "$rc_weekly");
+  const annualProduct = offerings.current?.availablePackages.find(pkg => pkg.identifier === "$rc_annual");
+  return { weekly: weeklyProduct, annual: annualProduct };
 }
 
 

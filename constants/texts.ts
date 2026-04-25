@@ -358,7 +358,7 @@ export const authCopy = {
   ],
 } as const;
 
-/** Paywall: static SEK display until Store prices are wired */
+/** Paywall: fallback display until Store prices are wired */
 export const paywallCopy = {
   title: "See real progress in 7 days",
   subtitle:
@@ -381,18 +381,105 @@ export const paywallCopy = {
 
   yearlyBadge: "Most popular",
   yearlyLabel: "Yearly",
-  yearlyPrice: "349 kr",
+  yearlyPrice: "$49.99",
   yearlyPeriod: "/ year",
 
   // 🔥 viktig ändring
-  yearlyPerWeekEquivalent: "Less than 1 kr/day",
-  yearlyPerWeekSubline: "Save 89% vs weekly",
+  yearlyPerWeekEquivalent: (params?: {
+    yearlyPrice?: number;
+    currencyCode?: string;
+    periodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+    periodValue?: number;
+  }): string => {
+    const fallback = "$0.96 / week";
+    const yearlyPrice = params?.yearlyPrice;
+    const currencyCode = params?.currencyCode;
+    const unit = params?.periodUnit;
+    const value = params?.periodValue ?? 1;
+
+    if (!yearlyPrice || yearlyPrice <= 0 || !currencyCode || !unit) return fallback;
+
+    const days =
+      unit === "DAY"
+        ? 1 * value
+        : unit === "WEEK"
+          ? 7 * value
+          : unit === "MONTH"
+            ? 30 * value
+            : unit === "YEAR"
+              ? 365 * value
+              : null;
+
+    if (!days || days <= 0) return fallback;
+
+    const weeks = days / 7;
+    if (!weeks || weeks <= 0) return fallback;
+
+    const perWeek = yearlyPrice / weeks;
+    const formatter = new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: currencyCode,
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    });
+
+    return `${formatter.format(perWeek)} / week`;
+  },
+
+  yearlyPerWeekSubline: (params?: {
+    weeklyPrice?: number;
+    weeklyPeriodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+    weeklyPeriodValue?: number;
+    yearlyPrice?: number;
+    yearlyPeriodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+    yearlyPeriodValue?: number;
+  }): string => {
+    const fallback = "Save 89% vs weekly";
+    const wp = params?.weeklyPrice;
+    const wUnit = params?.weeklyPeriodUnit;
+    const wValue = params?.weeklyPeriodValue ?? 1;
+    const yp = params?.yearlyPrice;
+    const yUnit = params?.yearlyPeriodUnit;
+    const yValue = params?.yearlyPeriodValue ?? 1;
+
+    if (!wp || wp <= 0 || !wUnit || !yp || yp <= 0 || !yUnit) return fallback;
+
+    const weeklyPerWeek =
+      wUnit === "WEEK"
+        ? wp / wValue
+        : wUnit === "DAY"
+          ? (wp / wValue) * 7
+          : wUnit === "MONTH"
+            ? (wp / wValue) / 4
+            : wUnit === "YEAR"
+              ? (wp / wValue) / 52
+              : null;
+
+    const yearlyPerWeek =
+      yUnit === "YEAR"
+        ? yp / (52 * yValue)
+        : yUnit === "MONTH"
+          ? (yp / yValue) / 4
+          : yUnit === "WEEK"
+            ? yp / wValue
+            : yUnit === "DAY"
+              ? (yp / yValue) * 7
+              : null;
+
+    if (!weeklyPerWeek || !yearlyPerWeek || weeklyPerWeek <= 0) return fallback;
+
+    const savings = 1 - yearlyPerWeek / weeklyPerWeek;
+    if (!Number.isFinite(savings) || savings <= 0) return fallback;
+
+    const pct = Math.max(1, Math.min(95, Math.round(savings * 100)));
+    return `Save ${pct}% vs weekly`;
+  },
 
   // 🔥 bättre framing
   yearlyTrialBadge: "Try it free for 3 days",
 
   weeklyLabel: "Weekly",
-  weeklyPrice: "59 kr",
+  weeklyPrice: "$9.99",
   weeklyPeriod: "/ week",
 
   // 🔥 mer neutral (inte för säljig)
@@ -423,6 +510,7 @@ export const paywallCopy = {
 } as const;
 
 export const reminderPaywallCopy = {
+  freeTrialLabel: "FREE TRIAL",
   screen1: {
     headline: "Finally stay consistent with your weight loss",
     subheadline: "Try Kudoo for free and see if it works for you.",

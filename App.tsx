@@ -23,7 +23,10 @@ import { getDateKey } from "./utils/dateUtils";
 import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
-import { initRevenueCat } from "./services/revenuecat";
+import { getProducts, initRevenueCat } from "./services/revenuecat";
+import PaywallScreen from "./screens/auth/PaywallScreen";
+import useRevCatStore from "./stores/useRevCatStore"; 
+
 export default function App() {
 
   const { isVisible, message } = useToastStore();
@@ -36,11 +39,13 @@ export default function App() {
     useConfettiStore();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+  const { setProducts } = useRevCatStore();
   useEffect(() => {
     checkAuthStatus();
     handleConfig(); 
     initRevenueCat(); 
+    handleRevCatProducts();
+
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);
@@ -86,9 +91,15 @@ export default function App() {
  
 
   const handleConfig = async () => {
-    const config = await getDocument("config", "app");
-    if (config) {
-      setConfig(config);
+    const [config, reminderPaywallPhrases] = await Promise.all([
+      getDocument("config", "app"),
+      getDocument("config", "paywall_reminder"),
+    ]);
+    if (config || reminderPaywallPhrases) {
+      setConfig({
+        ...(config ?? {}),
+        reminderPaywallPhrases,
+      });
     }
   };
 
@@ -105,6 +116,12 @@ export default function App() {
     } else {
       setIsAuthenticated(false);
     }
+  };
+
+  const handleRevCatProducts = async () => {
+    const products = await getProducts();
+
+    setProducts(products);
   };
 
 
@@ -146,7 +163,7 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-          {isAuthenticated ? <MainStack /> : <AuthNavigator />}
+          {isAuthenticated ? <PaywallScreen /> : <AuthNavigator />}
         </NavigationContainer>
       </View>
     </View>

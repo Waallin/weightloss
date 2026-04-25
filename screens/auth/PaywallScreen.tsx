@@ -6,12 +6,13 @@ import useConfigStore from "../../stores/useConfigStore";
 import { getProducts, purchasePlan } from "../../services/revenuecat";
 import { updateDocument } from "../../services/firebase";
 import useUserStore from "../../stores/useUserStore";
-
+import useRevCatStore from "../../stores/useRevCatStore";
 const PaywallScreen: React.FC = () => {
   const navigation = useNavigation();
   const { config } = useConfigStore();
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
+  const { products } = useRevCatStore();
   const handleCTAPress = async (plan: any) => {
 
     const purchase = await purchasePlan(plan);
@@ -31,6 +32,7 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "default") {
     return (
       <DefaultPaywall
+        products={products}
         onCTAPress={(plan: "weekly" | "annual") =>
           handleCTAPress(plan as "weekly" | "annual")
         }
@@ -41,6 +43,7 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "reminder") {
     return (
       <ReminderPaywall
+        products={products}
         onCTAPress={(() => handleCTAPress("annual"))}
         loading={loading}
       />  

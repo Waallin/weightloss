@@ -41,6 +41,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
     }) => {
         const isSelected = selectedPlan === plan.key;
         const isYearly = plan.key === "yearly";
+        const mainPriceLine = isYearly && plan.rightHint ? plan.rightHint : plan.price;
+        const secondaryRightHint = isYearly && plan.rightHint ? `${plan.price} ${plan.period}` : plan.rightHint;
         return (
             <Pressable
                 onPress={() => setSelectedPlan(plan.key)}
@@ -113,13 +115,15 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
 
                 <View style={{ alignItems: "flex-end", gap: 2 }}>
                     <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
-                        {plan.price}
-                        <Text style={{ ...typography.small, color: colors.text.secondary }}>
-                            {" "}
-                            {plan.period}
-                        </Text>
+                        {mainPriceLine}
+                        {!isYearly && (
+                            <Text style={{ ...typography.small, color: colors.text.secondary }}>
+                                {" "}
+                                {plan.period}
+                            </Text>
+                        )}
                     </Text>
-                    {!!plan.rightHint && (
+                    {!!secondaryRightHint && (
                         <Text
                             style={{
                                 ...typography.caption,
@@ -128,7 +132,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
                                 lineHeight: 16,
                             }}
                         >
-                            {plan.rightHint}
+                            {secondaryRightHint}
                         </Text>
 
                     )}
@@ -211,8 +215,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
                                         badge: paywallCopy.yearlyBadge,
                                         price: paywallCopy.yearlyPrice,
                                         period: paywallCopy.yearlyPeriod,
-                                        subline: paywallCopy.yearlyPerWeekSubline,
-                                        rightHint: paywallCopy.yearlyPerWeekEquivalent,
+                                        subline: paywallCopy.yearlyPerWeekSubline(),
+                                        rightHint: paywallCopy.yearlyPerWeekEquivalent(),
                                     })}
 
                                     {renderPlanRow({
