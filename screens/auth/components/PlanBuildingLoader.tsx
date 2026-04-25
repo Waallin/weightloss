@@ -13,9 +13,11 @@ import Animated, {
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import { planBuildingCopy, textStyles, typography } from "../../../constants/texts";
+import useConfigStore from "../../../stores/useConfigStore";
 
 type Props = {
   onComplete?: () => void;
+  config?: any;
   /**
    * Optional override for total duration. If omitted, a bounded random duration is used.
    * Default: 10 000ms, now plays for 13 000ms (3 seconds longer).
@@ -23,7 +25,6 @@ type Props = {
   durationMs?: number;
 };
 
-const defaultDurationMs = 12_000; // Förläng till 13 sekunder (10 + 3)
 
 const getStepIndex = (percent: number): number => {
   if (percent < 35) return 0;
@@ -36,7 +37,13 @@ const clampInt = (value: number, min: number, max: number): number => {
   return Math.min(max, Math.max(min, Math.round(value)));
 };
 
-const PlanBuildingLoader: React.FC<Props> = ({ onComplete, durationMs }) => {
+const PlanBuildingLoader: React.FC<Props> = ({ onComplete, durationMs, config }) => {
+  // config.planBuildingDuration kommer i 12 (seconds), konvertera till ms om satt.
+  let defaultDurationMs = 12_000; // fallback
+  if (typeof config?.planBuildingDuration === "number") {
+    defaultDurationMs = config.planBuildingDuration * 1000;
+  }
+
   const progress = useSharedValue(0);
   const [percent, setPercent] = React.useState<number>(0);
   const hasCompletedRef = React.useRef(false);

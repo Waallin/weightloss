@@ -10,9 +10,13 @@ import { colors } from "../../constants/colors";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import PlanBuildingLoader from "./components/PlanBuildingLoader";
-import { PermissionStatus, useHealthKitPermissions } from "../../services/healthkit";
+import {
+  PermissionStatus,
+  useHealthKitPermissions,
+} from "../../services/healthkit";
 import { getNotificationToken } from "../../services/notifications";
 import useUserStore from "../../stores/useUserStore";
+import useConfigStore from "../../stores/useConfigStore";
 
 const dummySocialProof = [
   {
@@ -60,6 +64,7 @@ const dummySocialProof = [
 const SocialProofScreen = () => {
   const navigation = useNavigation();
   const [isPlanReady, setIsPlanReady] = React.useState(false);
+  const { config } = useConfigStore();
   const { requestPermission } = useHealthKitPermissions();
   const { user, setUser } = useUserStore();
 
@@ -73,9 +78,7 @@ const SocialProofScreen = () => {
     }, 1000);
   }, []);
 
-
   const handleGetPermissions = async () => {
-
     const healthKit = await requestPermission();
 
     setUser({
@@ -145,7 +148,12 @@ const SocialProofScreen = () => {
     </View>
   );
 
-  const renderLoadingComponent = () => <PlanBuildingLoader onComplete={() => setIsPlanReady(true)} />;
+  const renderLoadingComponent = () => (
+    <PlanBuildingLoader
+      onComplete={() => setIsPlanReady(true)}
+      config={config}
+    />
+  );
 
   return (
     <View style={{ ...globalStyles.container }}>
@@ -154,7 +162,6 @@ const SocialProofScreen = () => {
         contentContainerStyle={{
           justifyContent: "center",
           alignItems: "center",
-    
         }}
         showsVerticalScrollIndicator={false}
       >
