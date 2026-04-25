@@ -1,9 +1,8 @@
 import * as Notifications from "expo-notifications";
 
-
 export const requestNotificationPermission = async () => {
   const { status } = await Notifications.requestPermissionsAsync();
- 
+
   return status === "granted";
 };
 
@@ -33,3 +32,48 @@ Notifications.setNotificationHandler({
     severity: "default",
   }),
 });
+
+export async function scheduleDailyNotifications() {
+  console.log("Schedule daily push notification");
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Start with water 💧",
+      body: 'One glass is an easy first win today.',
+      data: { type: "dashboard" },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+      hour: 8,
+      minute: 0,
+      repeats: true,
+    },
+  });
+
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Lunch walk? 🚶",
+      body: 'A short walk helps you closer to 10k',
+      data: { type: "dashboard" },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+      hour: 12,
+      minute: 0,
+      repeats: true,
+    },
+  });
+  
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Finish strong 💪",
+      body: 'Check your points and mark today as done.',
+      data: { type: "dashboard" },
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+      hour: 20,
+      minute: 0,
+      repeats: true,
+    },
+  });
+}

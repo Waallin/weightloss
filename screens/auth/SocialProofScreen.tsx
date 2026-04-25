@@ -12,7 +12,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import PlanBuildingLoader from "./components/PlanBuildingLoader";
 import { PermissionStatus, useHealthKitPermissions } from "../../services/healthkit";
 import { getNotificationToken } from "../../services/notifications";
-
+import useUserStore from "../../stores/useUserStore";
 
 const dummySocialProof = [
   {
@@ -61,13 +61,28 @@ const SocialProofScreen = () => {
   const navigation = useNavigation();
   const [isPlanReady, setIsPlanReady] = React.useState(false);
   const { requestPermission } = useHealthKitPermissions();
+  const { user, setUser } = useUserStore();
 
+  useEffect(() => {
+    setTimeout(async () => {
+      const token = await getNotificationToken();
+      setUser({
+        ...user,
+        notificationToken: token,
+      });
+    }, 1000);
+  }, []);
 
 
   const handleGetPermissions = async () => {
 
-    await requestPermission();
-    
+    const healthKit = await requestPermission();
+
+    setUser({
+      ...user,
+      healthKitPermission: healthKit,
+    });
+
     navigation.replace("Auth");
   };
 

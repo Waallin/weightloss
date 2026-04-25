@@ -18,12 +18,12 @@ type Props = {
   onComplete?: () => void;
   /**
    * Optional override for total duration. If omitted, a bounded random duration is used.
-   * Default: 10 000ms.
+   * Default: 10 000ms, now plays for 13 000ms (3 seconds longer).
    */
   durationMs?: number;
 };
 
-const defaultDurationMs = 10_000;
+const defaultDurationMs = 12_000; // Förläng till 13 sekunder (10 + 3)
 
 const getStepIndex = (percent: number): number => {
   if (percent < 35) return 0;
@@ -42,7 +42,7 @@ const PlanBuildingLoader: React.FC<Props> = ({ onComplete, durationMs }) => {
   const hasCompletedRef = React.useRef(false);
 
   React.useEffect(() => {
-    const total = durationMs ?? defaultDurationMs;
+    const total = durationMs ?? defaultDurationMs; // now uses the new default (13_000ms)
 
     progress.value = 0;
     progress.value = withTiming(
@@ -171,4 +171,3 @@ const PlanBuildingLoader: React.FC<Props> = ({ onComplete, durationMs }) => {
 };
 
 export default React.memo(PlanBuildingLoader);
-
