@@ -29,11 +29,12 @@ type ReminderPaywallProps = {
         weekly?: RevenueCatPackage | null;
         annual?: RevenueCatPackage | null;
     } | null;
+    onRestorePurchases?: () => void;
 };
 
 type PlanKey = "yearly" | "weekly";
 
-const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, products }) => {
+const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, products, onRestorePurchases }) => {
     const [activeScreen, setActiveScreen] = useState(0);
     const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
     const navigation = useNavigation();
@@ -491,7 +492,10 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
                     <PrimaryButtonComponent
                         title={
                             isLastScreen
-                                ? config?.reminderPaywallPhrases?.cta_3
+                                ? selectedPlan === "weekly"
+                                    ? config?.reminderPaywallPhrases?.cta_3_weekly ??
+                                      config?.reminderPaywallPhrases?.cta_3
+                                    : config?.reminderPaywallPhrases?.cta_3
                                 : activeScreen === 1
                                 ? config?.reminderPaywallPhrases?.cta_2
                                 : config?.reminderPaywallPhrases?.cta_1
@@ -517,13 +521,23 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
                 >
                     <TouchableOpacity
                         onPress={() => {
-                            // TODO: wire to StoreKit/RevenueCat restore when available
+                            onRestorePurchases?.();
                         }}
                         activeOpacity={0.8}
-                        style={{ alignSelf: "center" }}
+                        style={{
+                            alignSelf: "center",
+                            paddingVertical: spacing.sm,
+                            paddingHorizontal: spacing.md,
+                            backgroundColor: colors.ui.componentBackground,
+                            borderRadius: 999,
+                            borderWidth: 1,
+                            borderColor: colors.ui.cardBorder,
+                        }}
+                        accessibilityRole="button"
+                        accessibilityLabel={paywallCopy.restorePurchases}
                     >
-                        <Text style={{ ...typography.small, textAlign: "center", color: colors.text.secondary }}>
-                            Restore purchase
+                        <Text style={{ ...typography.bodyMedium, color: colors.ui.primary }}>
+                            {paywallCopy.restorePurchases}
                         </Text>
                     </TouchableOpacity>
                     <Text

@@ -1,22 +1,93 @@
 import React, { useMemo, useState } from "react";
-import { Image, Pressable, SafeAreaView, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../../../constants/colors";
-import { paywallCopy, typography } from "../../../constants/texts";
+import { getPaywallSpecialOfferHeadline, paywallCopy, typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
 
 type PlanKey = "yearly" | "weekly";
 
-type Props = {
-    onCTAPress: (plan: "weekly" | "annual") => void;
+type RevenueCatPackage = {
+    identifier: string;
+    product: {
+        price?: number;
+        priceString?: string;
+        currencyCode?: string;
+        subscriptionPeriod?: {
+            unit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+            value?: number;
+        } | null;
+    };
 };
 
-const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
+type Props = {
+    onCTAPress: (plan: "weekly" | "annual") => void;
+    products?: {
+        weekly?: RevenueCatPackage | null;
+        annual?: RevenueCatPackage | null;
+    } | null;
+        onRestorePurchases?: () => void;
+};
+
+const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurchases }) => {
+    console.log("🚀 ~ DefaultPaywall ~ products:", products)
     const navigation = useNavigation();
     const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
 
+    const getPeriodLabel = useMemo(() => {
+        return (pkg?: RevenueCatPackage | null): string | null => {
+            const unit = pkg?.product?.subscriptionPeriod?.unit;
+            if (!unit) return null;
+            if (unit === "WEEK") return "/ week";
+            if (unit === "MONTH") return "/ month";
+            if (unit === "YEAR") return "/ year";
+            if (unit === "DAY") return "/ day";
+            return null;
+        };
+    }, []);
+
+    const weeklyPrice = products?.weekly?.product?.priceString ?? paywallCopy.weeklyPrice;
+    const weeklyPeriod = getPeriodLabel(products?.weekly) ?? paywallCopy.weeklyPeriod;
+
+    const yearlyPrice = products?.annual?.product?.priceString ?? paywallCopy.yearlyPrice;
+    const yearlyPeriod = getPeriodLabel(products?.annual) ?? paywallCopy.yearlyPeriod;
+
+    const yearlyPerWeekEquivalent = paywallCopy.yearlyPerWeekEquivalent({
+        yearlyPrice: products?.annual?.product?.price,
+        currencyCode: products?.annual?.product?.currencyCode,
+        periodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+        periodValue: products?.annual?.product?.subscriptionPeriod?.value,
+    });
+
+    const yearlyPerWeekSubline = paywallCopy.yearlyPerWeekSubline({
+        weeklyPrice: products?.weekly?.product?.price,
+        weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
+        weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
+        yearlyPrice: products?.annual?.product?.price,
+        yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+        yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
+    });
+
+    const specialOfferHeadline = useMemo(() => {
+        return getPaywallSpecialOfferHeadline({
+            weeklyPrice: products?.weekly?.product?.price,
+            weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
+            weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
+            yearlyPrice: products?.annual?.product?.price,
+            yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+            yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
+        });
+    }, [
+        products?.weekly?.product?.price,
+        products?.weekly?.product?.subscriptionPeriod?.unit,
+        products?.weekly?.product?.subscriptionPeriod?.value,
+        products?.annual?.product?.price,
+        products?.annual?.product?.subscriptionPeriod?.unit,
+        products?.annual?.product?.subscriptionPeriod?.value,
+    ]);
+
     const ctaLabel = useMemo(() => {
-        return selectedPlan === "yearly" ? paywallCopy.ctaYearlyTrial : paywallCopy.ctaWeekly;
+        return selectedPlan === "yearly" ? paywallCopy.ctaYearlyFreeTrial : paywallCopy.ctaWeekly;
     }, [selectedPlan]);
 
     const footnote = useMemo(() => {
@@ -199,7 +270,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
                             <View style={{ padding: spacing.lg, gap: spacing.md }}>
                                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                                     <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
-                                        {paywallCopy.specialOfferHeadline}
+                                        {specialOfferHeadline}
                                     </Text>
                                     <Text style={{ ...typography.caption, color: colors.text.secondary }}>
                                         {paywallCopy.socialProofRating}/{paywallCopy.socialProofRatingMax}
@@ -213,17 +284,17 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
                                         key: "yearly",
                                         label: paywallCopy.yearlyLabel,
                                         badge: paywallCopy.yearlyBadge,
-                                        price: paywallCopy.yearlyPrice,
-                                        period: paywallCopy.yearlyPeriod,
-                                        subline: paywallCopy.yearlyPerWeekSubline(),
-                                        rightHint: paywallCopy.yearlyPerWeekEquivalent(),
+                                        price: yearlyPrice,
+                                        period: yearlyPeriod,
+                                        subline: yearlyPerWeekSubline,
+                                        rightHint: yearlyPerWeekEquivalent,
                                     })}
 
                                     {renderPlanRow({
                                         key: "weekly",
                                         label: paywallCopy.weeklyLabel,
-                                        price: paywallCopy.weeklyPrice,
-                                        period: paywallCopy.weeklyPeriod,
+                                        price: weeklyPrice,
+                                        period: weeklyPeriod,
                                         subline: paywallCopy.weeklySubline,
                                     })}
                                 </View>
@@ -250,16 +321,6 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
 
                         <Text
                             style={{
-                                ...typography.bodyMedium,
-                                color: colors.text.primary,
-                                textAlign: "center",
-                            }}
-                        >
-                            {paywallCopy.freeTrialUnderCta}
-                        </Text>
-
-                        <Text
-                            style={{
                                 ...typography.small,
                                 color: colors.text.secondary,
                                 textAlign: "center",
@@ -268,16 +329,16 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress }) => {
                             {footnote}
                         </Text>
 
-                        <Pressable
-                            onPress={() => { }}
-                            style={{ alignSelf: "center", paddingVertical: spacing.sm, paddingHorizontal: spacing.md }}
+                        <TouchableOpacity
+                            onPress={onRestorePurchases}
+                            style={{ alignSelf: "center", paddingVertical: spacing.sm, paddingHorizontal: spacing.md, backgroundColor: colors.ui.componentBackground, borderRadius: 999, borderWidth: 1, borderColor: colors.ui.cardBorder }}
                             accessibilityRole="button"
                             accessibilityLabel={paywallCopy.restorePurchases}
                         >
                             <Text style={{ ...typography.bodyMedium, color: colors.ui.primary }}>
                                 {paywallCopy.restorePurchases}
                             </Text>
-                        </Pressable>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </ScrollView>

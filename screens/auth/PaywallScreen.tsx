@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import DefaultPaywall from "./Paywalls/DefaultPaywall";
 import ReminderPaywall from "./Paywalls/ReminderPaywall";
 import useConfigStore from "../../stores/useConfigStore";
-import { getProducts, purchasePlan } from "../../services/revenuecat";
+import { getProducts, purchasePlan, restorePurchases } from "../../services/revenuecat";
 import { updateDocument } from "../../services/firebase";
 import useUserStore from "../../stores/useUserStore";
 import useRevCatStore from "../../stores/useRevCatStore";
@@ -29,6 +29,18 @@ const PaywallScreen: React.FC = () => {
     setLoading(false);
   };
 
+  const handleRestorePurchases = async () => {
+    const restored = await restorePurchases();
+
+    // restored är ett objekt. Kolla så restored innehåller entitlements eller purchases för att bestämma om det lyckades.
+    if (restored && (restored.entitlements?.active || (Array.isArray(restored.purchases) && restored.purchases.length > 0))) {
+      alert("Purchases restored");
+      navigation.replace("MainStack" as never);
+    } else {
+      alert("Failed to restore purchases");
+    }
+  };
+
   if (config?.showPaywall === "default") {
     return (
       <DefaultPaywall
@@ -36,6 +48,7 @@ const PaywallScreen: React.FC = () => {
         onCTAPress={(plan: "weekly" | "annual") =>
           handleCTAPress(plan as "weekly" | "annual")
         }
+        onRestorePurchases={() => handleRestorePurchases()}
       />
     );
   }
@@ -44,13 +57,14 @@ const PaywallScreen: React.FC = () => {
     return (
       <ReminderPaywall
         products={products}
-        onCTAPress={(() => handleCTAPress("annual"))}
+        onCTAPress={(plan: "weekly" | "annual") => handleCTAPress(plan as "weekly" | "annual")}
         loading={loading}
+        onRestorePurchases={() => handleRestorePurchases()}
       />  
     );
   }
 
-  return <DefaultPaywall onCTAPress={handleCTAPress} loading={loading} />;
+  return <DefaultPaywall onCTAPress={(plan: "weekly" | "annual") => handleCTAPress(plan as "weekly" | "annual")} products={products} />;
 };
 
 export default PaywallScreen;

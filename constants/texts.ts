@@ -379,7 +379,7 @@ export const paywallCopy = {
     "For the first time ever, I actually stuck with it. Seeing my progress each day kept me going.",
   testimonialAttribution: "— Anna, 23",
 
-  yearlyBadge: "Most popular",
+  yearlyBadge: "3-days FREE",
   yearlyLabel: "Yearly",
   yearlyPrice: "$49.99",
   yearlyPeriod: "/ year",
@@ -487,8 +487,9 @@ export const paywallCopy = {
   weeklyAnnualizedHint: "", // ← ta bort denna helt (den skrämmer bort)
 
   // 🔥 viktig CTA förbättring
+  ctaYearlyFreeTrial: "Try for FREE",
   ctaYearlyTrial: "Continue with yearly",
-  ctaWeekly: "Continue with weekly",
+  ctaWeekly: "Continue",
 
   // 🔥 mycket viktig trust-text
   trialFootnote: "No payment today · Cancel anytime",
@@ -509,8 +510,23 @@ export const paywallCopy = {
   freeTrialUnderCta: "Free for 7 days",
 } as const;
 
+export function getPaywallSpecialOfferHeadline(params?: {
+  weeklyPrice?: number;
+  weeklyPeriodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+  weeklyPeriodValue?: number;
+  yearlyPrice?: number;
+  yearlyPeriodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+  yearlyPeriodValue?: number;
+}): string {
+  const fallback = paywallCopy.specialOfferHeadline;
+  const savingsLine = paywallCopy.yearlyPerWeekSubline(params);
+  const match = /Save\s+(\d+)%/i.exec(savingsLine);
+  if (!match?.[1]) return fallback;
+  return `Save ${match[1]}% on Yearly`;
+}
+
 export const reminderPaywallCopy = {
-  freeTrialLabel: "FREE TRIAL",
+  freeTrialLabel: "3-day free trial",
   screen1: {
     headline: "Finally stay consistent with your weight loss",
     subheadline: "Try Kudoo for free and see if it works for you.",
