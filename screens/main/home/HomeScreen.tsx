@@ -32,6 +32,8 @@ import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 import { syncToday } from "../../../services/firebase";
 import { isCustomerPremium } from "../../../services/revenuecat";
+import * as StoreReview from 'expo-store-review';
+
 const articles = [
   {
     id: 1,
@@ -231,10 +233,14 @@ const HomeScreen = () => {
 
   const { setVisibleConfetti } = useConfettiStore();
   const todaySteps = useTodaySteps();
-  const [claimStepsReward, setClaimStepsReward] = useState(
-    todayProgress?.progress.steps >= 10000 &&
-    todayProgress?.completion.steps === false,
-  );
+  const [claimStepsReward, setClaimStepsReward] = useState(false);
+
+  useEffect(() => {
+   
+    if (todaySteps >= 10000 && todayProgress?.completion.steps === false) {
+      setClaimStepsReward(true);
+    }
+  }, [todaySteps, todayProgress?.completion.steps]);
 
   const overConsumedPoints = todayProgress?.points?.used > todayProgress?.points?.total;
   const { user } = useUserStore();
@@ -247,12 +253,6 @@ const HomeScreen = () => {
       ).length;
       setOverallProgress(completed);
     }, [todayProgress]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      handleSyncToday();
-    }, []),
   );
 
   useEffect(() => {
@@ -271,7 +271,9 @@ const HomeScreen = () => {
   }, []);
 
 
-  const handleSyncToday = async () => {
+  const handleSyncToday = useCallback(async () => {
+    if (!user?.email) return;
+    console.log("🚀 ~ handleSyncToday ~ handleSyncToday:", todaySteps);
     const points = calculatePoints(
       user?.currentWeight ?? user?.startWeight,
       user?.height ?? 0,
@@ -284,7 +286,22 @@ const HomeScreen = () => {
     if (syncedDay != null) {
       setTodayProgress(syncedDay);
     }
-  };
+  }, [
+    todaySteps,
+    user?.email,
+    user?.currentWeight,
+    user?.startWeight,
+    user?.height,
+    user?.birthYear,
+    user?.gender,
+    setTodayProgress,
+  ]);
+
+  useFocusEffect(
+    useCallback(() => {
+      handleSyncToday();
+    }, [handleSyncToday]),
+  );
 
   const returnStepsMicroCopy = () => {
     const steps = todayProgress?.progress?.steps ?? 0;
@@ -372,6 +389,8 @@ const HomeScreen = () => {
     });
     setClaimStepsReward(false);
     setVisibleConfetti(true);
+
+    askForStoreReview();
   };
 
   const handleAddWater = () => {
@@ -452,6 +471,20 @@ const HomeScreen = () => {
       ],
     );
   };
+
+const askForStoreReview = async () => {
+  try {
+    const isAvailable = await StoreReview.isAvailableAsync();
+    if (isAvailable) {
+      await StoreReview.requestReview();
+    } else {
+      // Optionally, handle or log that review is not supported
+      console.log('Store review is not available on this device.');
+    }
+  } catch (error) {
+    console.log('Error requesting store review:', error);
+  }
+};
 
   const renderProgressComponents = () => {
     return (

@@ -3,7 +3,8 @@ import Purchases, { LOG_LEVEL } from "react-native-purchases";
 
 export async function initRevenueCat() {
 
-  await Purchases.setLogLevel(LOG_LEVEL.WARN);
+  // Sätt önskad loggnivå för RevenueCat här
+  await Purchases.setLogLevel(LOG_LEVEL.ERROR);
 
   if (Platform.OS === 'ios') {
     Purchases.configure({
@@ -14,7 +15,6 @@ export async function initRevenueCat() {
 
 export async function isCustomerPremium() {
   const customerInfo = await Purchases.getCustomerInfo();
-  console.log("🐱 ~ customerInfo?.entitlements", customerInfo?.entitlements)
   return customerInfo?.entitlements.active["Kudoo Premium"] !== undefined;
 }
 

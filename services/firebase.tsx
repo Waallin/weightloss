@@ -15,6 +15,14 @@ import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
 import * as haptics from "expo-haptics";
 
+const debug = false;
+
+
+function log(message: string) {
+  if (debug) {
+    console.log(message);
+  }
+}
 export const getDocument = async (collection: string, email: string) => {
   try {
     const docRef = doc(database, collection, email);
@@ -83,7 +91,7 @@ const deleteUserFirestoreTree = async (email: string) => {
     await deleteAllInCollection(foodEntriesRef);
     await deleteDoc(dayDoc.ref);
   }
-  console.log(`🔥🧯 Deleting user and Firestore data for ${email}`);
+  log(`🔥🧯 Deleting user and Firestore data for ${email}`);
   await deleteDoc(doc(database, "users", email));
 };
 
@@ -94,7 +102,7 @@ export const deleteUser = async (email: string) => {
       !current?.email ||
       current.email.toLowerCase() !== email.toLowerCase()
     ) {
-      console.log(
+      log(
         "deleteUser: no signed-in user or email does not match current session",
       );
       return false;
@@ -102,10 +110,10 @@ export const deleteUser = async (email: string) => {
 
     await deleteUserFirestoreTree(email);
     await deleteFirebaseAuthUser(current);
-    console.log(`🔥🧯 User and Firestore data deleted for ${email}`);
+    log(`🔥🧯 User and Firestore data deleted for ${email}`);
     return true;
   } catch (error) {
-    console.log(`Error deleting user with email ${email}:`, error);
+    log(`Error deleting user with email ${email}: ${error}`);
     return false;
   }
 };
@@ -118,14 +126,11 @@ export const setDocument = async (
   try {
     const docRef = doc(database, collection, email);
     await setDoc(docRef, data);
-    console.log(`🔥🧯 Document set in ${collection} with email ${email}`);
-    return true;
+    log(`🔥🧯 Document set in ${collection} with email ${email}`);
   } catch (error) {
-    console.log(
-      `Error setting document in ${collection} with email ${email}:`,
-      error,
+    log(
+      `Error setting document in ${collection} with email ${email}: ${error}`,
     );
-    return false;
   }
 };
 
@@ -137,14 +142,12 @@ export const updateDocument = async (
   try {
     const docRef = doc(database, collection, email);
     await updateDoc(docRef, data);
-    console.log(`🔥🧯 Document updated in ${collection} with email ${email}`);
+    log(`🔥🧯 Document updated in ${collection} with email ${email}`);
     return true;
   } catch (error) {
-    console.log(
-      `Error updating document in ${collection} with email ${email}:`,
-      error,
+    log(
+      `Error updating document in ${collection} with email ${email}: ${error}`,
     );
-    return false;
   }
 };
 
@@ -153,14 +156,10 @@ export const updateTodayProgress = async (email: string, data: any) => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     const docRef = doc(database, "users", email, "days", getDateKey());
     await updateDoc(docRef, data);
-    console.log(`🔥🧯 Document updated in ${collection} with email ${email}`);
+    log(`🔥🧯 Document updated in ${collection} with email ${email}`);
     return true;
   } catch (error) {
-    console.log(
-      `Error updating today progress in users with email ${email}:`,
-      error,
-    );
-    return false;
+    log(`Error updating today progress in users with email ${email}: ${error}`);
   }
 };
 
@@ -174,17 +173,16 @@ export const addToDiet = async (email: string, payload: any) => {
       getDateKey(),
       "foodEntries"
     );
-     await addDoc(docRef, payload);
-    console.log(`🔥🧯 Document added to diet in users with email ${email}`);
+    await addDoc(docRef, payload);
+    log(`🔥🧯 Document added to diet in users with email ${email}`);
     await updateTodayProgress(email, {
       "points.used": increment(payload.points),
     });
-    
+
 
     return true;
   } catch (error) {
-    console.log(`Error adding to diet in users with email ${email}:`, error);
-    return false;
+    log(`Error adding to diet in users with email ${email}: ${error}`);
   }
 };
 
@@ -195,14 +193,14 @@ export const syncToday = async (
 ) => {
   try {
     const dateKey = getDateKey();
-   
+
     const dayRef = doc(database, "users", email, "days", dateKey);
     const daySnap = await getDoc(dayRef);
 
     if (!daySnap.exists()) {
       const newDay = {
         dateKey,
-        
+
         progress: {
           water: 0,
           steps: 0,
@@ -231,7 +229,7 @@ export const syncToday = async (
       };
 
       await setDoc(dayRef, newDay);
-      console.log(`🔥🧯 Document set in users with email ${email}`);
+      log(`🔥🧯 Document set in users with email ${email}`);
       return newDay;
     } else {
       await updateDoc(dayRef, {
@@ -241,11 +239,11 @@ export const syncToday = async (
         "points.total": points?.total ?? 0,
       });
       const freshSnap = await getDoc(dayRef);
-      console.log(`🔥🧯 Document updated in users with email ${email}`);
+      log(`🔥🧯 Document updated in users with email ${email}`);
       return freshSnap.exists() ? freshSnap.data() : daySnap.data();
     }
   } catch (error) {
-    console.log("Error syncing today:", error);
+    log(`Error syncing today: ${error}`);
   }
 };
 
@@ -277,7 +275,7 @@ export const getDaysProgress = async (email: string) => {
 
     return { allDone, someDone };
   } catch (error) {
-    console.log(`Error getting days in users with email ${email}:`, error);
+    log(`Error getting days in users with email ${email}: ${error}`);
     return { allDone: [], someDone: [] };
   }
 };

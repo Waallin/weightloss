@@ -1,6 +1,6 @@
 import { SafeAreaView, View, Text, TouchableOpacity, AppState } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useToastStore from "./stores/useToastStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useUserStore from "./stores/useUserStore";
@@ -58,23 +58,8 @@ export default function App() {
 
 
 
-  useEffect(() => {
+  const handleSyncToday = useCallback(async () => {
     if (!user?.email) return;
-
-    handleSyncToday();
-  }, [user?.email]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active" && user?.email) {  
-        handleSyncToday();
-      }
-    });
-
-    return () => sub.remove();
-  }, [user?.email]);
-  
-  const handleSyncToday = async () => {
     const points = calculatePoints(
       user?.currentWeight ?? user?.startWeight,
       user?.height ?? 0,
@@ -87,7 +72,31 @@ export default function App() {
     if (syncedDay != null) {
       setTodayProgress(syncedDay);
     }
-  };
+  }, [
+    user?.email,
+    user?.currentWeight,
+    user?.startWeight,
+    user?.height,
+    user?.birthYear,
+    user?.gender,
+    steps,
+    setTodayProgress,
+  ]);
+
+  useEffect(() => {
+    if (!user?.email) return;
+    handleSyncToday();
+  }, [user?.email, steps, handleSyncToday]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active" && user?.email) {  
+        handleSyncToday();
+      }
+    });
+
+    return () => sub.remove();
+  }, [user?.email, handleSyncToday]);
  
 
   const handleConfig = async () => {

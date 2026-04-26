@@ -18,7 +18,7 @@ export const useTodaySteps = () => {
     type: "stepCount",
     aggregations: ["cumulativeSum"],
     startDate: new Date(new Date().setHours(0, 0, 0, 0)),
-    endDate: new Date(new Date().setHours(23, 59, 59, 999)),
+    endDate: new Date()
   });
 
   if (data == null || Array.isArray(data)) {
