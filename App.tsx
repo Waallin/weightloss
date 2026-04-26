@@ -24,6 +24,7 @@ import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
 import { getProducts, initRevenueCat } from "./services/revenuecat";
+import { initializeMixpanel } from "./services/mixpanel"; 
 import PaywallScreen from "./screens/auth/PaywallScreen";
 import useRevCatStore from "./stores/useRevCatStore"; 
 
@@ -45,7 +46,7 @@ export default function App() {
     handleConfig(); 
     initRevenueCat(); 
     handleRevCatProducts();
-
+    initializeMixpanel();
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);

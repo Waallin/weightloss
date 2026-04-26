@@ -15,7 +15,7 @@ import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
 import * as haptics from "expo-haptics";
 
-const debug = false;
+const debug = true;
 
 
 function log(message: string) {
@@ -127,6 +127,7 @@ export const setDocument = async (
     const docRef = doc(database, collection, email);
     await setDoc(docRef, data);
     log(`🔥🧯 Document set in ${collection} with email ${email}`);
+    return true;
   } catch (error) {
     log(
       `Error setting document in ${collection} with email ${email}: ${error}`,

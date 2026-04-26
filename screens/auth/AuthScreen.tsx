@@ -17,6 +17,7 @@ import { setDocument } from "../../services/firebase";
 const IMAGE_SIZE = 250;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
+import { scheduleDailyNotifications } from "../../services/notifications";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
@@ -64,6 +65,7 @@ const AuthScreen = () => {
   };
 
   const handleCreateAccount = async (email: string) => {   
+
     try {
       const userObj = {
         ...user,
@@ -75,11 +77,14 @@ const AuthScreen = () => {
         totalAppsOpen: 1,
       }
       const result = await setDocument("users", email, userObj);
+  
       if (result) {
-        await AsyncStorage.setItem("user", email);
-        setUser(userObj);
 
+        setUser(userObj);
+        scheduleDailyNotifications()
+        
         if (!config?.showPaywall) {
+
           navigation.replace("MainStack");
         } else {
         navigation.replace("Paywall");
