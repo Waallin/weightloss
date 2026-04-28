@@ -42,11 +42,16 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { setProducts } = useRevCatStore();
   useEffect(() => {
-    checkAuthStatus();
-    handleConfig(); 
-    initRevenueCat(); 
-    handleRevCatProducts();
-    initializeMixpanel();
+
+    const initializeApp = async () => {
+      const authStatus = await checkAuthStatus();
+      const config = await handleConfig(); 
+      const revenueCatInitialized = await initRevenueCat(); 
+      const products = await handleRevCatProducts();
+      const initializeMixpanelResult = await initializeMixpanel();
+
+    }
+    initializeApp();
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);

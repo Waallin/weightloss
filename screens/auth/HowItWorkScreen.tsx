@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dimensions,
   FlatList,
@@ -24,6 +24,7 @@ import Animated, {
 } from "react-native-reanimated";
 import * as haptics from "expo-haptics";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
+import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -228,6 +229,10 @@ const HowItWorkScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const flatListRef = React.useRef<FlatList>(null);
 
+  useEffect(() => {
+    trackMixpanelEvent("HowItWork");
+  }, []);
+
   const sections: HowItWorkSection[] = React.useMemo(() => {
     console.log(authCopy.howItWorkSections);
     return authCopy.howItWorkSections.map((s) => ({
@@ -329,6 +334,7 @@ const HowItWorkScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Begin my plan"
           onPress={() => {
+            trackMixpanelEvent("onboarding_complete");
             navigation.replace("Paywall");
           }}
         />

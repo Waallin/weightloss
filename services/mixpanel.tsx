@@ -5,11 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // create an instance of Mixpanel using your project token
 // disable legacy autotrack mobile events
 const trackAutomaticEvents = false;
-const mixpanel = new Mixpanel('2f6b28c9f6491aa83740fe0d09e8bdc5', trackAutomaticEvents);
+const mixpanel = new Mixpanel('6121133a12b8a905284ed8948adcef67', trackAutomaticEvents);
 
-
+    
 export const initializeMixpanel = async () => { 
-    console.log("Initializing Mixpanel");
     await mixpanel.init();
 };
 

@@ -7,29 +7,40 @@ import { getProducts, purchasePlan, restorePurchases } from "../../services/reve
 import { updateDocument } from "../../services/firebase";
 import useUserStore from "../../stores/useUserStore";
 import useRevCatStore from "../../stores/useRevCatStore";
+import { trackMixpanelEvent } from "../../services/mixpanel";
+import { useEffect } from "react";
 const PaywallScreen: React.FC = () => {
   const navigation = useNavigation();
   const { config } = useConfigStore();
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
   const { products } = useRevCatStore();
-  const handleCTAPress = async (plan: any) => {
 
+  useEffect(() => {
+    trackMixpanelEvent("Paywall", { variant: config?.showPaywall });
+  }, []);
+  const handleCTAPress = async (plan: any) => {
+    const variant = config?.showPaywall;
+    
     const purchase = await purchasePlan(plan);
 
     if (purchase) {
+      trackMixpanelEvent("purchase_success", { variant, plan });
       updateDocument("users", user?.email, {
         revenuecat: purchase,
       });
       navigation.replace("MainStack" as never);
     } else {
       setLoading(false);
+      trackMixpanelEvent("purchase_failed", { variant, plan });
       alert("Purchase failed");
     }
     setLoading(false);
   };
 
   const handleRestorePurchases = async () => {
+    const variant = config?.showPaywall;
+    trackMixpanelEvent("paywall_restore_tap", { variant });
     const restored = await restorePurchases();
 
     // restored är ett objekt. Kolla så restored innehåller entitlements eller purchases för att bestämma om det lyckades.

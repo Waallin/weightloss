@@ -18,15 +18,15 @@ const IMAGE_SIZE = 250;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
 import { scheduleDailyNotifications } from "../../services/notifications";
+import { identifyMixpanel, trackMixpanelEvent } from "../../services/mixpanel";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const { user, setUser } = useUserStore();
   const { config } = useConfigStore();
   useEffect(() => {
     if (appleToken) {
-
       const provider = new OAuthProvider("apple.com");
       const credential = provider.credential({ idToken: appleToken as string });
 
@@ -57,15 +57,14 @@ const AuthScreen = () => {
         setAppleToken(undefined);
       }
     } catch (e: any) {
-      if (e.code === 'ERR_REQUEST_CANCELED') {
+      if (e.code === "ERR_REQUEST_CANCELED") {
       } else {
         Alert.alert("Error", "Failed to verify Apple login");
       }
     }
   };
 
-  const handleCreateAccount = async (email: string) => {   
-
+  const handleCreateAccount = async (email: string) => {
     try {
       const userObj = {
         ...user,
@@ -75,19 +74,20 @@ const AuthScreen = () => {
         platform: Constants.platform?.ios ? "ios" : "android",
         version: Constants.expoConfig?.version || "",
         totalAppsOpen: 1,
-      }
+      };
       const result = await setDocument("users", email, userObj);
-  
+
       if (result) {
-
         setUser(userObj);
-        scheduleDailyNotifications()
-        
-        if (!config?.showPaywall) {
+        scheduleDailyNotifications();
 
+        await identifyMixpanel(email);
+        await trackMixpanelEvent("user_registered");
+
+        if (!config?.showPaywall) {
           navigation.replace("MainStack");
         } else {
-        navigation.replace("Paywall");
+          navigation.replace("Paywall");
         }
       }
     } catch (e: any) {
@@ -203,13 +203,10 @@ const AuthScreen = () => {
         style={{ width: "100%" }}
       >
         <AppleAuthentication.AppleAuthenticationButton
-
           buttonType={
             AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
           }
-          buttonStyle={
-            AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
-          }
+          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
           cornerRadius={10}
           style={{ width: "100%", height: 50 }}
           onPress={handleAppleLogin}
@@ -219,9 +216,7 @@ const AuthScreen = () => {
   };
 
   return (
-    <View
-      style={globalStyles.container}
-    >
+    <View style={globalStyles.container}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         {renderImage()}
         {renderText()}

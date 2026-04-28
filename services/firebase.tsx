@@ -15,7 +15,7 @@ import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
 import * as haptics from "expo-haptics";
 
-const debug = true;
+const debug = false;
 
 
 function log(message: string) {

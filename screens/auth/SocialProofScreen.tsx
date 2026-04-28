@@ -17,6 +17,7 @@ import {
 import { getNotificationToken } from "../../services/notifications";
 import useUserStore from "../../stores/useUserStore";
 import useConfigStore from "../../stores/useConfigStore";
+import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const dummySocialProof = [
   {
@@ -62,11 +63,15 @@ const dummySocialProof = [
 ];
 
 const SocialProofScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [isPlanReady, setIsPlanReady] = React.useState(false);
   const { config } = useConfigStore();
   const { requestPermission } = useHealthKitPermissions();
   const { user, setUser } = useUserStore();
+
+  useEffect(() => {
+    trackMixpanelEvent("SocialProof");
+  }, []);
 
   useEffect(() => {
     setTimeout(async () => {

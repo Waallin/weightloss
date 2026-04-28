@@ -13,6 +13,8 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
+import { useEffect } from "react";
+import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -67,6 +69,10 @@ const ProfileDetailsScreen = () => {
   const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
+
+  useEffect(() => {
+    trackMixpanelEvent("ProfileDetails");
+  }, []);
   const totalSteps = 5;
   const activeIndex = step - 1;
   const age = useMemo(() => {
@@ -236,6 +242,11 @@ const ProfileDetailsScreen = () => {
     );
   };
 
+  const handleCreatePlan = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    trackMixpanelEvent("Create my plan", { age, gender, height, startWeight, goalWeight });
+    navigation.navigate("SocialProofScreen");
+  };
   const renderPlanCreated = () => {
     const goalDeltaKg = Math.abs((user?.goalWeight ?? 0) - (user?.startWeight ?? 0));
     return (
@@ -459,10 +470,7 @@ const ProfileDetailsScreen = () => {
         <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
           <PrimaryButtonComponent
             title="Create my plan"
-            onPress={() => {
-              haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate("SocialProofScreen");
-            }}
+            onPress={handleCreatePlan}
           />
         </View>
       </View>
