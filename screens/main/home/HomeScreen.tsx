@@ -255,21 +255,6 @@ const HomeScreen = () => {
     }, [todayProgress]),
   );
 
-  useEffect(() => {
-    const checkPremium = async () => {
-      const isPremium = await isCustomerPremium();
-      
-      if (!isPremium) {
-      alert("You need to upgrade to premium to continue");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "AuthNavigator" as never }],
-      });
-      }
-    }
-    checkPremium();
-  }, []);
-
 
   const handleSyncToday = useCallback(async () => {
     if (!user?.email) return;

@@ -17,6 +17,7 @@ export type RecipeDetail = {
 
 export type RootStackParamList = {
   MainNavigator: undefined;
+  Paywall: undefined;
   AuthNavigator: undefined;
   DietListScreen: undefined;
   AddDietScreen: undefined;

@@ -1,5 +1,10 @@
-import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import React, { useState, useEffect } from "react";
+import {
+  useNavigation,
+  StackActions,
+  type NavigationProp,
+  type ParamListBase,
+} from "@react-navigation/native";
 import DefaultPaywall from "./Paywalls/DefaultPaywall";
 import ReminderPaywall from "./Paywalls/ReminderPaywall";
 import useConfigStore from "../../stores/useConfigStore";
@@ -8,9 +13,16 @@ import { updateDocument } from "../../services/firebase";
 import useUserStore from "../../stores/useUserStore";
 import useRevCatStore from "../../stores/useRevCatStore";
 import { trackMixpanelEvent } from "../../services/mixpanel";
-import { useEffect } from "react";
+
+function getPaywallSuccessRoute(
+  navigation: NavigationProp<ParamListBase>,
+): "MainStack" | "MainNavigator" {
+  const routeNames = navigation.getState()?.routeNames ?? [];
+  return routeNames.includes("MainStack") ? "MainStack" : "MainNavigator";
+}
+
 const PaywallScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<ParamListBase>>();
   const { config } = useConfigStore();
   const { user } = useUserStore();
   const [loading, setLoading] = useState(false);
@@ -20,16 +32,22 @@ const PaywallScreen: React.FC = () => {
     trackMixpanelEvent("Paywall", { variant: config?.showPaywall });
   }, []);
   const handleCTAPress = async (plan: any) => {
+
     const variant = config?.showPaywall;
     
     const purchase = await purchasePlan(plan);
+    console.log("🚀 ~ handleCTAPress ~ purchase:", purchase)
 
     if (purchase) {
       trackMixpanelEvent("purchase_success", { variant, plan });
       updateDocument("users", user?.email, {
         revenuecat: purchase,
       });
-      navigation.replace("MainStack" as never);
+      const nextRoute = getPaywallSuccessRoute(navigation);
+      navigation.reset({
+        index: 0,
+        routes: [{ name: nextRoute }],
+      });
     } else {
       setLoading(false);
       trackMixpanelEvent("purchase_failed", { variant, plan });
@@ -44,7 +62,9 @@ const PaywallScreen: React.FC = () => {
     const restored = await restorePurchases();
     if (restored) {
       alert("Purchases restored");
-      navigation.replace("MainStack" as never);
+      navigation.dispatch(
+        StackActions.replace(getPaywallSuccessRoute(navigation)),
+      );
     } else {
       alert("Failed to restore purchases");
     }

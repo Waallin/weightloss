@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
 import { scheduleDailyNotifications } from "../../services/notifications";
 import { identifyMixpanel, trackMixpanelEvent } from "../../services/mixpanel";
+import { isCustomerPremium } from "../../services/revenuecat";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
@@ -78,6 +79,8 @@ const AuthScreen = () => {
       const result = await setDocument("users", email, userObj);
 
       if (result) {
+        await AsyncStorage.setItem("user", email);
+
         setUser(userObj);
         scheduleDailyNotifications();
 

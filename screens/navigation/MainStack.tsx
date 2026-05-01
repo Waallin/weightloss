@@ -1,5 +1,5 @@
+import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import AuthScreen from "../auth/AuthScreen";
 import MainNavigator from "./MainNavigator";
 import DietListScreen from "../main/diet/DietListScreen";
 import AddDietScreen from "../main/diet/AddDietScreen";
@@ -9,15 +9,22 @@ import LogWeightScreen from "../main/progress/LogWeightScreen";
 import ArticleScreen from "../main/home/ArticleScreen";
 import { RootStackParamList } from "./types";
 import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
-import OnboardingScreen from "../auth/OnboardingScreen";
 import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export const MainStack = () => {
+export type MainStackInitialRoute = "MainNavigator" | "Paywall";
+
+interface MainStackProps {
+  initialRouteName?: MainStackInitialRoute;
+}
+
+export const MainStack: React.FC<MainStackProps> = ({
+  initialRouteName = "MainNavigator",
+}) => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName={initialRouteName}>
       <Stack.Screen
         name="MainNavigator"
         component={MainNavigator}

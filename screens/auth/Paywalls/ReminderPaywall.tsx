@@ -8,6 +8,7 @@ import { spacing } from "../../../constants/spacing";
 import { useNavigation } from "@react-navigation/native";
 import { paywallCopy, reminderPaywallCopy, typography } from "../../../constants/texts";
 import useConfigStore from "../../../stores/useConfigStore";
+import * as Haptics from "expo-haptics";
 
 type RevenueCatPackage = {
     identifier: string;
@@ -267,6 +268,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
     };
 
     const handleGoBack = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         if (activeScreen === 0) {
             navigation.goBack();
         } else {
@@ -306,7 +308,10 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
 
         return (
             <Pressable
-                onPress={() => setSelectedPlan(plan.key)}
+                onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setSelectedPlan(plan.key);
+                }}
                 style={{
                     height: spacing.paywallPlanRowHeight,
                     borderRadius: 14,
@@ -502,6 +507,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
                         }
                    
                         onPress={() => {
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             if (activeScreen === 2) {
                                 onCTAPress?.(selectedPlan === "yearly" ? "annual" : "weekly");
                                 return;

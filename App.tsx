@@ -24,8 +24,7 @@ import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
 import { getProducts, initRevenueCat } from "./services/revenuecat";
-import { initializeMixpanel } from "./services/mixpanel"; 
-import PaywallScreen from "./screens/auth/PaywallScreen";
+import { initializeMixpanel } from "./services/mixpanel";
 import useRevCatStore from "./stores/useRevCatStore"; 
 
 export default function App() {
@@ -36,6 +35,7 @@ export default function App() {
   const steps = useTodaySteps();
   const {  setTodayDiet } = useTodayDietStore();
   const { setConfig } = useConfigStore();
+  const [authState, setAuthState] = useState("unauthenticated");
   const { visibleConfetti, confettiNonce, setVisibleConfetti } =
     useConfettiStore();
   const [showSplash, setShowSplash] = useState(true);
@@ -44,7 +44,7 @@ export default function App() {
   useEffect(() => {
 
     const initializeApp = async () => {
-      const authStatus = await checkAuthStatus();
+      const authStatus = await checkInUser()
       const config = await handleConfig(); 
       const revenueCatInitialized = await initRevenueCat(); 
       const products = await handleRevCatProducts();
@@ -118,20 +118,7 @@ export default function App() {
     }
   };
 
-  const checkAuthStatus = async () => {
-    const user = await AsyncStorage.getItem("user");
-    if (user) {
-      const result = await checkInUser(user);
 
-      if (result) {
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-    } else {
-      setIsAuthenticated(false);
-    }
-  };
 
   const handleRevCatProducts = async () => {
     const products = await getProducts();
@@ -141,10 +128,18 @@ export default function App() {
 
 
 
-  const checkInUser = async (user: string) => {
+  const checkInUser = async () => {
+    const user = await AsyncStorage.getItem("user");
+
+    if (!user) {
+      setAuthState("unauthenticated");
+      return false;
+    }
+
     const userData = await getDocument("users", user);
     const dietRef = "users/" + user + "/days/" + getDateKey() + "/foodEntries";
     const todayDiet = await getDocuments(dietRef);
+
     if (userData) {
       await updateDocument("users", user, {
         totalAppsOpen: increment(1),
@@ -152,11 +147,19 @@ export default function App() {
       });
       setTodayDiet(todayDiet);
       setUser(userData);
+
+      if (userData?.revenuecat) {
+        setAuthState("loggedInWithPremium");
+      } else {
+        setAuthState("loggedInWithoutPremium");
+      }
+      
       return true;
     } else {
-      console.log("🚀 ~ checkInUser ~ userData not found")
+
       await AsyncStorage.removeItem("user");
       setIsAuthenticated(false);
+      setAuthState("unauthenticated");
       return false;
     }
   };
@@ -178,7 +181,11 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-          {isAuthenticated ? <MainStack /> : <AuthNavigator />}
+          {authState === "loggedInWithPremium" && <MainStack />}
+          {authState === "unauthenticated" && <AuthNavigator />}
+          {authState === "loggedInWithoutPremium" && (
+            <MainStack initialRouteName="Paywall" />
+          )}
         </NavigationContainer>
       </View>
     </View>
