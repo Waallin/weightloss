@@ -42,9 +42,7 @@ const PaywallScreen: React.FC = () => {
     const variant = config?.showPaywall;
     trackMixpanelEvent("paywall_restore_tap", { variant });
     const restored = await restorePurchases();
-
-    // restored är ett objekt. Kolla så restored innehåller entitlements eller purchases för att bestämma om det lyckades.
-    if (restored && (restored.entitlements?.active || (Array.isArray(restored.purchases) && restored.purchases.length > 0))) {
+    if (restored) {
       alert("Purchases restored");
       navigation.replace("MainStack" as never);
     } else {

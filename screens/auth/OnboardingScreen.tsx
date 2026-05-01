@@ -205,27 +205,34 @@ const OnboardingScreen: React.FC = () => {
     },
     {
       id: 2,
+      title: "Don’t know what to eat?",
+      description:
+        "Easy, delicious recipes with points built in.",
+      image: require("../../assets/mascot/walk.png"),
+    },
+    {
+      id: 3,
       title: "Don’t feel like going to the gym?",
       description:
         "You’re not alone. You don’t need it to make real progress.",
       image: require("../../assets/mascot/pushUps.png"),
     },
     {
-      id: 3,
+      id: 4,
       title: "Struggle to stay consistent?",
       description:
         "You start strong… then life happens. That’s why this is built to be simple.",
       image: require("../../assets/mascot/jump.png"),
     },
     {
-      id: 4,
+      id: 5,
       title: "Wish it was just… easier?",
       description:
         "Just follow three small habits each day. That’s enough.",
       image: require("../../assets/mascot/threeFingers.png"),
     },
     {
-      id: 5,
+      id: 6,
       title: "Ready to try something different?",
       description:
         "No pressure. Just a simple reset—one day at a time.",
@@ -302,7 +309,7 @@ const OnboardingScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Let’s start"
           onPress={() => {
-            navigation.replace("ProfileDetails");
+            navigation.replace("HowItWork");
           }}
         />
       )

@@ -334,8 +334,8 @@ const HowItWorkScreen: React.FC = () => {
         <PrimaryButtonComponent
           title="Begin my plan"
           onPress={() => {
-            trackMixpanelEvent("onboarding_complete");
-            navigation.replace("Paywall");
+            trackMixpanelEvent("HowItWork_complete");
+            navigation.replace("ProfileDetails");
           }}
         />
       )

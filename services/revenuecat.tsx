@@ -59,8 +59,12 @@ export async function purchasePlan(plan: "weekly" | "annual") {
 export async function restorePurchases() {
   try {
    const res =  await Purchases.restorePurchases();
-    console.log("🚀 ~ restorePurchases ~ Purchases:", res)
-    return res;
+     
+   if (res.entitlements.active["Kudoo Premium"]) {
+    return true;
+   } else {
+    return false;
+   }
   } catch (e: any) {
     if (!e.userCancelled) {
       console.log("Restore purchases error:", e);

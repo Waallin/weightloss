@@ -334,25 +334,24 @@ export const authCopy = {
   howItWorkSections: [
     {
       id: 1,
-      title: "Todays plan",
+      title: "Your day, simplified",
       description: [
-        "• Walk: 10k steps",
-        "• Drink: 10 glasses of water",
-        "• Eat: Stay within your points",
+        "Walk a little",
+        "Stay hydrated",
+        " Stay within your points",
       ].join("\n"),
       imageKey: "threeFingers",
     },
     {
       id: 2,
-      title: "Points explained",
-      description:
-        "Foods that keep you full = fewer points\nFoods that don’t = more points",
+      title: "No calories. Just points",
+      description: "Eat smarter, not less",
       imageKey: "standing",
     },
     {
       id: 3,
-      title: "You're ready",
-      description: "That’s it. Just follow today.\nWe’ll handle the rest.",
+      title: "You're all set",
+      description: "Start simple, results will follow",
       imageKey: "thumbsUp",
     },
   ],
