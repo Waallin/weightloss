@@ -650,6 +650,7 @@ const askForStoreReview = async () => {
           Tips for success
         </Text>
         <ScrollView
+          showsVerticalScrollIndicator={false}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{

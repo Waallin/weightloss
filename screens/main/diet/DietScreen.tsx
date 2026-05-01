@@ -115,7 +115,7 @@ const DietScreen = () => {
               key={`${item.sourceId ?? "row"}-${index}`}
               item={item}
               quantity={quantity > 1 ? quantity : undefined}
-              onPress={() => console.log(item)}
+   
             />
           ))}
         </View>
@@ -250,6 +250,7 @@ const DietScreen = () => {
       <ScrollView
         style={globalStyles.container}
         contentContainerStyle={globalStyles.scrollContainer}
+        showsVerticalScrollIndicator={false}
       >
         {renderHeroSection()}
         {renderFoodItems()}

@@ -34,7 +34,8 @@ Notifications.setNotificationHandler({
 });
 
 export async function scheduleDailyNotifications() {
-  console.log("Schedule daily push notification");
+  
+  await Notifications.cancelAllScheduledNotificationsAsync();
   await Notifications.scheduleNotificationAsync({
     content: {
       title: "Start with water 💧",
@@ -77,3 +78,19 @@ export async function scheduleDailyNotifications() {
     },
   });
 }
+
+
+export const handleReminderNotification = async () => {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Your trial is still free",
+      body: "Try Kudoo today and see how simple staying on track can feel.",
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+      seconds: 24 * 60 * 60,
+      repeats: false,
+    },
+  });
+  console.log("Reminder notification scheduled");
+};

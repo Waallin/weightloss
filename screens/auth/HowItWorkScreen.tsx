@@ -229,9 +229,6 @@ const HowItWorkScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const flatListRef = React.useRef<FlatList>(null);
 
-  useEffect(() => {
-    trackMixpanelEvent("HowItWork");
-  }, []);
 
   const sections: HowItWorkSection[] = React.useMemo(() => {
     console.log(authCopy.howItWorkSections);

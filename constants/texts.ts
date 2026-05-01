@@ -291,7 +291,8 @@ export const dietLabels = {
   heroMicrocopyFallback: "Keep it up!",
 } as const;
 
-export const dietFoodSearchPlaceholder = 'Search food, e.g. "banana"' as const;
+export const dietFoodSearchPlaceholder =
+  'Search food and recipes, e.g. "banana"' as const;
 
 export const recipeDetailCopy = {
   ingredientsSection: "Ingredients",

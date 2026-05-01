@@ -17,7 +17,6 @@ import {
 import { getNotificationToken } from "../../services/notifications";
 import useUserStore from "../../stores/useUserStore";
 import useConfigStore from "../../stores/useConfigStore";
-import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const dummySocialProof = [
   {
@@ -69,9 +68,6 @@ const SocialProofScreen = () => {
   const { requestPermission } = useHealthKitPermissions();
   const { user, setUser } = useUserStore();
 
-  useEffect(() => {
-    trackMixpanelEvent("SocialProof");
-  }, []);
 
   useEffect(() => {
     setTimeout(async () => {

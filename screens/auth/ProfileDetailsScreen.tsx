@@ -13,8 +13,6 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
-import { useEffect } from "react";
-import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -70,9 +68,6 @@ const ProfileDetailsScreen = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
 
-  useEffect(() => {
-    trackMixpanelEvent("ProfileDetails");
-  }, []);
   const totalSteps = 5;
   const activeIndex = step - 1;
   const age = useMemo(() => {

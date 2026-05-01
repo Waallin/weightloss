@@ -24,7 +24,6 @@ export const identifyMixpanel = async (email: string) => {
 export const trackMixpanelEvent = async (event: string, properties?: any) => {
     try {
         mixpanel.track(event, properties);
-        console.log("Event sent:", event);
     } catch (error) {
         console.log("Error in track function:", error);
     }

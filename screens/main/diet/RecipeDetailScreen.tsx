@@ -68,7 +68,6 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
 
   const scrollBottomPadding = 150 + insets.bottom;
 
-
   const handleAddToDiet = async (recipe: any) => {
  
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
@@ -88,7 +87,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
       ...todayProgress,
       points: {
         ...todayProgress.points,
-        used: todayProgress.points.used + payload.points,
+        used: todayProgress.points.used + parseInt(recipe.points),
       },
     });
     setTodayDiet([...todayDiet, payload]);

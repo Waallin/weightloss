@@ -3,10 +3,9 @@ import {
   TextInput,
   View,
   TouchableOpacity,
-  Alert,
   ScrollView,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -15,12 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FoodItem from "./components/FoodItem";
-import {
-  dietFoodSearchPlaceholder,
-  dietLabels,
-  textStyles,
-  typography,
-} from "../../../constants/texts";
+import { dietFoodSearchPlaceholder, typography } from "../../../constants/texts";
 import useUserStore from "../../../stores/useUserStore";
 import { getDocuments } from "../../../services/firebase";
 import { RecipeDetail, RootStackParamList } from "../../navigation/types";
@@ -31,6 +25,19 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
 
+type DietListTab = "food" | "recipes";
+
+function itemTitleMatchesQuery(
+  title: unknown,
+  name: unknown,
+  searchQuery: string
+): boolean {
+  const q = searchQuery.trim().toLowerCase();
+  if (!q) return true;
+  const haystack = String(title ?? name ?? "").toLowerCase();
+  return haystack.includes(q);
+}
+
 const DietListScreen = () => {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "DietListScreen">>();
@@ -40,11 +47,32 @@ const DietListScreen = () => {
   const [recipesList, setRecipesList] = useState<RecipeDetail[]>([]);
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const [showContent, setShowContent] = useState<DietListTab>("food");
+  
+
+
+  const [searchQuery, setSearchQuery] = useState("");
   const { showToast } = useToastStore();
   useEffect(() => {
     getFoodList();
     getRecipeList();
   }, []);
+
+  const filteredFoodList = useMemo(
+    () =>
+      foodList.filter((item) =>
+        itemTitleMatchesQuery(item.title, item.name, searchQuery)
+      ),
+    [foodList, searchQuery]
+  );
+
+  const filteredRecipesList = useMemo(
+    () =>
+      recipesList.filter((item) =>
+        itemTitleMatchesQuery(item.title, item.name, searchQuery)
+      ),
+    [recipesList, searchQuery]
+  );
 
   const getFoodList = async () => {
     const foodList = await getDocuments("food");
@@ -52,10 +80,9 @@ const DietListScreen = () => {
   };
 
   const handleAddFoodItem = (foodItem: any) => {
-
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     showToast(foodItem.title + " successfully added to your day");
-    
+
     const payload = {
       sourceId: foodItem.id,
       type: foodItem.mealType,
@@ -64,12 +91,12 @@ const DietListScreen = () => {
       calories: foodItem.calories,
       imagePath: foodItem.imagePath,
       createdAt: serverTimestamp(),
-    }
+    };
     setTodayProgress({
       ...todayProgress,
       points: {
         ...todayProgress.points,
-        used: todayProgress.points.used + foodItem.points,
+        used: todayProgress.points.used + parseInt(foodItem.points),
       },
     });
 
@@ -144,6 +171,8 @@ const DietListScreen = () => {
               ...typography.titleMedium,
               color: colors.text.primary,
             }}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
           />
         </View>
       </View>
@@ -153,23 +182,13 @@ const DietListScreen = () => {
   const renderFoodItems = () => {
     return (
       <View>
-        <Text
-          style={{
-            ...textStyles.screenSectionTitle,
-            marginBottom: spacing.md,
-          }}
-        >
-          Food
-        </Text>
-        <View style={{ flex: 1 }}>
-          {foodList.map((item) => (
+        <View style={{ flex: 1, gap: spacing.xs}}>
+          {filteredFoodList.map((item) => (
             <FoodItem
               key={item.id}
               item={item}
               onPress={() => console.log(item)}
-              onIconPress={() =>
-                handleAddFoodItem(item)
-              }
+              onIconPress={() => handleAddFoodItem(item)}
             />
           ))}
         </View>
@@ -180,23 +199,13 @@ const DietListScreen = () => {
   const renderRecipesItems = () => {
     return (
       <View>
-        <Text
-          style={{
-            ...textStyles.screenSectionTitle,
-            marginBottom: spacing.md,
-          }}
-        >
-          Recipes
-        </Text>
-        <View style={{ flex: 1 }}>
-          {recipesList.map((item) => (
+        <View style={{ flex: 1, gap: spacing.xs}}>
+          {filteredRecipesList.map((item) => (
             <FoodItem
               key={item.id}
               item={item}
               onPress={() => handleNavigateToRecipeDetailScreen(item)}
-              onIconPress={() =>
-                handleAddFoodItem(item)
-              }
+              onIconPress={() => handleAddFoodItem(item)}
             />
           ))}
         </View>
@@ -204,12 +213,75 @@ const DietListScreen = () => {
     );
   };
 
+  const renderTabs = () => {
+    const segment = (key: DietListTab, label: string) => {
+      const active = showContent === key;
+      return (
+        <TouchableOpacity
+          key={key}
+          activeOpacity={0.85}
+          onPress={() => {
+            if (showContent === key) return;
+            haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+            setShowContent(key);
+          }}
+          style={{
+            flex: 1,
+            paddingVertical: spacing.sm,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: spacing.rounded,
+            backgroundColor: active ? colors.ui.white : "transparent",
+            borderWidth: active ? 1 : 0,
+            borderColor: colors.ui.cardBorder,
+            ...(active ? globalStyles.shadow : {}),
+          }}
+        >
+          <Text
+            style={{
+              ...(active ? typography.bodySemiBold : typography.body),
+              color: active ? colors.text.primary : colors.text.secondary,
+            }}
+          >
+            {label}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          padding: spacing.xs,
+          backgroundColor: colors.ui.secondaryBackground,
+          borderRadius: spacing.rounded,
+          marginBottom: spacing.md,
+        }}
+      >
+        {segment("food", "Food")}
+        {segment("recipes", "Recipes")}
+      </View>
+    );
+  };
+  const renderContent = () => {
+    return (
+      <View>
+        {showContent === "food" && renderFoodItems()}
+        {showContent === "recipes" && renderRecipesItems()}
+      </View>
+    );
+  };
+
   return (
     <View style={globalStyles.container}>
-      {renderHeader()}
-      <ScrollView contentContainerStyle={globalStyles.scrollContainer}>
-        {renderFoodItems()}
-        {renderRecipesItems()}
+      <ScrollView
+        contentContainerStyle={globalStyles.scrollContainer}
+        showsVerticalScrollIndicator={false}
+      >
+              {renderHeader()}
+        {renderTabs()}
+        {renderContent()}
       </ScrollView>
     </View>
   );

@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { colors } from "../../../constants/colors";
 import { getPaywallSpecialOfferHeadline, paywallCopy, typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
+import useConfigStore from "../../../stores/useConfigStore";
 
 type PlanKey = "yearly" | "weekly";
 
@@ -33,7 +34,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
     console.log("🚀 ~ DefaultPaywall ~ products:", products)
     const navigation = useNavigation();
     const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
-
+    const { config } = useConfigStore();
     const getPeriodLabel = useMemo(() => {
         return (pkg?: RevenueCatPackage | null): string | null => {
             const unit = pkg?.product?.subscriptionPeriod?.unit;
@@ -215,6 +216,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.ui.background }}>
             <ScrollView
+                
                 contentContainerStyle={{
                     flexGrow: 1,
                     paddingHorizontal: spacing.lg,
@@ -283,7 +285,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                     {renderPlanRow({
                                         key: "yearly",
                                         label: paywallCopy.yearlyLabel,
-                                        badge: paywallCopy.yearlyBadge,
+                                        badge: config?.reminderPaywallPhrases?.badge,   
                                         price: yearlyPrice,
                                         period: yearlyPeriod,
                                         subline: yearlyPerWeekSubline,
