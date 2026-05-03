@@ -181,12 +181,11 @@ export default function App() {
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
         <NavigationContainer>
-        <MainStack initialRouteName="Paywall" />
-          {/* {authState === "loggedInWithPremium" && <MainStack />}
+          {authState === "loggedInWithPremium" && <MainStack />}
           {authState === "unauthenticated" && <AuthNavigator />}
           {authState === "loggedInWithoutPremium" && (
             <MainStack initialRouteName="Paywall" />
-          )} */}
+          )}
         </NavigationContainer>
       </View>
     </View>

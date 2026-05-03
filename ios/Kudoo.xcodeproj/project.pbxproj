@@ -8,25 +8,25 @@
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		33B571FD8C0AACA3B83DC2E8 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44E4BAA6BC6163BBBB07065 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		70F392E0017452FE521353E1 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E9D5B2C4DD42448E864D14 /* ExpoModulesProvider.swift */; };
+		70F0325D6A4B9B2EBD99C448 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 1035195ABC557C0DB401B2AC /* PrivacyInfo.xcprivacy */; };
+		7BB6B26B1148B94FBF74FB8F /* libPods-Kudoo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D58E27A204D9D06141F11DF2 /* libPods-Kudoo.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		C0B6296A68BC3614B18D46C3 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 9DF4A2BEFADBC0D8B1DDAF92 /* PrivacyInfo.xcprivacy */; };
-		CDF4F0397783F5FB104626A4 /* libPods-Kudoo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6DDD046F396FE4CC97092CDC /* libPods-Kudoo.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1035195ABC557C0DB401B2AC /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Kudoo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Kudoo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kudoo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Kudoo/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Kudoo/Info.plist; sourceTree = "<group>"; };
-		49E9D5B2C4DD42448E864D14 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Kudoo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		596662C2EABD624F4F575431 /* Pods-Kudoo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kudoo.release.xcconfig"; path = "Target Support Files/Pods-Kudoo/Pods-Kudoo.release.xcconfig"; sourceTree = "<group>"; };
-		6DDD046F396FE4CC97092CDC /* libPods-Kudoo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Kudoo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		9DF4A2BEFADBC0D8B1DDAF92 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = Kudoo/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2B93421D7FBED59E2B93A1B0 /* Pods-Kudoo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kudoo.release.xcconfig"; path = "Target Support Files/Pods-Kudoo/Pods-Kudoo.release.xcconfig"; sourceTree = "<group>"; };
+		9C4E19BF807AED43B3C86B81 /* Pods-Kudoo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kudoo.debug.xcconfig"; path = "Target Support Files/Pods-Kudoo/Pods-Kudoo.debug.xcconfig"; sourceTree = "<group>"; };
+		A44E4BAA6BC6163BBBB07065 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-Kudoo/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = Kudoo/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		C4F43BE41FE23B4EDD554E14 /* Pods-Kudoo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Kudoo.debug.xcconfig"; path = "Target Support Files/Pods-Kudoo/Pods-Kudoo.debug.xcconfig"; sourceTree = "<group>"; };
+		D58E27A204D9D06141F11DF2 /* libPods-Kudoo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Kudoo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Kudoo/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* Kudoo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Kudoo-Bridging-Header.h"; path = "Kudoo/Kudoo-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -37,13 +37,23 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CDF4F0397783F5FB104626A4 /* libPods-Kudoo.a in Frameworks */,
+				7BB6B26B1148B94FBF74FB8F /* libPods-Kudoo.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0449B9AF398D9DB847369D71 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9C4E19BF807AED43B3C86B81 /* Pods-Kudoo.debug.xcconfig */,
+				2B93421D7FBED59E2B93A1B0 /* Pods-Kudoo.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* Kudoo */ = {
 			isa = PBXGroup;
 			children = (
@@ -53,44 +63,34 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				9DF4A2BEFADBC0D8B1DDAF92 /* PrivacyInfo.xcprivacy */,
+				1035195ABC557C0DB401B2AC /* PrivacyInfo.xcprivacy */,
 			);
 			name = Kudoo;
-			sourceTree = "<group>";
-		};
-		1F298CA3796A17A6547FB5C8 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				C4F43BE41FE23B4EDD554E14 /* Pods-Kudoo.debug.xcconfig */,
-				596662C2EABD624F4F575431 /* Pods-Kudoo.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		23EDFE36B048E580E8A91CB6 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				681399BB99B57C6109C48F4D /* Kudoo */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				6DDD046F396FE4CC97092CDC /* libPods-Kudoo.a */,
+				D58E27A204D9D06141F11DF2 /* libPods-Kudoo.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
-		681399BB99B57C6109C48F4D /* Kudoo */ = {
+		3CF947F6871ADF24B860E711 /* Kudoo */ = {
 			isa = PBXGroup;
 			children = (
-				49E9D5B2C4DD42448E864D14 /* ExpoModulesProvider.swift */,
+				A44E4BAA6BC6163BBBB07065 /* ExpoModulesProvider.swift */,
 			);
 			name = Kudoo;
+			sourceTree = "<group>";
+		};
+		4C5C3D47F4EA725896A7E89C /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				3CF947F6871ADF24B860E711 /* Kudoo */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -107,8 +107,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				1F298CA3796A17A6547FB5C8 /* Pods */,
-				23EDFE36B048E580E8A91CB6 /* ExpoModulesProviders */,
+				0449B9AF398D9DB847369D71 /* Pods */,
+				4C5C3D47F4EA725896A7E89C /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "Kudoo" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				BEA9433FC04C080CD6DA749E /* [Expo] Configure project */,
+				EE648EDF49247C28AB8B06A7 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				904D172905230B1982F01AD7 /* [CP] Embed Pods Frameworks */,
+				D1AB4DA71C5788446044BCF4 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -166,8 +166,8 @@
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = CCW95SJZFC;
 						LastSwiftMigration = 1250;
+						DevelopmentTeam = "CCW95SJZFC";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -198,7 +198,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				C0B6296A68BC3614B18D46C3 /* PrivacyInfo.xcprivacy in Resources */,
+				70F0325D6A4B9B2EBD99C448 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,7 +290,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Kudoo/Pods-Kudoo-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		904D172905230B1982F01AD7 /* [CP] Embed Pods Frameworks */ = {
+		D1AB4DA71C5788446044BCF4 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -324,7 +324,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Kudoo/Pods-Kudoo-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BEA9433FC04C080CD6DA749E /* [Expo] Configure project */ = {
+		EE648EDF49247C28AB8B06A7 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -356,7 +356,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				70F392E0017452FE521353E1 /* ExpoModulesProvider.swift in Sources */,
+				33B571FD8C0AACA3B83DC2E8 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -365,15 +365,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C4F43BE41FE23B4EDD554E14 /* Pods-Kudoo.debug.xcconfig */;
+			baseConfigurationReference = 9C4E19BF807AED43B3C86B81 /* Pods-Kudoo.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Kudoo/Kudoo.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CCW95SJZFC;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -399,20 +396,20 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "CCW95SJZFC";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Debug;
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 596662C2EABD624F4F575431 /* Pods-Kudoo.release.xcconfig */;
+			baseConfigurationReference = 2B93421D7FBED59E2B93A1B0 /* Pods-Kudoo.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = Kudoo/Kudoo.entitlements;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = CCW95SJZFC;
 				INFOPLIST_FILE = Kudoo/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -432,6 +429,9 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
+				DEVELOPMENT_TEAM = "CCW95SJZFC";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 			};
 			name = Release;
 		};

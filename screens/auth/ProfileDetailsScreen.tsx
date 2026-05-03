@@ -13,6 +13,7 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
+import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
