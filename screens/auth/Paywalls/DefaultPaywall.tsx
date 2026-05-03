@@ -95,12 +95,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
         return selectedPlan === "yearly" ? paywallCopy.trialFootnote : paywallCopy.weeklyFootnote;
     }, [selectedPlan]);
 
-    const handleBackPress = () => {
-        if (navigation.canGoBack()) {
-            navigation.goBack();
-            return;
-        }
-    };
+
 
     const renderPlanRow = (plan: {
         key: PlanKey;

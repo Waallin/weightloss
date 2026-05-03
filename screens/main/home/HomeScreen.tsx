@@ -316,6 +316,18 @@ const HomeScreen = () => {
     }
   };
 
+  const overallProgressMicroCopy = () => {
+    if (overallProgress >= 3) {
+      return "All goals done today 👏";
+    } else if (overallProgress === 2) {
+      return "2 goals done — almost there";
+    } else if (overallProgress === 1) {
+      return "1 goal done — keep going";
+    } else {
+      return "No goals done yet — let's start simple";
+    }
+  };
+
   const returnPointsMicroCopy = () => {
     const total = todayProgress?.points?.total ?? 0;
     const used = todayProgress?.points?.used ?? 0;
@@ -369,12 +381,18 @@ const HomeScreen = () => {
 
 
   const handle10kSteps = () => {
+    setVisibleConfetti(true);
+    setTodayProgress({
+      ...todayProgress,
+      completion: {
+        ...todayProgress.completion,
+        steps: true,
+      },
+    });
+    setClaimStepsReward(false);
     updateTodayProgress(user?.email as string, {
       "completion.steps": true,
     });
-    setClaimStepsReward(false);
-    setVisibleConfetti(true);
-
     askForStoreReview();
   };
 
@@ -598,7 +616,7 @@ const askForStoreReview = async () => {
                 color: colors.text.primary,
               }}
             >
-              {overallProgress} of 3 habits done 👏
+              {overallProgressMicroCopy()}
             </Text>
             <Text style={{ ...textStyles.listItemEmphasis }}>
               {3 - overallProgress} more to go

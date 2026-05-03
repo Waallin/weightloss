@@ -14,7 +14,10 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FoodItem from "./components/FoodItem";
-import { dietFoodSearchPlaceholder, typography } from "../../../constants/texts";
+import {
+  dietFoodSearchPlaceholder,
+  typography,
+} from "../../../constants/texts";
 import useUserStore from "../../../stores/useUserStore";
 import { getDocuments } from "../../../services/firebase";
 import { RecipeDetail, RootStackParamList } from "../../navigation/types";
@@ -30,7 +33,7 @@ type DietListTab = "food" | "recipes";
 function itemTitleMatchesQuery(
   title: unknown,
   name: unknown,
-  searchQuery: string
+  searchQuery: string,
 ): boolean {
   const q = searchQuery.trim().toLowerCase();
   if (!q) return true;
@@ -48,11 +51,9 @@ const DietListScreen = () => {
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const [showContent, setShowContent] = useState<DietListTab>("food");
-  
-
 
   const [searchQuery, setSearchQuery] = useState("");
-  const { showToast } = useToastStore();
+  const { showToast, isVisible } = useToastStore();
   useEffect(() => {
     getFoodList();
     getRecipeList();
@@ -61,17 +62,17 @@ const DietListScreen = () => {
   const filteredFoodList = useMemo(
     () =>
       foodList.filter((item) =>
-        itemTitleMatchesQuery(item.title, item.name, searchQuery)
+        itemTitleMatchesQuery(item.title, item.name, searchQuery),
       ),
-    [foodList, searchQuery]
+    [foodList, searchQuery],
   );
 
   const filteredRecipesList = useMemo(
     () =>
       recipesList.filter((item) =>
-        itemTitleMatchesQuery(item.title, item.name, searchQuery)
+        itemTitleMatchesQuery(item.title, item.name, searchQuery),
       ),
-    [recipesList, searchQuery]
+    [recipesList, searchQuery],
   );
 
   const getFoodList = async () => {
@@ -99,11 +100,8 @@ const DietListScreen = () => {
         used: todayProgress.points.used + parseInt(foodItem.points),
       },
     });
-
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
-
-    navigation.pop(2);
   };
 
   const getRecipeList = async () => {
@@ -182,7 +180,7 @@ const DietListScreen = () => {
   const renderFoodItems = () => {
     return (
       <View>
-        <View style={{ flex: 1, gap: spacing.xs}}>
+        <View style={{ flex: 1, gap: spacing.xs }}>
           {filteredFoodList.map((item) => (
             <FoodItem
               key={item.id}
@@ -199,7 +197,7 @@ const DietListScreen = () => {
   const renderRecipesItems = () => {
     return (
       <View>
-        <View style={{ flex: 1, gap: spacing.xs}}>
+        <View style={{ flex: 1, gap: spacing.xs }}>
           {filteredRecipesList.map((item) => (
             <FoodItem
               key={item.id}
@@ -264,6 +262,22 @@ const DietListScreen = () => {
       </View>
     );
   };
+
+  const renderNote = () => {
+    return (
+      <View>
+        <Text
+          style={{
+            ...typography.body,
+            color: colors.text.secondary,
+            textAlign: "center",
+          }}
+        >
+          Points shown are for one portion
+        </Text>
+      </View>
+    );
+  };
   const renderContent = () => {
     return (
       <View>
@@ -279,8 +293,9 @@ const DietListScreen = () => {
         contentContainerStyle={globalStyles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-              {renderHeader()}
+        {renderHeader()}
         {renderTabs()}
+        {renderNote()}
         {renderContent()}
       </ScrollView>
     </View>

@@ -15,7 +15,7 @@ const useToastStore = create<ToastState>((set) => ({
 
     setTimeout(() => {
       set({ isVisible: false });
-    }, 3300);
+    }, 1200);
   },
   hideToast: () => set({ isVisible: false }),
 }));

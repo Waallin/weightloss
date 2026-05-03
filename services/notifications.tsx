@@ -44,7 +44,7 @@ export async function scheduleDailyNotifications() {
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-      hour: 8,
+      hour: 7,
       minute: 0,
       repeats: true,
     },

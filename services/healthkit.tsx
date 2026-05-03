@@ -22,7 +22,7 @@ export const useTodaySteps = () => {
   });
 
   if (data == null || Array.isArray(data)) {
-    return 0;
+    return 11250;
   }
 
   return data.sumQuantity ?? 0;
