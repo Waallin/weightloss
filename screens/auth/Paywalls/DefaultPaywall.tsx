@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from "react";
-import { Image, Pressable, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image, Linking, Pressable, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { colors } from "../../../constants/colors";
 import { getPaywallSpecialOfferHeadline, paywallCopy, typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
+import { externalLinks } from "../../../constants/links";
 import useConfigStore from "../../../stores/useConfigStore";
 
 type PlanKey = "yearly" | "weekly";
@@ -31,7 +32,6 @@ type Props = {
 };
 
 const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurchases }) => {
-    console.log("🚀 ~ DefaultPaywall ~ products:", products)
     const navigation = useNavigation();
     const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
     const { config } = useConfigStore();
@@ -88,12 +88,12 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
     ]);
 
     const ctaLabel = useMemo(() => {
-        return selectedPlan === "yearly" ? paywallCopy.ctaYearlyFreeTrial : paywallCopy.ctaWeekly;
+        return selectedPlan === "yearly" ? config?.reminderPaywallPhrases?.ctaYearlyFreeTrial : paywallCopy.ctaWeekly;
     }, [selectedPlan]);
 
     const footnote = useMemo(() => {
-        return selectedPlan === "yearly" ? paywallCopy.trialFootnote : paywallCopy.weeklyFootnote;
-    }, [selectedPlan]);
+        return selectedPlan === "yearly" ? config?.reminderPaywallPhrases?.trialFootnote : paywallCopy.weeklyFootnote;
+    }, [selectedPlan, config?.reminderPaywallPhrases?.trialFootnote]);
 
 
 
@@ -103,13 +103,14 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
         price: string;
         period: string;
         subline: string;
+        metaLine?: string;
         badge?: string;
         rightHint?: string;
     }) => {
         const isSelected = selectedPlan === plan.key;
         const isYearly = plan.key === "yearly";
-        const mainPriceLine = isYearly && plan.rightHint ? plan.rightHint : plan.price;
-        const secondaryRightHint = isYearly && plan.rightHint ? `${plan.price} ${plan.period}` : plan.rightHint;
+        const mainPriceLine = isYearly ? `${plan.price} ${plan.period}` : plan.price;
+        const secondaryRightHint = plan.rightHint;
         return (
             <Pressable
                 onPress={() => setSelectedPlan(plan.key)}
@@ -181,7 +182,12 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                 </View>
 
                 <View style={{ alignItems: "flex-end", gap: 2 }}>
-                    <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
+                    <Text
+                        style={{
+                            ...(isYearly ? typography.headlineSemi : typography.bodySemiBold),
+                            color: isYearly ? colors.text.primary : colors.text.primary,
+                        }}
+                    >
                         {mainPriceLine}
                         {!isYearly && (
                             <Text style={{ ...typography.small, color: colors.text.secondary }}>
@@ -193,10 +199,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                     {!!secondaryRightHint && (
                         <Text
                             style={{
-                                ...typography.caption,
-                                color: colors.ui.primary,
-                                fontSize: 12, // mindre
-                                lineHeight: 16,
+                                ...(isYearly ? typography.small : typography.caption),
+                                color: isYearly ? colors.text.secondary : colors.ui.primary,
                             }}
                         >
                             {secondaryRightHint}
@@ -205,6 +209,54 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                     )}
                 </View>
             </Pressable>
+        );
+    };
+
+    const renderPrivacyPolicy = () => {
+        return (
+            <View
+                style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: spacing.sm,
+                    paddingVertical: spacing.sm,
+                }}
+            >
+                <TouchableOpacity
+                    onPress={() => Linking.openURL(externalLinks.privacyPolicy)}
+                    accessibilityRole="link"
+                    accessibilityLabel={paywallCopy.privacyPolicy}
+                >
+                    <Text
+                        style={{
+                            ...typography.small,
+                            color: colors.text.secondary,
+                            textDecorationLine: "underline",
+                        }}
+                    >
+                        {paywallCopy.privacyPolicy}
+                    </Text>
+                </TouchableOpacity>
+                <Text style={{ ...typography.small, color: colors.text.secondary }}>
+                    {paywallCopy.legalSeparator}
+                </Text>
+                <TouchableOpacity
+                    onPress={() => Linking.openURL(externalLinks.termsOfUse)}
+                    accessibilityRole="link"
+                    accessibilityLabel={paywallCopy.termsOfUse}
+                >
+                    <Text
+                        style={{
+                            ...typography.small,
+                            color: colors.text.secondary,
+                            textDecorationLine: "underline",
+                        }}
+                    >
+                        {paywallCopy.termsOfUse}
+                    </Text>
+                </TouchableOpacity>
+            </View>
         );
     };
 
@@ -234,11 +286,15 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                 <Text style={{ ...typography.headline, textAlign: "center", color: colors.text.primary }}>
                                     {paywallCopy.choosePlanTitle}
                                 </Text>
+                                <Text style={{ ...typography.bodyMedium, color: colors.text.secondary, textAlign: "center" }}>  
+                                    {paywallCopy.subTitle}
+                                </Text>
                                 <Text
                                     style={{
                                         ...typography.bodyMedium,
                                         color: colors.ui.primary,
                                         textAlign: "center",
+                                        marginTop: spacing.sm,
                                     }}
                                 >
                                     {paywallCopy.urgencyLine}
@@ -284,6 +340,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                         price: yearlyPrice,
                                         period: yearlyPeriod,
                                         subline: yearlyPerWeekSubline,
+                                        metaLine: paywallCopy.yearlyTrialThenPriceLine({ yearlyPriceString: yearlyPrice }),
                                         rightHint: yearlyPerWeekEquivalent,
                                     })}
 
@@ -336,6 +393,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                 {paywallCopy.restorePurchases}
                             </Text>
                         </TouchableOpacity>
+
+                        {renderPrivacyPolicy()}
                     </View>
                 </View>
             </ScrollView>

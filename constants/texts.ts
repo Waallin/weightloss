@@ -93,8 +93,8 @@ export const typography = {
   },
   headlineSemi: {
     fontFamily: fonts.primary.semiBold,
-    fontSize: textSizes.xl,
-    fontWeight: "600" as const,
+    fontSize: textSizes.md,
+    fontWeight: "500" as const,
   },
   subheadline: {
     fontFamily: fonts.primary.semiBold,
@@ -477,6 +477,11 @@ export const paywallCopy = {
 
   // 🔥 bättre framing
   yearlyTrialBadge: "Try it free for 3 days",
+  yearlyTrialThenPriceLine: (params?: { yearlyPriceString?: string }): string => {
+    const fallbackPrice = paywallCopy.yearlyPrice;
+    const price = params?.yearlyPriceString ?? fallbackPrice;
+    return `3-day free trial, then ${price}/year`;
+  },
 
   weeklyLabel: "Weekly",
   weeklyPrice: "$9.99",
@@ -487,19 +492,24 @@ export const paywallCopy = {
   weeklyAnnualizedHint: "", // ← ta bort denna helt (den skrämmer bort)
 
   // 🔥 viktig CTA förbättring
-  ctaYearlyFreeTrial: "Try for FREE",
+  ctaYearlyFreeTrial: "Try for 3 days free",
   ctaYearlyTrial: "Continue with yearly",
   ctaWeekly: "Continue",
 
   // 🔥 mycket viktig trust-text
-  trialFootnote: "No payment today · Cancel anytime",
+  trialFootnote: "Then $49.99 / year. Cancel anytime.",
 
   weeklyFootnote: "Cancel anytime",
 
   restorePurchases: "Restore purchases",
 
+  privacyPolicy: "Privacy Policy",
+  termsOfUse: "Terms of Use",
+  legalSeparator: "·",
+
   // 🔥 mer emotion
   choosePlanTitle: "Start seeing results today",
+  subTitle: "with Kudoo Premium",
 
   /** Snapchat-like offer framing */
   specialOfferPill: "SPECIAL OFFER",

@@ -298,6 +298,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
         price: string;
         period: string;
         subline: string;
+        metaLine?: string;
         badge?: string;
         rightHint?: string;
     }) => {
@@ -385,6 +386,16 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
                     >
                         {plan.subline}
                     </Text>
+                    {!!plan.metaLine && (
+                        <Text
+                            style={{
+                                ...typography.caption,
+                                color: colors.text.secondary,
+                            }}
+                        >
+                            {plan.metaLine}
+                        </Text>
+                    )}
                 </View>
 
                 <View style={{ alignItems: "flex-end", gap: 2 }}>
@@ -453,6 +464,7 @@ const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, 
                                 price: yearlyPrice,
                                 period: yearlyPeriod,
                                 subline: yearlyPerWeekSubline,
+                                metaLine: paywallCopy.yearlyTrialThenPriceLine({ yearlyPriceString: yearlyPrice }),
                                 rightHint: yearlyPerWeekEquivalent,
                             })}
 
