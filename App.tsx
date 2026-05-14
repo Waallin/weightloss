@@ -23,9 +23,10 @@ import { getDateKey } from "./utils/dateUtils";
 import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
-import { getProducts, initRevenueCat } from "./services/revenuecat";
-import { initializeMixpanel } from "./services/mixpanel";
+import { getRevenueCatCustomerInfo, getProducts, initRevenueCat } from "./services/revenuecat";
+import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
 import useRevCatStore from "./stores/useRevCatStore"; 
+import { scheduleActiveUserNotifications } from "./services/notifications";
 
 export default function App() {
 
@@ -48,8 +49,10 @@ export default function App() {
       const config = await handleConfig(); 
       const revenueCatInitialized = await initRevenueCat(); 
       const products = await handleRevCatProducts();
+      const revenueCatCustomerInfo = await handleRevenueCatCustomerInfo();
+      const trackMixpanelInstall = await handleTrackMixpanelInstall();
       const initializeMixpanelResult = await initializeMixpanel();
-
+      const scheduledNotifications = await scheduleActiveUserNotifications();
     }
     initializeApp();
     setTimeout(() => {
@@ -118,15 +121,38 @@ export default function App() {
     }
   };
 
+  const handleRevenueCatCustomerInfo = async () => {
+    const user = await AsyncStorage.getItem("user");
+    if (!user) return;
+    
+    const revenueCatCustomerInfo = await getRevenueCatCustomerInfo();
+    updateDocument("users", user, {
+      revenuecat: revenueCatCustomerInfo,
+    });
 
+    console.log("🚀 ~ handleRevenueCatCustomerInfo ~ revenueCatCustomerInfo:", revenueCatCustomerInfo)
+
+
+    if (revenueCatCustomerInfo?.entitlements.active["Kudoo Premium"]) {
+      setAuthState("loggedInWithPremium");
+    } else {
+      setAuthState("loggedInWithoutPremium");
+    }
+  };
 
   const handleRevCatProducts = async () => {
     const products = await getProducts();
 
     setProducts(products);
   };
+  
 
-
+  const handleTrackMixpanelInstall = async () => {
+    const mixpanelInstalled = await AsyncStorage.getItem("mixpanel_installed");
+    if (mixpanelInstalled) return;
+    const trackMixPanelInstall = await trackMixpanelEvent("app_installed");
+    await AsyncStorage.setItem("mixpanel_installed", "true");
+  };
 
   const checkInUser = async () => {
     const user = await AsyncStorage.getItem("user");
@@ -141,18 +167,13 @@ export default function App() {
     const todayDiet = await getDocuments(dietRef);
 
     if (userData) {
+    
       await updateDocument("users", user, {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
       });
       setTodayDiet(todayDiet);
-      setUser(userData);
-
-      if (userData?.revenuecat) {
-        setAuthState("loggedInWithPremium");
-      } else {
-        setAuthState("loggedInWithoutPremium");
-      }
+      setUser(userData)
       
       return true;
     } else {
@@ -160,6 +181,7 @@ export default function App() {
       await AsyncStorage.removeItem("user");
       setIsAuthenticated(false);
       setAuthState("unauthenticated");
+
       return false;
     }
   };

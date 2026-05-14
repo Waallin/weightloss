@@ -65,7 +65,7 @@ const ProfileDetailsScreen = () => {
   const [startWeight, setStartWeight] = useState<number>(70);
   const [goalWeight, setGoalWeight] = useState<number>(70);
   const [height, setHeight] = useState<number>(175);
-  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
+  const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
 
@@ -170,9 +170,9 @@ const ProfileDetailsScreen = () => {
         summaryValue={gender}
       >
         <WheelPicker<string>
-          data={["Male", "Female", "Other"]}
+          data={["Male", "Female"]}
           value={gender}
-          onChange={(g) => setGender(g as "Male" | "Female" | "Other")}
+          onChange={(g) => setGender(g as "Male" | "Female")}
           getLabel={(g) => g}
         />
       </ProfileStepSection>

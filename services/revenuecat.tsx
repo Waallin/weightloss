@@ -74,3 +74,8 @@ export async function restorePurchases() {
     return false;
   }
 }
+
+export async function getRevenueCatCustomerInfo() {
+  const customerInfo = await Purchases.getCustomerInfo();
+  return customerInfo;
+}
