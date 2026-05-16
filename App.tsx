@@ -50,8 +50,8 @@ export default function App() {
       const revenueCatInitialized = await initRevenueCat(); 
       const products = await handleRevCatProducts();
       const revenueCatCustomerInfo = await handleRevenueCatCustomerInfo();
-      const trackMixpanelInstall = await handleTrackMixpanelInstall();
       const initializeMixpanelResult = await initializeMixpanel();
+      const trackMixpanelInstall = await handleTrackMixpanelInstall();
       const scheduledNotifications = await scheduleActiveUserNotifications();
     }
     initializeApp();

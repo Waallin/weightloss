@@ -54,14 +54,14 @@ export function usePaywallPurchaseFlow({
  
           if (plan === "annual") {
             await trackMixpanelEvent(
-              analyticsEvents.paywallStartTrail,
+              "Paywall_start_trail",
               baseProps,
             );
             await handleReminderNotification();
             await logMetaEvent("StartTrial", baseProps);
           } else {
             await trackMixpanelEvent(
-              analyticsEvents.paywallPurchaseSuccess,
+              "paywall_start_subscription",
               baseProps,
             );
             await logMetaEvent("Subscribe", baseProps);
@@ -77,10 +77,10 @@ export function usePaywallPurchaseFlow({
             routes: [{ name: nextRoute }],
           });
         } else {
-          await trackMixpanelEvent(analyticsEvents.paywallPurchaseFailed, {
+          await trackMixpanelEvent("Paywall_purchase_failed", {
             variant,
             plan,
-            ...productProps,
+
           });
           alert("Purchase failed");
         }
@@ -92,7 +92,7 @@ export function usePaywallPurchaseFlow({
   );
 
   const handleRestorePurchases = useCallback(async () => {
-    trackMixpanelEvent("paywall_restore_tap", { variant: showPaywallRaw });
+    trackMixpanelEvent("Paywall_restore_tap", { variant: showPaywallRaw });
     const restored = await restorePurchases();
     if (restored) {
       alert("Purchases restored");

@@ -17,6 +17,7 @@ import {
 import { getNotificationToken } from "../../services/notifications";
 import useUserStore from "../../stores/useUserStore";
 import useConfigStore from "../../stores/useConfigStore";
+import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const dummySocialProof = [
   {
@@ -86,7 +87,7 @@ const SocialProofScreen = () => {
       ...user,
       healthKitPermission: healthKit,
     });
-
+    trackMixpanelEvent("SocialProof_complete");
     navigation.replace("Auth");
   };
 

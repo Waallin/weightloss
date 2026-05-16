@@ -13,7 +13,7 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
-import { trackMixpanelEvent } from "../../services/mixpanel";
+import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -240,7 +240,14 @@ const ProfileDetailsScreen = () => {
 
   const handleCreatePlan = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    trackMixpanelEvent("Create my plan", { age, gender, height, startWeight, goalWeight });
+    trackMixpanelEvent("ProfileDetails_complete", { age, gender, height, startWeight, goalWeight })
+    setMixpanelPeopleProperty("age", age);
+    setMixpanelPeopleProperty("gender", gender);
+    setMixpanelPeopleProperty("height", height);
+    setMixpanelPeopleProperty("weight", startWeight);
+    setMixpanelPeopleProperty("weight_goal", goalWeight);
+
+
     navigation.navigate("SocialProofScreen");
   };
   const renderPlanCreated = () => {

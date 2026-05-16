@@ -20,7 +20,7 @@ const PaywallScreen: React.FC = () => {
   const { products } = useRevCatStore();
 
   useEffect(() => {
-    trackMixpanelEvent("onboarding_completed");
+    trackMixpanelEvent("Paywall_viewed");
   }, []);
 
   const variant = config?.showPaywall === "reminder" ? "reminder" : "default";
@@ -35,7 +35,6 @@ const PaywallScreen: React.FC = () => {
     });
 
   useEffect(() => {
-    trackMixpanelEvent("Paywall", { variant: config?.showPaywall });
     logMetaEvent("ViewContent", { content_type: "paywall", variant });
   }, [config?.showPaywall, variant]);
 
