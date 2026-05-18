@@ -54,11 +54,13 @@ export function usePaywallPurchaseFlow({
  
           if (plan === "annual") {
             await trackMixpanelEvent(
-              "Paywall_start_trail",
+              "paywall_start_subscription",
               baseProps,
             );
             await handleReminderNotification();
             await logMetaEvent("StartTrial", baseProps);
+            await logMetaEvent("Subscribe", baseProps);
+            
           } else {
             await trackMixpanelEvent(
               "paywall_start_subscription",
