@@ -1,4 +1,26 @@
 import * as Notifications from "expo-notifications";
+const ACTIVE_NOTIFICATION_DAYS = 3;
+
+const dailyNotifications = [
+  {
+    hour: 7,
+    minute: 0,
+    title: "Start with water 💧",
+    body: 'One glass is an easy first win today.',
+  },
+  {
+    hour: 12,
+    minute: 0,
+    title: "Lunch walk? 🚶",
+    body: 'A short walk helps you get closer to 10k',
+  },
+  {
+    hour: 20,
+    minute: 0,
+    title: "Finish strong 💪",
+    body: 'Check your points and mark today as done.',
+  }
+]
 
 export const requestNotificationPermission = async () => {
   const { status } = await Notifications.requestPermissionsAsync();
@@ -33,52 +55,41 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function scheduleDailyNotifications() {
-  
-  await Notifications.cancelAllScheduledNotificationsAsync();
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Start with water 💧",
-      body: 'One glass is an easy first win today.',
-      data: { type: "dashboard" },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-      hour: 7,
-      minute: 0,
-      repeats: true,
-    },
-  });
+export async function scheduleActiveUserNotifications() {
 
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Lunch walk? 🚶",
-      body: 'A short walk helps you closer to 10k',
-      data: { type: "dashboard" },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-      hour: 12,
-      minute: 0,
-      repeats: true,
-    },
-  });
-  
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: "Finish strong 💪",
-      body: 'Check your points and mark today as done.',
-      data: { type: "dashboard" },
-    },
-    trigger: {
-      type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
-      hour: 20,
-      minute: 0,
-      repeats: true,
-    },
-  });
+  const now = new Date();
+
+ // Cancel all old active-window notifications
+ const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+
+  for (const notification of scheduled) {
+    if (notification.content.data?.group === "daily_notifications") {
+      await Notifications.cancelScheduledNotificationAsync(notification.identifier);
+    }
+  }
+
+  for (let day = 0; day < ACTIVE_NOTIFICATION_DAYS; day++) {
+
+    for (const item of dailyNotifications) {
+      const triggerDate = new Date(now);
+      triggerDate.setDate(now.getDate() + day);
+      triggerDate.setHours(item.hour, item.minute, 0, 0);
+
+      if (triggerDate <= now) continue;
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: item.title,
+          body: item.body,
+          data: { group: "daily_notifications" },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.DATE,
+          date: triggerDate,
+        },
+      });
+    }
+  }
 }
-
 
 export const handleReminderNotification = async () => {
   await Notifications.scheduleNotificationAsync({
@@ -92,5 +103,4 @@ export const handleReminderNotification = async () => {
       repeats: false,
     },
   });
-  console.log("Reminder notification scheduled");
 };

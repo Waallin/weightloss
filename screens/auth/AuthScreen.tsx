@@ -17,8 +17,8 @@ import { setDocument } from "../../services/firebase";
 const IMAGE_SIZE = 250;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
-import { scheduleDailyNotifications } from "../../services/notifications";
-import { identifyMixpanel, trackMixpanelEvent } from "../../services/mixpanel";
+import { scheduleActiveUserNotifications } from "../../services/notifications";
+import { identifyMixpanel, setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 import { isCustomerPremium } from "../../services/revenuecat";
 
 const AuthScreen = () => {
@@ -82,9 +82,9 @@ const AuthScreen = () => {
         await AsyncStorage.setItem("user", email);
 
         setUser(userObj);
-        scheduleDailyNotifications();
+        scheduleActiveUserNotifications();
 
-        await identifyMixpanel(email);
+        await setMixpanelPeopleProperty("email", email);
         await trackMixpanelEvent("user_registered");
 
         if (!config?.showPaywall) {

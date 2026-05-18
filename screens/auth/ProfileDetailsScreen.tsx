@@ -13,7 +13,7 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
-import { trackMixpanelEvent } from "../../services/mixpanel";
+import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -65,7 +65,7 @@ const ProfileDetailsScreen = () => {
   const [startWeight, setStartWeight] = useState<number>(70);
   const [goalWeight, setGoalWeight] = useState<number>(70);
   const [height, setHeight] = useState<number>(175);
-  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
+  const [gender, setGender] = useState<"Male" | "Female">("Male");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
 
@@ -170,9 +170,9 @@ const ProfileDetailsScreen = () => {
         summaryValue={gender}
       >
         <WheelPicker<string>
-          data={["Male", "Female", "Other"]}
+          data={["Male", "Female"]}
           value={gender}
-          onChange={(g) => setGender(g as "Male" | "Female" | "Other")}
+          onChange={(g) => setGender(g as "Male" | "Female")}
           getLabel={(g) => g}
         />
       </ProfileStepSection>
@@ -240,7 +240,14 @@ const ProfileDetailsScreen = () => {
 
   const handleCreatePlan = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    trackMixpanelEvent("Create my plan", { age, gender, height, startWeight, goalWeight });
+    trackMixpanelEvent("ProfileDetails_complete", { age, gender, height, startWeight, goalWeight })
+    setMixpanelPeopleProperty("age", age);
+    setMixpanelPeopleProperty("gender", gender);
+    setMixpanelPeopleProperty("height", height);
+    setMixpanelPeopleProperty("weight", startWeight);
+    setMixpanelPeopleProperty("weight_goal", goalWeight);
+
+
     navigation.navigate("SocialProofScreen");
   };
   const renderPlanCreated = () => {
