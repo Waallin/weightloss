@@ -304,8 +304,8 @@ export const logWeightCopy = {
   screenTitle: "Log weight",
   question: "What's your weight today?",
   hint: "Use your usual morning weight.",
-  placeholder: "e.g. 72.5",
-  unitKg: "kg",
+  placeholder: "e.g. 160",
+  unitLb: "lb",
   save: "Save",
 } as const;
 

@@ -14,6 +14,14 @@ import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
 import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import {
+  cmToFeetInches,
+  feetInchesToCm,
+  formatFeetInches,
+  formatLb,
+  kgToLb,
+  lbToKg,
+} from "../../utils/units";
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -22,18 +30,14 @@ const BIRTH_YEARS = (() => {
   return list;
 })();
 
-const WEIGHT_IN_KG = (() => {
+const WEIGHT_IN_LB = (() => {
   const list: number[] = [];
-  // Use integer tenths to avoid float drift (e.g. 0.1 + 0.2 !== 0.3)
-  for (let w10 = 400; w10 <= 1200; w10 += 1) list.push(w10 / 10);
+  for (let lb = kgToLb(40); lb <= kgToLb(120); lb += 1) list.push(lb);
   return list;
 })();
 
-const HEIGHT_IN_CM = (() => {
-  const list: number[] = [];
-  for (let h = 120; h <= 220; h += 1) list.push(h);
-  return list;
-})();
+const FEET_OPTIONS = [3, 4, 5, 6, 7];
+const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
   return (
@@ -81,11 +85,6 @@ const ProfileDetailsScreen = () => {
     [goalWeight, startWeight],
   );
 
-  const formatKgNumber = (value: number): string => {
-    const n = Number(value);
-    if (!Number.isFinite(n)) return "0";
-    return Number.isInteger(n) ? String(n) : n.toFixed(1);
-  };
   const goalDirection = useMemo<"lose" | "gain" | "maintain">(() => {
     if (goalWeight < startWeight) return "lose";
     if (goalWeight > startWeight) return "gain";
@@ -180,20 +179,33 @@ const ProfileDetailsScreen = () => {
   };
 
   const renderHeightStep = () => {
+    const { feet, inches } = cmToFeetInches(height);
     return (
       <ProfileStepSection
         title="What is your height?"
         description="So we can fine-tune your daily targets."
         summaryIconName="person"
         summaryLabel="Selected height:"
-        summaryValue={`${height} cm`}
+        summaryValue={formatFeetInches(feet, inches)}
       >
-        <WheelPicker<number>
-          data={HEIGHT_IN_CM}
-          value={height}
-          onChange={setHeight}
-          getLabel={(h) => String(h)}
-        />
+        <View style={{ flexDirection: "row", width: "100%", gap: spacing.xl, justifyContent: "center" }}>
+          <View style={{}}>
+            <WheelPicker<number>
+              data={FEET_OPTIONS}
+              value={feet}
+              onChange={(ft) => setHeight(feetInchesToCm(ft, inches))}
+              getLabel={(ft) => `${ft} ft`}
+            />
+          </View>
+          <View style={{}}>
+            <WheelPicker<number>
+              data={INCHES_OPTIONS}
+              value={inches}
+              onChange={(inch) => setHeight(feetInchesToCm(feet, inch))}
+              getLabel={(inch) => `${inch} in`}
+            />
+          </View>
+        </View>
       </ProfileStepSection>
     );
   };
@@ -205,14 +217,13 @@ const ProfileDetailsScreen = () => {
         description="No pressure — just a starting point."
         summaryIconName="person"
         summaryLabel="Selected weight:"
-        summaryValue={`${formatKgNumber(startWeight)} kg`}
+        summaryValue={`${formatLb(kgToLb(startWeight))} lb`}
       >
         <WheelPicker<number>
-          data={WEIGHT_IN_KG}
-          value={startWeight}
-          onChange={setStartWeight}
-          getKey={(w) => w.toFixed(1)}
-          getLabel={(w) => formatKgNumber(w)}
+          data={WEIGHT_IN_LB}
+          value={kgToLb(startWeight)}
+          onChange={(lb) => setStartWeight(lbToKg(lb))}
+          getLabel={(lb) => formatLb(lb)}
         />
       </ProfileStepSection>
     );
@@ -225,14 +236,13 @@ const ProfileDetailsScreen = () => {
         description="You can always adjust this later."
         summaryIconName="person"
         summaryLabel="Selected goal weight:"
-        summaryValue={`${formatKgNumber(goalWeight)} kg`}
+        summaryValue={`${formatLb(kgToLb(goalWeight))} lb`}
       >
         <WheelPicker<number>
-          data={WEIGHT_IN_KG}
-          value={goalWeight}
-          onChange={setGoalWeight}
-          getKey={(w) => w.toFixed(1)}
-          getLabel={(w) => formatKgNumber(w)}
+          data={WEIGHT_IN_LB}
+          value={kgToLb(goalWeight)}
+          onChange={(lb) => setGoalWeight(lbToKg(lb))}
+          getLabel={(lb) => formatLb(lb)}
         />
       </ProfileStepSection>
     );
@@ -380,7 +390,7 @@ const ProfileDetailsScreen = () => {
                     marginBottom: spacing.xs,
                   }}
                 >
-                  You’re just {formatKgNumber(goalDeltaKg)} kg away
+                  You’re just {formatLb(kgToLb(goalDeltaKg))} lb away
                 </Text>
                 <Text
                   style={{
