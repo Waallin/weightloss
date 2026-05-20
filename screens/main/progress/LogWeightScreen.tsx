@@ -6,7 +6,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
@@ -17,6 +17,7 @@ import { logWeightCopy, textStyles, typography } from "../../../constants/texts"
 import * as haptics from "expo-haptics";
 import { updateDocument } from "../../../services/firebase";
 import useUserStore from "../../../stores/useUserStore";
+import { kgToLb, lbToKg } from "../../../utils/units";
 
 const IMAGE_SIZE = 220;
 
@@ -24,11 +25,22 @@ const LogWeightScreen: React.FC = () => {
   const navigation = useNavigation();
   const [weightInput, setWeightInput] = useState("");
   const { setUser, user } = useUserStore();
+
+  useEffect(() => {
+    const cw = user?.currentWeight;
+    if (cw != null && !Number.isNaN(Number(cw))) {
+      setWeightInput(String(kgToLb(Number(cw))));
+    }
+  }, [user?.currentWeight]);
+
   const handleSave = async () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    const result = await updateDocument("users", user?.email as string, { currentWeight: parseFloat(weightInput) });
+    const weightKg = lbToKg(parseFloat(weightInput));
+    const result = await updateDocument("users", user?.email as string, {
+      currentWeight: weightKg,
+    });
     if (result) {
-      setUser({ ...user, currentWeight: parseFloat(weightInput) });
+      setUser({ ...user, currentWeight: weightKg });
       navigation.goBack();
     }
   };
@@ -78,7 +90,7 @@ const LogWeightScreen: React.FC = () => {
           />
 
           <Text style={{ ...typography.titleMedium, color: colors.text.secondary }}>
-            {logWeightCopy.unitKg}
+            {logWeightCopy.unitLb}
           </Text>
         </View>
       </View>

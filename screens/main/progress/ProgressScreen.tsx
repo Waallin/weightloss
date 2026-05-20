@@ -26,6 +26,7 @@ import {
 } from "../../../utils/dateUtils";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import { getDaysProgress } from "../../../services/firebase";
+import { formatWeightFromKg, kgToLb } from "../../../utils/units";
 
 const CIRCLE_SIZE = 200;
 const CIRCLE_WIDTH = 15;
@@ -35,13 +36,8 @@ type DaysProgress = {
   someDone: string[];
 };
 
-const formatKgDisplay = (value: number | null | undefined): string => {
-  if (value == null || Number.isNaN(Number(value))) {
-    return progressWeightsCopy.notSet;
-  }
-  const n = Number(value);
-  const str = Number.isInteger(n) ? String(n) : n.toFixed(1);
-  return `${str} ${logWeightCopy.unitKg}`;
+const formatLbDisplay = (value: number | null | undefined): string => {
+  return formatWeightFromKg(value, progressWeightsCopy.notSet);
 };
 
 const ProgressScreen = () => {
@@ -201,9 +197,9 @@ const ProgressScreen = () => {
         return "At your goal weight";
       }
       const delta = Math.abs(current - goal);
-      return `${delta} kg from goal`;
+      return `${kgToLb(delta)} lb from goal`;
     }
-    return `${progressKg.toFixed(1)} / ${totalChangeKg.toFixed(1)} kg completed`;
+    return `${kgToLb(progressKg)} / ${kgToLb(totalChangeKg)} lb completed`;
   }, [user?.startWeight, user?.goalWeight, user?.currentWeight, totalChangeKg, progressKg]);
 
   const returnWeightMicroCopy = () => {
@@ -469,7 +465,7 @@ const ProgressScreen = () => {
                   textAlign: "center",
                 }}
               >
-                {formatKgDisplay(user?.startWeight)}
+                {formatLbDisplay(user?.startWeight)}
               </Text>
             </View>
             <View style={{ flex: 1, alignItems: "center" }}>
@@ -490,7 +486,7 @@ const ProgressScreen = () => {
                   textAlign: "center",
                 }}
               >
-                {formatKgDisplay(user?.currentWeight)}
+                {formatLbDisplay(user?.currentWeight)}
               </Text>
             </View>
             <View style={{ flex: 1, alignItems: "center" }}>
@@ -511,7 +507,7 @@ const ProgressScreen = () => {
                   textAlign: "center",
                 }}
               >
-                {formatKgDisplay(user?.goalWeight)}
+                {formatLbDisplay(user?.goalWeight)}
               </Text>
             </View>
           </View>

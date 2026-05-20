@@ -27,13 +27,12 @@ import { RootStackParamList } from "../../navigation/types";
 import useUserStore from "../../../stores/useUserStore";
 import { updateTodayProgress } from "../../../services/firebase";
 import { increment } from "firebase/firestore";
-import { useTodaySteps } from "../../../services/healthkit";
+import { useHealthKitPermissions, useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 import { syncToday } from "../../../services/firebase";
 import { isCustomerPremium } from "../../../services/revenuecat";
 import * as StoreReview from 'expo-store-review';
-
 const articles = [
   {
     id: 1,
@@ -234,9 +233,15 @@ const HomeScreen = () => {
   const { setVisibleConfetti } = useConfettiStore();
   const todaySteps = useTodaySteps();
   const [claimStepsReward, setClaimStepsReward] = useState(false);
-
+  const { requestPermission } = useHealthKitPermissions();  
+    
   useEffect(() => {
-   
+    requestPermission();
+  }, []); 
+
+  
+  useEffect(() => {
+
     if (todaySteps >= 10000 && todayProgress?.completion.steps === false) {
       setClaimStepsReward(true);
     }
@@ -441,8 +446,8 @@ const HomeScreen = () => {
         "Over your points",
         "You’ve used more points than planned today. That’s okay — it happens. You can go for a walk to earn more points, or just continue and get back on track tomorrow.",
         [
-         
-          { text: "Continue"},
+
+          { text: "Continue" },
         ]
       );
       return;
@@ -475,19 +480,19 @@ const HomeScreen = () => {
     );
   };
 
-const askForStoreReview = async () => {
-  try {
-    const isAvailable = await StoreReview.isAvailableAsync();
-    if (isAvailable) {
-      await StoreReview.requestReview();
-    } else {
-      // Optionally, handle or log that review is not supported
-      console.log('Store review is not available on this device.');
+  const askForStoreReview = async () => {
+    try {
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        // Optionally, handle or log that review is not supported
+        console.log('Store review is not available on this device.');
+      }
+    } catch (error) {
+      console.log('Error requesting store review:', error);
     }
-  } catch (error) {
-    console.log('Error requesting store review:', error);
-  }
-};
+  };
 
   const renderProgressComponents = () => {
     return (

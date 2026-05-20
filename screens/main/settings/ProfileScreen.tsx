@@ -5,20 +5,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React, { useState } from "react";
+import React from "react";
 import { spacing } from "../../../constants/spacing";
 import ProfileItem from "./components/ProfileItem";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import { globalStyles } from "../../../constants/globalStyles";
-import { textSizes, textStyles } from "../../../constants/texts";
+import { textStyles } from "../../../constants/texts";
 import { colors } from "../../../constants/colors";
 import useUserStore from "../../../stores/useUserStore";
+import { formatHeightFromCm, kgToLb } from "../../../utils/units";
+
 const ProfileScreen = () => {
-  const [height, setHeight] = useState<number>(175);
-  const [weight, setWeight] = useState<number>(70);
-  const [goalWeight, setGoalWeight] = useState<number>(70);
-  const [birthYear, setBirthYear] = useState<number>(2000);
-  const [gender, setGender] = useState<string>("male");
   const { user } = useUserStore();
 
   const renderProfileSection = () => {
@@ -26,21 +23,20 @@ const ProfileScreen = () => {
       <View style={{ gap: spacing.sm }}>
         <ProfileItem
           title="Height"
-          suffix="cm"
-          value={user?.height ?? 175}
+          value={formatHeightFromCm(user?.height ?? 175)}
           icon="human-male-height"
           disabled={true}
         />
         <ProfileItem
-          suffix="kg"
+          suffix="lb"
           title="Weight"
-          value={user?.currentWeight ?? 70}
-          icon="weight-kilogram"
+          value={kgToLb(user?.currentWeight ?? 70)}
+          icon="weight-pound"
         />
         <ProfileItem
-          suffix="kg"
+          suffix="lb"
           title="Goal Weight"
-          value={user?.goalWeight ?? 70}
+          value={kgToLb(user?.goalWeight ?? 70)}
           icon="target"
         />
         <ProfileItem

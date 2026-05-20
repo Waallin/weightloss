@@ -40,7 +40,7 @@ const dummySocialProof = [
     name: "Kudoo user",
     rating: 5,
     ratingMax: 5,
-    headline: "Lost 6kg without overthinking",
+    headline: "Lost 13lb without overthinking",
     quote:
       "“I don’t think about food all day anymore. I just follow the points and it works.”",
   },
@@ -81,12 +81,6 @@ const SocialProofScreen = () => {
   }, []);
 
   const handleGetPermissions = async () => {
-    const healthKit = await requestPermission();
-
-    setUser({
-      ...user,
-      healthKitPermission: healthKit,
-    });
     trackMixpanelEvent("SocialProof_complete");
     navigation.replace("Auth");
   };
