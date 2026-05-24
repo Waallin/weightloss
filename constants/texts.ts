@@ -346,7 +346,7 @@ export const authCopy = {
     {
       id: 2,
       title: "No calories. Just points",
-      description: "Eat smarter, not less",
+      description: "Our recipes are designed to make healthy eating feel simple",
       imageKey: "standing",
     },
     {

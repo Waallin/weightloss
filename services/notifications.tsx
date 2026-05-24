@@ -12,7 +12,7 @@ const dailyNotifications = [
     hour: 12,
     minute: 0,
     title: "Lunch walk? 🚶",
-    body: 'A short walk helps you get closer to 10k',
+    body: 'A short walk helps you get closer to 5k',
   },
   {
     hour: 20,

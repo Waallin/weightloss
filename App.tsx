@@ -172,6 +172,7 @@ export default function App() {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
       });
+      trackMixpanelEvent("app_opened");
       setTodayDiet(todayDiet);
       setUser(userData)
       

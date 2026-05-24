@@ -33,7 +33,7 @@ const SettingsScreen = () => {
       {
         text: "Delete", style: "destructive", onPress: async () => {
 
-          await AsyncStorage.removeItem("user");
+          await AsyncStorage.clear();
           await deleteUser(user?.email as string);
 
           navigation.navigate("AuthNavigator");
