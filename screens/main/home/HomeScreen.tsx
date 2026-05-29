@@ -31,8 +31,9 @@ import { useHealthKitPermissions, useTodaySteps } from "../../../services/health
 import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
 import { syncToday } from "../../../services/firebase";
-import { isCustomerPremium } from "../../../services/revenuecat";
 import * as StoreReview from 'expo-store-review';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { trackMixpanelEvent } from "../../../services/mixpanel";
 const articles = [
   {
     id: 1,
@@ -187,11 +188,11 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
 
     id: 5,
 
-    title: "Reach 10k steps easily",
+    title: "Reach 5k steps easily",
 
     description: "Simple ways to move more without overthinking it.",
 
-    content: `Reaching 10,000 steps doesn’t have to be hard.
+    content: `Reaching 5,000 steps doesn’t have to be hard.
   
   You don’t need long workouts or a strict routine. Small movements throughout the day add up quickly.
   
@@ -201,7 +202,7 @@ Meals are already balanced to keep you full and satisfied. No guessing. No overt
   
   Break it up.
   
-  You don’t have to hit 10k in one go. A few short walks during the day are enough.
+  You don’t have to hit 5k in one go. A few short walks during the day are enough.
   
   Make it part of your routine.
   
@@ -233,16 +234,25 @@ const HomeScreen = () => {
   const { setVisibleConfetti } = useConfettiStore();
   const todaySteps = useTodaySteps();
   const [claimStepsReward, setClaimStepsReward] = useState(false);
-  const { requestPermission } = useHealthKitPermissions();  
-    
+  const [firstTime, setFirstTime] = useState(false);
+ 
+  const { requestPermission } = useHealthKitPermissions();
+
   useEffect(() => {
     requestPermission();
-  }, []); 
+  }, []);
 
-  
+  useEffect(() => {
+    const checkFirstTime = async () => {
+      const firstTime = await AsyncStorage.getItem("first_time");
+      setFirstTime(firstTime === "true");
+    };
+    checkFirstTime();
+  }, []);
+
   useEffect(() => {
 
-    if (todaySteps >= 10000 && todayProgress?.completion.steps === false) {
+    if (todaySteps >= 5000 && todayProgress?.completion.steps === false) {
       setClaimStepsReward(true);
     }
   }, [todaySteps, todayProgress?.completion.steps]);
@@ -263,7 +273,6 @@ const HomeScreen = () => {
 
   const handleSyncToday = useCallback(async () => {
     if (!user?.email) return;
-    console.log("🚀 ~ handleSyncToday ~ handleSyncToday:", todaySteps);
     const points = calculatePoints(
       user?.currentWeight ?? user?.startWeight,
       user?.height ?? 0,
@@ -296,26 +305,18 @@ const HomeScreen = () => {
   const returnStepsMicroCopy = () => {
     const steps = todayProgress?.progress?.steps ?? 0;
 
-    if (steps >= 10000) {
-      return "10k done! Congratulations";
-    } else if (steps >= 9000) {
-      return "So close. Just a little push left";
-    } else if (steps >= 8000) {
-      return "Almost there. Keep moving";
-    } else if (steps >= 7000) {
-      return "Great pace. You're getting close";
-    } else if (steps >= 6000) {
-      return "Nice work. Keep it going";
-    } else if (steps >= 5000) {
-      return "Halfway there. Stay consistent";
+    if (steps >= 5000) {
+      return "5k steps — great job!";
     } else if (steps >= 4000) {
-      return "Good momentum. Keep walking";
+      return "4k steps — well done, keep it up!";
     } else if (steps >= 3000) {
-      return "You're off to a solid start";
+      return "3k steps — you’re making progress!";
     } else if (steps >= 2000) {
-      return "Nice start. Let's build on it";
+      return "2k steps — solid start!";
     } else if (steps >= 1000) {
-      return "Good start. Keep moving";
+      return "1k steps — nice going!";
+    } else if (steps > 0) {
+      return "Let’s get started — every step counts!";
     } else {
       return "Let’s get started today";
     }
@@ -342,8 +343,12 @@ const HomeScreen = () => {
   const returnWaterMicroCopy = () => {
     const water = todayProgress?.progress?.water ?? 0;
 
+    if (firstTime) {
+      return "Tap to complete 💧";
+    }
+
     if (water >= 10) {
-      return "Hydration goal reached ";
+      return "Hydration goal reached";
     } else if (water >= 8) {
       return "Almost there. Keep sipping";
     } else if (water >= 6) {
@@ -385,7 +390,7 @@ const HomeScreen = () => {
   };
 
 
-  const handle10kSteps = () => {
+  const handleStepsReward = () => {
     setVisibleConfetti(true);
     setTodayProgress({
       ...todayProgress,
@@ -398,7 +403,6 @@ const HomeScreen = () => {
     updateTodayProgress(user?.email as string, {
       "completion.steps": true,
     });
-    askForStoreReview();
   };
 
   const handleAddWater = () => {
@@ -409,6 +413,15 @@ const HomeScreen = () => {
     const currentWater = todayProgress.progress.water ?? 0;
     const nextWater = currentWater + 1;
     const reachedGoal = nextWater >= 10;
+
+    if (firstTime) {
+      setVisibleConfetti(true);
+      AsyncStorage.setItem("first_time", "false");
+      askForStoreReview();
+      setFirstTime(false);
+      trackMixpanelEvent("first_time_water_completed");
+      
+    }
 
     setTodayProgress({
       ...todayProgress,
@@ -521,21 +534,22 @@ const HomeScreen = () => {
           type="water"
           onPress={() => handleAddWater()}
           completed={todayProgress?.completion?.water === true}
+          firstTime={firstTime}
         />
         <ProgressComponents
           title="Steps"
           icon="walk"
           number={todayProgress?.progress?.steps ?? 0}
-          goal={10000}
+          goal={5000}
           microcopy={returnStepsMicroCopy()}
           width="47%"
           type="steps"
           completed={todayProgress?.completion?.steps === true}
-          claimRewardPress={() => handle10kSteps()}
+          claimRewardPress={() => handleStepsReward()}
           claimReward={claimStepsReward}
         />
         <ProgressComponents
-          title="Points"
+          title="Nutrition points"
           icon="food-apple"
           completed={todayProgress?.completion?.points === true}
           number={todayProgress?.points?.used ?? 0}
@@ -544,7 +558,7 @@ const HomeScreen = () => {
           type="points"
           onPress={() => handleClaimPointsReward()}
           width="100%"
-          description={"Mark today as done"}
+          description={"Tap to mark today as done"}
         />
       </MotiView>
     );
@@ -692,17 +706,37 @@ const HomeScreen = () => {
     );
   };
 
+  const renderFirstTimeComponent = () => {
+    return (
+      <View style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+
+        zIndex: 1000,
+      }}>
+        <Text>Welcome to the app</Text>
+      </View>
+    )
+  }
+
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={globalStyles.scrollContainer}
-      style={globalStyles.container}
-    >
-      {renderHeader()}
-      {renderProgressInsight()}
-      {renderProgressComponents()}
-      {renderArticlesComponent()}
-    </ScrollView>
+    <View style={{
+      flex: 1
+    }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={globalStyles.scrollContainer}
+        style={globalStyles.container}
+      >
+        {renderHeader()}
+        {renderProgressInsight()}
+        {renderProgressComponents()}
+        {renderArticlesComponent()}
+      </ScrollView>
+    </View>
   );
 };
 

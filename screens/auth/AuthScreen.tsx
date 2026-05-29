@@ -87,6 +87,8 @@ const AuthScreen = () => {
         await setMixpanelPeopleProperty("email", email);
         await trackMixpanelEvent("user_registered");
 
+        AsyncStorage.setItem("first_time", "true");
+
         if (!config?.showPaywall) {
           navigation.replace("MainStack");
         } else {
