@@ -2,7 +2,7 @@
   "expo": {
     "name": "Kudoo",
     "slug": "kudoo",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -11,15 +11,22 @@
       "expo-apple-authentication",
       "apple-health",
       [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "This helps us show you relevant offers and improve your experience."
+        }
+      ],
+      [
         "react-native-fbsdk-next",
         {
           "appID": "2045759616362582",
           "clientToken": "7b9551bf874f26d6c443886b0a25aec9",
           "displayName": "Kudoo",
           "scheme": "fb2045759616362582",
-          "advertiserIDCollectionEnabled": false,
+          "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
-          "isAutoInitEnabled": true
+          "isAutoInitEnabled": true,
+          "iosUserTrackingPermission": "This helps us show you relevant offers and improve your experience."
         }
       ]
     ],
@@ -34,6 +41,7 @@
         "healthSharePermission": "This app needs access to your health data to share your activity.",
         "healthUpdatePermission": "This app needs access to your health data to update your activity.",
         "NSHealthUpdateUsageDescription": "This app needs access to your health data to update your activity.",
+        "NSUserTrackingUsageDescription": "This helps us show you relevant offers and improve your experience.",
         "SKAdNetworkItems": [
           {
             "SKAdNetworkIdentifier": "v9wttpbfk9.skadnetwork"

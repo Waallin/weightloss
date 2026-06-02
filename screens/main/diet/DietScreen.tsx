@@ -1,5 +1,5 @@
 import { Alert, Text, View } from "react-native";
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
@@ -21,6 +21,7 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useUserStore from "../../../stores/useUserStore";
 import { useNavigation } from "@react-navigation/native";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
+import { trackMixpanelEvent } from "../../../services/mixpanel";  
 import AddedFoodItem, {
   AddedFoodItemData,
 } from "./components/AddedFoodItem";
@@ -97,6 +98,10 @@ const DietScreen = () => {
   const pointsRemaining = pointsTotal - pointsUsed;
   const progressFill =
     pointsTotal > 0 ? (pointsUsed * 100) / pointsTotal : 0;
+
+  useEffect(() => {
+    trackMixpanelEvent("diet_screen_viewed");
+  }, []);
 
   const renderFoodItems = () => {
     return (

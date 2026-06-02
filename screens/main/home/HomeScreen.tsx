@@ -1,4 +1,4 @@
-import { Text, View, ScrollView, Alert } from "react-native";
+import { Text, View, ScrollView, Alert, TouchableOpacity } from "react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import { MotiView } from "moti";
 import { ReduceMotion, steps } from "react-native-reanimated";
@@ -7,6 +7,7 @@ import { colors } from "../../../constants/colors";
 import {
   getHomePointsMicroCopy,
   lineHeights,
+  textSizes,
   textStyles,
   typography,
 } from "../../../constants/texts";
@@ -30,6 +31,21 @@ import { increment } from "firebase/firestore";
 import { useHealthKitPermissions, useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
 const PROGRESS_INSIGHT_ICON_SIZE = 40;
+const FIRST_TIME_GUIDE_STEP_KEY = "first_time_guide_step";
+
+type FirstTimeGuideStep = 0 | 1 | 2 | 3 | 4;
+
+const parseGuideStep = (
+  guideStepValue: string | null,
+  firstTimeValue: string | null,
+): FirstTimeGuideStep => {
+  if (guideStepValue === "done") return 0;
+  if (guideStepValue === "4") return 4;
+  if (guideStepValue === "3") return 3;
+  if (guideStepValue === "2") return 2;
+  if (guideStepValue === "1" || firstTimeValue === "true") return 1;
+  return 0;
+};
 import { syncToday } from "../../../services/firebase";
 import * as StoreReview from 'expo-store-review';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -235,20 +251,46 @@ const HomeScreen = () => {
   const todaySteps = useTodaySteps();
   const [claimStepsReward, setClaimStepsReward] = useState(false);
   const [firstTime, setFirstTime] = useState(false);
- 
+  const [guideStep, setGuideStep] = useState<FirstTimeGuideStep>(0);
+  const showFirstTimeGuide = guideStep >= 1 && guideStep <= 4;
+
   const { requestPermission } = useHealthKitPermissions();
 
   useEffect(() => {
-    requestPermission();
+    trackMixpanelEvent("dashboard_viewed");    
   }, []);
 
   useEffect(() => {
     const checkFirstTime = async () => {
-      const firstTime = await AsyncStorage.getItem("first_time");
-      setFirstTime(firstTime === "true");
+      const [firstTimeValue, guideStepValue] = await Promise.all([
+        AsyncStorage.getItem("first_time"),
+        AsyncStorage.getItem(FIRST_TIME_GUIDE_STEP_KEY),
+      ]);
+      setFirstTime(firstTimeValue === "true");
+      setGuideStep(parseGuideStep(guideStepValue, firstTimeValue));
     };
     checkFirstTime();
   }, []);
+
+  useEffect(() => {
+    if (guideStep === 1) {
+      trackMixpanelEvent("first_time_guide_step_1_viewed");
+    } else if (guideStep === 2) {
+      trackMixpanelEvent("first_time_guide_step_2_viewed");
+    } else if (guideStep === 3) {
+      trackMixpanelEvent("first_time_guide_step_3_viewed");
+    } else if (guideStep === 4) {
+      trackMixpanelEvent("first_time_guide_step_4_viewed");
+    }
+  }, [guideStep]);
+
+  useEffect(() => {
+    if (guideStep === 1 && todayProgress?.completion?.water === true) {
+      AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "2");
+      setGuideStep(2);
+      trackMixpanelEvent("first_time_guide_step_1_completed");
+    }
+  }, [guideStep, todayProgress?.completion?.water]);
 
   useEffect(() => {
 
@@ -403,6 +445,7 @@ const HomeScreen = () => {
     updateTodayProgress(user?.email as string, {
       "completion.steps": true,
     });
+    trackMixpanelEvent("steps_reward_claimed");
   };
 
   const handleAddWater = () => {
@@ -413,6 +456,12 @@ const HomeScreen = () => {
     const currentWater = todayProgress.progress.water ?? 0;
     const nextWater = currentWater + 1;
     const reachedGoal = nextWater >= 10;
+
+    if (reachedGoal && guideStep === 1) {
+      AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "2");
+      setGuideStep(2);
+      trackMixpanelEvent("first_time_guide_step_1_completed");
+    }
 
     if (firstTime) {
       setVisibleConfetti(true);
@@ -447,6 +496,7 @@ const HomeScreen = () => {
     if (reachedGoal) {
       setVisibleConfetti(true);
     }
+    trackMixpanelEvent("water_reward_claimed");
   };
 
   const handleClaimPointsReward = () => {
@@ -487,10 +537,41 @@ const HomeScreen = () => {
             updateTodayProgress(user?.email as string, {
               "completion.points": true,
             });
+            trackMixpanelEvent("points_reward_claimed");
           },
         },
       ],
     );
+  };
+
+  const handleEnableStepsGuide = async () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+
+    try {
+      await requestPermission();
+    } catch (error) {
+      console.log("Error requesting HealthKit permission:", error);
+    }
+
+    setVisibleConfetti(true);
+    AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "4");
+    setGuideStep(4);
+    trackMixpanelEvent("first_time_guide_step_3_completed");
+  };
+
+  const handleBeginJourney = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "done");
+    setGuideStep(0);
+    trackMixpanelEvent("first_time_guide_step_4_completed");
+  };
+
+  const handleOpenRecipesGuide = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "3");
+    setGuideStep(3);
+    trackMixpanelEvent("first_time_guide_step_2_completed");
+    navigation.navigate("Diet" as never);
   };
 
   const askForStoreReview = async () => {
@@ -534,7 +615,6 @@ const HomeScreen = () => {
           type="water"
           onPress={() => handleAddWater()}
           completed={todayProgress?.completion?.water === true}
-          firstTime={firstTime}
         />
         <ProgressComponents
           title="Steps"
@@ -570,6 +650,194 @@ const HomeScreen = () => {
   };
 
   const renderProgressInsight = () => {
+    const insightCardStyle = {
+      backgroundColor: colors.ui.componentBackground,
+      borderRadius: spacing.borderRadius * 1.5,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      ...globalStyles.shadow,
+      width: "100%" as const,
+    };
+
+    const guideCardStyle = {
+      backgroundColor: colors.ui.white,
+      borderRadius: spacing.borderRadius * 1.5,
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.md,
+      borderWidth: 2,
+      borderColor: colors.ui.primary,
+      shadowColor: colors.ui.primary,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.18,
+      shadowRadius: 12,
+      elevation: 8,
+      width: "100%" as const,
+    };
+
+    const guideLabelStyle = {
+      ...typography.caption,
+      color: colors.ui.primary,
+      letterSpacing: 0.8,
+      textTransform: "uppercase" as const,
+      fontWeight: "600" as const,
+      lineHeight: lineHeights.caption,
+      marginBottom: spacing.sm,
+    };
+
+    const labelStyle = {
+      ...typography.caption,
+      color: colors.text.secondary,
+      letterSpacing: 0.8,
+      textTransform: "uppercase" as const,
+      opacity: 0.55,
+      lineHeight: lineHeights.caption,
+      marginBottom: spacing.sm,
+    };
+
+    if (showFirstTimeGuide) {
+      const guideContent =
+        guideStep === 1
+          ? {
+              label: `Get started · ${guideStep} of 3`,
+              icon: "water-outline" as const,
+              title: "You're one glass away 🎉",
+              description:
+                "Tap the Water card below to complete your first goal.",
+              showButton: false,
+              buttonLabel: "",
+              onButtonPress: undefined,
+            }
+          : guideStep === 2
+            ? {
+                label: `Get started · ${guideStep} of 3`,
+                icon: "restaurant-outline" as const,
+                title: "Find your first recipe 🍽️",
+                description:
+                  "Pick a recipe and see how Nutrition Points work.",
+                showButton: true,
+                buttonLabel: "Open Recipes",
+                onButtonPress: handleOpenRecipesGuide,
+              }
+            : guideStep === 3
+              ? {
+                  label: `Get started · ${guideStep} of 3`,
+                  icon: "footsteps-outline" as const,
+                  title: "Hit 5,000 steps",
+                  description:
+                    "Connect Apple Health so your steps sync automatically. Reach 5k steps to complete today's movement goal.",
+                  showButton: true,
+                  buttonLabel: "Connect Health",
+                  onButtonPress: handleEnableStepsGuide,
+                }
+              : {
+                  label: "You're all set",
+                  icon: "checkmark-circle-outline" as const,
+                  title: "You're ready to go 🎉",
+                  description:
+                    "You've got everything you need. Small habits, every day — that's how progress happens.",
+                  showButton: true,
+                  buttonLabel: "Begin my journey",
+                  onButtonPress: handleBeginJourney,
+                };
+
+      return (
+        <MotiView
+          from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+          animate={{ opacity: 1, translateY: 0, scale: 1 }}
+          transition={{
+            type: "timing",
+            duration: 450,
+            delay: 100,
+            reduceMotion: ReduceMotion.Never,
+          }}
+          style={{ width: "100%" }}
+        >
+          <MotiView
+            from={{ borderWidth: 1.5, shadowOpacity: 0.1 }}
+            animate={{ borderWidth: 3, shadowOpacity: 0.28 }}
+            transition={{
+              type: "timing",
+              duration: 1600,
+              loop: true,
+              repeatReverse: true,
+              reduceMotion: ReduceMotion.System,
+            }}
+            style={guideCardStyle}
+          >
+          <Text style={guideLabelStyle}>{guideContent.label}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              gap: spacing.md,
+              alignItems: "flex-start",
+              marginBottom: guideContent.showButton ? spacing.md : 0,
+            }}
+          >
+            <View
+              style={{
+                width: PROGRESS_INSIGHT_ICON_SIZE,
+                height: PROGRESS_INSIGHT_ICON_SIZE,
+                borderRadius: PROGRESS_INSIGHT_ICON_SIZE / 2,
+                backgroundColor: `${colors.ui.primary}22`,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Ionicons
+                name={guideContent.icon}
+                size={24}
+                color={colors.ui.primary}
+              />
+            </View>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text
+                style={{
+                  ...typography.subheadline,
+                  color: colors.text.primary,
+                  marginBottom: spacing.sm,
+                  fontWeight: "600",
+                }}
+              >
+                {guideContent.title}
+              </Text>
+              <Text
+                style={{
+                  ...typography.small,
+                  color: colors.text.secondary,
+                  lineHeight: textSizes.xs * 1.5,
+                }}
+              >
+                {guideContent.description}
+              </Text>
+            </View>
+          </View>
+          {guideContent.showButton ? (
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={guideContent.onButtonPress}
+              style={{
+                backgroundColor: colors.ui.primary,
+                borderRadius: spacing.borderRadius,
+                paddingVertical: spacing.sm + 2,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.buttonSecondary,
+                  color: colors.ui.white,
+                }}
+              >
+                {guideContent.buttonLabel}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
+          </MotiView>
+        </MotiView>
+      );
+    }
+
     return (
       <MotiView
         from={{ opacity: 0, translateY: 10, scale: 0.98 }}
@@ -580,28 +848,9 @@ const HomeScreen = () => {
           delay: 100,
           reduceMotion: ReduceMotion.Never,
         }}
-        style={{
-          backgroundColor: colors.ui.componentBackground,
-          borderRadius: spacing.borderRadius * 1.5,
-          paddingVertical: spacing.md,
-          paddingHorizontal: spacing.md,
-          ...globalStyles.shadow,
-          width: "100%",
-        }}
+        style={insightCardStyle}
       >
-        <Text
-          style={{
-            ...typography.caption,
-            color: colors.text.secondary,
-            letterSpacing: 0.8,
-            textTransform: "uppercase",
-            opacity: 0.55,
-            lineHeight: lineHeights.caption,
-            marginBottom: spacing.sm,
-          }}
-        >
-          Today
-        </Text>
+        <Text style={labelStyle}>Today</Text>
         <View
           style={{
             flexDirection: "row",
@@ -705,22 +954,6 @@ const HomeScreen = () => {
       </MotiView>
     );
   };
-
-  const renderFirstTimeComponent = () => {
-    return (
-      <View style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-
-        zIndex: 1000,
-      }}>
-        <Text>Welcome to the app</Text>
-      </View>
-    )
-  }
 
   return (
     <View style={{

@@ -27,6 +27,7 @@ import { getRevenueCatCustomerInfo, getProducts, initRevenueCat } from "./servic
 import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
 import useRevCatStore from "./stores/useRevCatStore"; 
 import { scheduleActiveUserNotifications } from "./services/notifications";
+import { initializeMetaTracking } from "./services/metasdk";
 
 export default function App() {
 
@@ -59,6 +60,11 @@ export default function App() {
       setShowSplash(false);
     }, 3000);
   }, []);
+
+  useEffect(() => {
+    if (showSplash) return;
+    initializeMetaTracking();
+  }, [showSplash]);
 
   const handleSplashFinish = () => {
     setShowSplash(false);
@@ -207,7 +213,7 @@ export default function App() {
           {authState === "loggedInWithPremium" && <MainStack />}
           {authState === "unauthenticated" && <AuthNavigator />}
           {authState === "loggedInWithoutPremium" && (
-            <MainStack initialRouteName="Paywall" />
+            <MainStack />
           )}
         </NavigationContainer>
       </View>

@@ -21,7 +21,7 @@
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0.6</string>
+    <string>1.0.7</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>CFBundleURLTypes</key>
@@ -48,7 +48,7 @@
     <key>CFBundleVersion</key>
     <string>1</string>
     <key>FacebookAdvertiserIDCollectionEnabled</key>
-    <false/>
+    <true/>
     <key>FacebookAppID</key>
     <string>2045759616362582</string>
     <key>FacebookAutoInitEnabled</key>
@@ -87,6 +87,8 @@
     <string>This app needs access to your microphone to capture photos with sound.</string>
     <key>NSPhotoLibraryUsageDescription</key>
     <string>This app needs access to your photo library to select a profile picture.</string>
+    <key>NSUserTrackingUsageDescription</key>
+    <string>This helps us show you relevant offers and improve your experience.</string>
     <key>RCTNewArchEnabled</key>
     <true/>
     <key>SKAdNetworkItems</key>

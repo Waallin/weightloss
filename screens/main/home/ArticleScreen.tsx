@@ -1,5 +1,5 @@
 import { ScrollView, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { RouteProp } from "@react-navigation/native";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { globalStyles } from "../../../constants/globalStyles";
@@ -7,6 +7,7 @@ import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import { lineHeights, textStyles, typography } from "../../../constants/texts";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
+import { trackMixpanelEvent } from "../../../services/mixpanel";
 
 const ICON_CONTAINER_SIZE = 52;
 
@@ -25,6 +26,10 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
   const article = _route.params.article;
   const content =
     typeof article?.content === "string" ? normalizeArticleContent(article.content) : "";
+
+  useEffect(() => {
+    trackMixpanelEvent("article_viewed");
+  }, []);
 
   return (
     <ScrollView

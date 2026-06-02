@@ -29,6 +29,7 @@ import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
+import { trackMixpanelEvent } from "../../../services/mixpanel";
 type RecipeDetailScreenRouteProp = RouteProp<
   RootStackParamList,
   "RecipeDetailScreen"
@@ -90,6 +91,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
         used: todayProgress.points.used + parseInt(recipe.points),
       },
     });
+    trackMixpanelEvent("recipe_added_to_diet", { recipe: recipe.title });
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
     navigation.goBack();

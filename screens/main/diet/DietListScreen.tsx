@@ -10,7 +10,8 @@ import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { spacing } from "../../../constants/spacing";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { RouteProp } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FoodItem from "./components/FoodItem";
@@ -27,6 +28,7 @@ import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
+import { trackMixpanelEvent } from "../../../services/mixpanel";
 
 type DietListTab = "food" | "recipes";
 
@@ -44,13 +46,16 @@ function itemTitleMatchesQuery(
 const DietListScreen = () => {
   const navigation =
     useNavigation<StackNavigationProp<RootStackParamList, "DietListScreen">>();
+  const route = useRoute<RouteProp<RootStackParamList, "DietListScreen">>();
   const insets = useSafeAreaInsets();
   const { user } = useUserStore();
   const [foodList, setFoodList] = useState<any[]>([]);
   const [recipesList, setRecipesList] = useState<RecipeDetail[]>([]);
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
-  const [showContent, setShowContent] = useState<DietListTab>("food");
+  const [showContent, setShowContent] = useState<DietListTab>(
+    route.params?.initialTab ?? "food",
+  );
 
   const [searchQuery, setSearchQuery] = useState("");
   const { showToast, isVisible } = useToastStore();
@@ -100,6 +105,7 @@ const DietListScreen = () => {
         used: todayProgress.points.used + parseInt(foodItem.points),
       },
     });
+    trackMixpanelEvent("food_added_to_diet", { foodItem: foodItem.title });
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
   };

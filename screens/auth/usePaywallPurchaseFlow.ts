@@ -58,7 +58,6 @@ export function usePaywallPurchaseFlow({
               baseProps,
             );
             await handleReminderNotification();
-            await logMetaEvent("StartTrial", baseProps);
             await logMetaEvent("Subscribe", baseProps);
             
           } else {

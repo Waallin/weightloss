@@ -264,7 +264,7 @@ const ProfileDetailsScreen = () => {
     const goalDeltaKg = Math.abs((user?.goalWeight ?? 0) - (user?.startWeight ?? 0));
     return (
       <View style={globalStyles.container}>
-   
+
         <MotiView
           from={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -390,7 +390,7 @@ const ProfileDetailsScreen = () => {
                     marginBottom: spacing.xs,
                   }}
                 >
-                  You’re just {formatLb(kgToLb(goalDeltaKg))} lb away
+                  Your personalized plan is ready
                 </Text>
                 <Text
                   style={{
@@ -398,51 +398,156 @@ const ProfileDetailsScreen = () => {
                     lineHeight: 20,
                   }}
                 >
-                  That’s closer than you think—and we’ll help you get there
+                  Based on your goals and profile:
                 </Text>
               </View>
 
               <View style={{ gap: spacing.sm, marginBottom: spacing.md }}>
-                {authCopy.planReadyBullets.map((bullet) => (
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: spacing.sm,
+                  }}
+                >
                   <View
-                    key={bullet}
                     style={{
-                      flexDirection: "row",
-                      alignItems: "flex-start",
-                      gap: spacing.sm,
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
                     }}
                   >
-                    <View
-                      style={{
-                        width: 22,
-                        height: 22,
-                        borderRadius: 11,
-                        backgroundColor: colors.ui.iconContainer,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginTop: 1,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          ...typography.buttonSecondary,
-                          color: colors.ui.primary,
-                        }}
-                      >
-                        ✓
-                      </Text>
-                    </View>
                     <Text
                       style={{
-                        ...textStyles.secondary,
-                        flex: 1,
-                        lineHeight: 20,
+                        ...typography.buttonSecondary,
+                        color: colors.ui.primary,
                       }}
                     >
-                      {bullet}
+                      🚶
                     </Text>
                   </View>
-                ))}
+                  <Text
+                    style={{
+                      ...textStyles.secondary,
+                      flex: 1,
+                      lineHeight: 20,
+                    }}
+                  >
+                    Daily step goal: 5,000
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: spacing.sm,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.buttonSecondary,
+                        color: colors.ui.primary,
+                      }}
+                    >
+                      💧
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...textStyles.secondary,
+                      flex: 1,
+                      lineHeight: 20,
+                    }}
+                  >
+                    Daily water goal: 10 glasses
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: spacing.sm,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.buttonSecondary,
+                        color: colors.ui.primary,
+                      }}
+                    >
+                      🍽️
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...textStyles.secondary,
+                      flex: 1,
+                      lineHeight: 20,
+                    }}
+                  >
+                    Personalized recipes for every day
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: spacing.sm,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: 11,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginTop: 1,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        ...typography.buttonSecondary,
+                        color: colors.ui.primary,
+                      }}
+                    >
+                      💪
+                    </Text>
+                  </View>
+                  <Text
+                    style={{
+                      ...textStyles.secondary,
+                      flex: 1,
+                      lineHeight: 20,
+                    }}
+                  >
+                    Designed to help you lose {formatLb(kgToLb(goalDeltaKg))} lbs
+                  </Text>
+                </View>
               </View>
 
               <View
@@ -482,7 +587,7 @@ const ProfileDetailsScreen = () => {
         </MotiView>
         <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
           <PrimaryButtonComponent
-            title="Create my plan"
+            title="Unlock my plan"
             onPress={handleCreatePlan}
           />
         </View>
