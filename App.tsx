@@ -28,6 +28,8 @@ import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
 import useRevCatStore from "./stores/useRevCatStore"; 
 import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
+import { initializeTikTokTracking } from "./services/tiktoksdk";
+import PaywallScreen from "./screens/auth/PaywallScreen";
 
 export default function App() {
 
@@ -63,7 +65,11 @@ export default function App() {
 
   useEffect(() => {
     if (showSplash) return;
-    initializeMetaTracking();
+    const initTracking = async () => {
+      await initializeMetaTracking();
+      await initializeTikTokTracking();
+    };
+    initTracking();
   }, [showSplash]);
 
   const handleSplashFinish = () => {
@@ -148,7 +154,6 @@ export default function App() {
 
   const handleRevCatProducts = async () => {
     const products = await getProducts();
-
     setProducts(products);
   };
   
@@ -213,7 +218,7 @@ export default function App() {
           {authState === "loggedInWithPremium" && <MainStack />}
           {authState === "unauthenticated" && <AuthNavigator />}
           {authState === "loggedInWithoutPremium" && (
-            <MainStack />
+            <PaywallScreen />
           )}
         </NavigationContainer>
       </View>

@@ -2289,6 +2289,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - TikTokBusiness (1.6.2):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - TikTokBusinessSDK (= 1.6.1)
+    - Yoga
+  - TikTokBusinessSDK (1.6.1)
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2395,6 +2419,8 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNWorklets (from `../node_modules/react-native-worklets`)
+  - TikTokBusiness (from `../node_modules/react-native-tiktok-business-sdk`)
+  - TikTokBusinessSDK
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2410,6 +2436,7 @@ SPEC REPOS:
     - PurchasesHybridCommonUI
     - RevenueCat
     - RevenueCatUI
+    - TikTokBusinessSDK
 
 EXTERNAL SOURCES:
   AppleHealth:
@@ -2617,6 +2644,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNWorklets:
     :path: "../node_modules/react-native-worklets"
+  TikTokBusiness:
+    :path: "../node_modules/react-native-tiktok-business-sdk"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2734,8 +2763,10 @@ SPEC CHECKSUMS:
   RNScreens: d8d6f1792f6e7ac12b0190d33d8d390efc0c1845
   RNSVG: 31d6639663c249b7d5abc9728dde2041eb2a3c34
   RNWorklets: 76fce72926e28e304afb44f0da23b2d24f2c1fa0
+  TikTokBusiness: e2fce2b1ed29eec2668af99da512a5f3f2f75022
+  TikTokBusinessSDK: 349bb1dea1f90d01f9b39418ebe7c8eb981c04af
   Yoga: 5934998fbeaef7845dbf698f698518695ab4cd1a
 
-PODFILE CHECKSUM: 6188e268e880d279aae94b87e90a17bf86c43324
+PODFILE CHECKSUM: 50d2540cd11cbc007c8f2b2ff95395257636d7f2
 
 COCOAPODS: 1.16.2

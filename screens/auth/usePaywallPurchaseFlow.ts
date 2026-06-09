@@ -15,11 +15,12 @@ import {
   type PaywallPlan,
 } from "./paywallProductAnalytics";
 import { handleReminderNotification } from "../../services/notifications";
+import { logTikTokEvent } from "../../services/tiktoksdk";
+import { TikTokEventName } from "react-native-tiktok-business-sdk";
 function getPaywallSuccessRoute(
   navigation: NavigationProp<ParamListBase>,
-): "MainStack" | "MainNavigator" {
-  const routeNames = navigation.getState()?.routeNames ?? [];
-  return routeNames.includes("MainStack") ? "MainStack" : "MainNavigator";
+): "PaywallSuccess" {
+  return "PaywallSuccess";
 }
 
 export type PaywallVariant = "default" | "reminder";
@@ -43,6 +44,8 @@ export function usePaywallPurchaseFlow({
 
   const handleCTAPress = useCallback(
     async (plan: PaywallPlan) => {
+      
+      
       const productProps = getPaywallProductAnalytics(products, plan);
 
       setLoading(true);
@@ -50,32 +53,23 @@ export function usePaywallPurchaseFlow({
         const purchase = await purchasePlan(plan);
         if (purchase) {
           const baseProps = { variant, plan, ...productProps };
+       
+            await trackMixpanelEvent(
+              "paywall_start_subscription",
+              baseProps,
+            );
 
- 
-          if (plan === "annual") {
-            await trackMixpanelEvent(
-              "paywall_start_subscription",
-              baseProps,
-            );
-            await handleReminderNotification();
             await logMetaEvent("Subscribe", baseProps);
-            
-          } else {
-            await trackMixpanelEvent(
-              "paywall_start_subscription",
-              baseProps,
-            );
-            await logMetaEvent("Subscribe", baseProps);
-          }
+            await logTikTokEvent(TikTokEventName.SUBSCRIBE, undefined, baseProps);
+
           if (userEmail) {
             updateDocument("users", userEmail, {
               revenuecat: purchase,
             });
           }
-          const nextRoute = getPaywallSuccessRoute(navigation);
           navigation.reset({
             index: 0,
-            routes: [{ name: nextRoute }],
+            routes: [{ name: "MainStack" }],
           });
         } else {
           await trackMixpanelEvent("Paywall_purchase_failed", {

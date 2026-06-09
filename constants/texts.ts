@@ -359,7 +359,7 @@ export const authCopy = {
 } as const;
 
 /** Paywall: fallback display until Store prices are wired */
-export const paywallCopy = {
+export const  paywallCopy = {
   title: "See real progress in 7 days",
   subtitle:
     "Join 5,000+ people already seeing results",
@@ -379,25 +379,30 @@ export const paywallCopy = {
     "For the first time ever, I actually stuck with it. Seeing my progress each day kept me going.",
   testimonialAttribution: "— Anna, 23",
 
+  monthlyBadge: "3-days FREE",
+  monthlyLabel: "Monthly",
+  monthlyPrice: "$12.99",
+  monthlyPeriod: "/ month",
+
   yearlyBadge: "3-days FREE",
   yearlyLabel: "Yearly",
   yearlyPrice: "$49.99",
-  yearlyPeriod: "/ year",
+  monthlyPeriod: "/ month",
 
   // 🔥 viktig ändring
-  yearlyPerWeekEquivalent: (params?: {
-    yearlyPrice?: number;
+  monthlyPerWeekEquivalent: (params?: {
+    monthlyPrice?: number;
     currencyCode?: string;
     periodUnit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
     periodValue?: number;
   }): string => {
     const fallback = "$0.96 / week";
-    const yearlyPrice = params?.yearlyPrice;
+    const monthlyPrice = params?.monthlyPrice;
     const currencyCode = params?.currencyCode;
     const unit = params?.periodUnit;
     const value = params?.periodValue ?? 1;
 
-    if (!yearlyPrice || yearlyPrice <= 0 || !currencyCode || !unit) return fallback;
+    if (!monthlyPrice || monthlyPrice <= 0 || !currencyCode || !unit) return fallback;
 
     const days =
       unit === "DAY"
@@ -508,7 +513,7 @@ export const paywallCopy = {
   legalSeparator: "·",
 
   // 🔥 mer emotion
-  choosePlanTitle: "Start seeing results today",
+  choosePlanTitle: "Your personalized plan is ready 🎉",
   subTitle: "with Kudoo Premium",
 
   /** Snapchat-like offer framing */
@@ -516,7 +521,7 @@ export const paywallCopy = {
   specialOfferHeadline: "Save 89% on Yearly",
 
   /** Variant-specific microcopy */
-  urgencyLine: "Offer ends soon — lock in the yearly price today",
+  urgencyLine: "Built for people tired of calorie counting",
   freeTrialUnderCta: "Free for 7 days",
 } as const;
 

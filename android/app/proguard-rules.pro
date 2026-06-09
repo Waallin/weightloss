@@ -11,4 +11,10 @@
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
 
+# react-native-tiktok-business-sdk
+-keep class com.tiktok.** { *; }
+-keep class com.android.billingclient.api.** { *; }
+-keep class androidx.lifecycle.** { *; }
+-keep class com.android.installreferrer.** { *; }
+
 # Add any project specific keep options here:

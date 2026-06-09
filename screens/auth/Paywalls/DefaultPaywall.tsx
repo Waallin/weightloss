@@ -7,7 +7,7 @@ import { spacing } from "../../../constants/spacing";
 import { externalLinks } from "../../../constants/links";
 import useConfigStore from "../../../stores/useConfigStore";
 
-type PlanKey = "yearly" | "weekly";
+type PlanKey = "monthly" | "weekly" | "yearly"; // Switch order for consistency if you wish
 
 type RevenueCatPackage = {
     identifier: string;
@@ -23,17 +23,18 @@ type RevenueCatPackage = {
 };
 
 type Props = {
-    onCTAPress: (plan: "weekly" | "annual") => void;
+    onCTAPress: (plan: "weekly" | "annual" | "monthly") => void;
     products?: {
         weekly?: RevenueCatPackage | null;
         annual?: RevenueCatPackage | null;
+        monthly?: RevenueCatPackage | null;
     } | null;
-        onRestorePurchases?: () => void;
+    onRestorePurchases?: () => void;
 };
 
 const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurchases }) => {
     const navigation = useNavigation();
-    const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
+    const [selectedPlan, setSelectedPlan] = useState<PlanKey>("monthly");
     const { config } = useConfigStore();
     const getPeriodLabel = useMemo(() => {
         return (pkg?: RevenueCatPackage | null): string | null => {
@@ -50,52 +51,52 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
     const weeklyPrice = products?.weekly?.product?.priceString ?? paywallCopy.weeklyPrice;
     const weeklyPeriod = getPeriodLabel(products?.weekly) ?? paywallCopy.weeklyPeriod;
 
-    const yearlyPrice = products?.annual?.product?.priceString ?? paywallCopy.yearlyPrice;
-    const yearlyPeriod = getPeriodLabel(products?.annual) ?? paywallCopy.yearlyPeriod;
+    // Renaming yearly to monthly, and shifting usage to monthly product
+    const monthlyPrice = products?.monthly?.product?.priceString ?? paywallCopy.monthlyPrice;
+    const monthlyPeriod = getPeriodLabel(products?.monthly) ?? paywallCopy.monthlyPeriod;
 
-    const yearlyPerWeekEquivalent = paywallCopy.yearlyPerWeekEquivalent({
-        yearlyPrice: products?.annual?.product?.price,
-        currencyCode: products?.annual?.product?.currencyCode,
-        periodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
-        periodValue: products?.annual?.product?.subscriptionPeriod?.value,
-    });
-
-    const yearlyPerWeekSubline = paywallCopy.yearlyPerWeekSubline({
-        weeklyPrice: products?.weekly?.product?.price,
-        weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
-        weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
-        yearlyPrice: products?.annual?.product?.price,
-        yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
-        yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
-    });
+    const monthlyPerWeekEquivalent = paywallCopy.monthlyPerWeekEquivalent
+        ? paywallCopy.monthlyPerWeekEquivalent({
+            monthlyPrice: products?.monthly?.product?.price,
+            currencyCode: products?.monthly?.product?.currencyCode,
+            periodUnit: products?.monthly?.product?.subscriptionPeriod?.unit,
+            periodValue: products?.monthly?.product?.subscriptionPeriod?.value,
+        })
+        : undefined; // Use fallback if your paywallCopy provides no equivalent
 
     const specialOfferHeadline = useMemo(() => {
-        return getPaywallSpecialOfferHeadline({
-            weeklyPrice: products?.weekly?.product?.price,
-            weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
-            weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
-            yearlyPrice: products?.annual?.product?.price,
-            yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
-            yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
-        });
+        if (getPaywallSpecialOfferHeadline.length === 1 && getPaywallSpecialOfferHeadline.name === "getPaywallSpecialOfferHeadline") {
+            // Might expect new arguments
+            return getPaywallSpecialOfferHeadline({
+                weeklyPrice: products?.weekly?.product?.price,
+                weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
+                weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
+                monthlyPrice: products?.monthly?.product?.price,
+                monthlyPeriodUnit: products?.monthly?.product?.subscriptionPeriod?.unit,
+                monthlyPeriodValue: products?.monthly?.product?.subscriptionPeriod?.value,
+            });
+        }
+        return "";
     }, [
         products?.weekly?.product?.price,
         products?.weekly?.product?.subscriptionPeriod?.unit,
         products?.weekly?.product?.subscriptionPeriod?.value,
-        products?.annual?.product?.price,
-        products?.annual?.product?.subscriptionPeriod?.unit,
-        products?.annual?.product?.subscriptionPeriod?.value,
+        products?.monthly?.product?.price,
+        products?.monthly?.product?.subscriptionPeriod?.unit,
+        products?.monthly?.product?.subscriptionPeriod?.value,
     ]);
 
     const ctaLabel = useMemo(() => {
-        return selectedPlan === "yearly" ? config?.reminderPaywallPhrases?.ctaYearlyFreeTrial : paywallCopy.ctaWeekly;
-    }, [selectedPlan]);
+        return selectedPlan === "monthly"
+            ? "Start my 3-day free trial"
+            : paywallCopy.ctaWeekly;
+    }, [selectedPlan, config?.reminderPaywallPhrases?.ctaMonthlyFreeTrial]);
 
     const footnote = useMemo(() => {
-        return selectedPlan === "yearly" ? config?.reminderPaywallPhrases?.trialFootnote : paywallCopy.weeklyFootnote;
+        return selectedPlan === "monthly"
+            ? (config?.reminderPaywallPhrases?.trialFootnote ?? paywallCopy.monthlyFootnote ?? paywallCopy.footnote)
+            : paywallCopy.weeklyFootnote;
     }, [selectedPlan, config?.reminderPaywallPhrases?.trialFootnote]);
-
-
 
     const renderPlanRow = (plan: {
         key: PlanKey;
@@ -108,8 +109,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
         rightHint?: string;
     }) => {
         const isSelected = selectedPlan === plan.key;
-        const isYearly = plan.key === "yearly";
-        const mainPriceLine = isYearly ? `${plan.price} ${plan.period}` : plan.price;
+        const isMonthly = plan.key === "monthly";
+        const mainPriceLine = isMonthly ? `${plan.price} ${plan.period}` : plan.price;
         const secondaryRightHint = plan.rightHint;
         return (
             <Pressable
@@ -173,8 +174,8 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                     </View>
                     <Text
                         style={{
-                            ...(isYearly ? typography.bodySemiBold : typography.small),
-                            color: isYearly ? colors.ui.primary : colors.text.secondary,
+                            ...(isMonthly ? typography.bodySemiBold : typography.small),
+                            color: isMonthly ? colors.ui.primary : colors.text.secondary,
                         }}
                     >
                         {plan.subline}
@@ -184,12 +185,12 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                 <View style={{ alignItems: "flex-end", gap: 2 }}>
                     <Text
                         style={{
-                            ...(isYearly ? typography.headlineSemi : typography.bodySemiBold),
-                            color: isYearly ? colors.text.primary : colors.text.primary,
+                            ...(isMonthly ? typography.headlineSemi : typography.bodySemiBold),
+                            color: colors.text.primary,
                         }}
                     >
                         {mainPriceLine}
-                        {!isYearly && (
+                        {!isMonthly && (
                             <Text style={{ ...typography.small, color: colors.text.secondary }}>
                                 {" "}
                                 {plan.period}
@@ -199,13 +200,12 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                     {!!secondaryRightHint && (
                         <Text
                             style={{
-                                ...(isYearly ? typography.small : typography.caption),
-                                color: isYearly ? colors.text.secondary : colors.ui.primary,
+                                ...(isMonthly ? typography.small : typography.caption),
+                                color: isMonthly ? colors.text.secondary : colors.ui.primary,
                             }}
                         >
                             {secondaryRightHint}
                         </Text>
-
                     )}
                 </View>
             </Pressable>
@@ -263,7 +263,6 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: colors.ui.background }}>
             <ScrollView
-                
                 contentContainerStyle={{
                     flexGrow: 1,
                     paddingHorizontal: spacing.lg,
@@ -286,7 +285,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                 <Text style={{ ...typography.headline, textAlign: "center", color: colors.text.primary }}>
                                     {paywallCopy.choosePlanTitle}
                                 </Text>
-                                <Text style={{ ...typography.bodyMedium, color: colors.text.secondary, textAlign: "center" }}>  
+                                <Text style={{ ...typography.bodyMedium, color: colors.text.secondary, textAlign: "center" }}>
                                     {paywallCopy.subTitle}
                                 </Text>
                                 <Text
@@ -323,7 +322,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                             <View style={{ padding: spacing.lg, gap: spacing.md }}>
                                 <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                                     <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
-                                        {specialOfferHeadline}
+                                        Save 62% on monthly plan
                                     </Text>
                                     <Text style={{ ...typography.caption, color: colors.text.secondary }}>
                                         {paywallCopy.socialProofRating}/{paywallCopy.socialProofRatingMax}
@@ -334,14 +333,13 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
 
                                 <View style={{ gap: spacing.md }}>
                                     {renderPlanRow({
-                                        key: "yearly",
-                                        label: paywallCopy.yearlyLabel,
-                                        badge: config?.reminderPaywallPhrases?.badge,   
-                                        price: yearlyPrice,
-                                        period: yearlyPeriod,
-                                        subline: yearlyPerWeekSubline,
-                                        metaLine: paywallCopy.yearlyTrialThenPriceLine({ yearlyPriceString: yearlyPrice }),
-                                        rightHint: yearlyPerWeekEquivalent,
+                                        key: "monthly",
+                                        label: "Monthly", // Use monthlyLabel if available
+                                        badge: "",
+                                        price: monthlyPrice,
+                                        period: monthlyPeriod,
+                                        subline: "3 day free trial",
+                                        rightHint: "$3.46 / week",
                                     })}
 
                                     {renderPlanRow({
@@ -358,7 +356,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
 
                     <View style={{ gap: spacing.md }}>
                         <Pressable
-                            onPress={() => onCTAPress(selectedPlan === "yearly" ? "annual" : "weekly")}
+                            onPress={() => onCTAPress(selectedPlan === "monthly" ? "monthly" : "weekly")}
                             style={{
                                 backgroundColor: colors.ui.primary,
                                 borderRadius: 999,

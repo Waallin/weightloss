@@ -24,16 +24,17 @@ export async function getProducts() {
   const offerings = await Purchases.getOfferings();
   const weeklyProduct = offerings.current?.availablePackages.find(pkg => pkg.identifier === "$rc_weekly");
   const annualProduct = offerings.current?.availablePackages.find(pkg => pkg.identifier === "$rc_annual");
-  return { weekly: weeklyProduct, annual: annualProduct };
+  const monthlyProduct = offerings.current?.availablePackages.find(pkg => pkg.identifier === "$rc_monthly");
+  return { weekly: weeklyProduct, annual: annualProduct, monthly: monthlyProduct };
 }
 
 
-export async function purchasePlan(plan: "weekly" | "annual") {
+export async function purchasePlan(plan: "weekly" | "annual" | "monthly") {
   try {
     const offerings = await Purchases.getOfferings();
     const packages = offerings.current?.availablePackages ?? [];
     const packageIdentifier =
-      plan === "weekly" ? "$rc_weekly" : "$rc_annual";
+      plan === "weekly" ? "$rc_weekly" : plan === "annual" ? "$rc_annual" : "$rc_monthly";
 
     const selectedPackage = packages.find(
       (pkg) => pkg.identifier === packageIdentifier
