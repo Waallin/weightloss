@@ -20,6 +20,8 @@ import useConfigStore from "../../stores/useConfigStore";
 import { scheduleActiveUserNotifications } from "../../services/notifications";
 import { identifyMixpanel, setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 import { isCustomerPremium } from "../../services/revenuecat";
+import { logTikTokEvent } from "../../services/tiktoksdk";
+import { TikTokEventName } from "react-native-tiktok-business-sdk";
 
 const AuthScreen = () => {
   const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
@@ -86,7 +88,7 @@ const AuthScreen = () => {
 
         await setMixpanelPeopleProperty("email", email);
         await trackMixpanelEvent("user_registered");
-
+        await logTikTokEvent(TikTokEventName.REGISTRATION);
         AsyncStorage.setItem("first_time", "true");
 
         if (!config?.showPaywall) {
