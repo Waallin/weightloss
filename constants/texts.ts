@@ -559,9 +559,9 @@ export const reminderPaywallCopy = {
     ],
   },
   socialProof: {
-    headline: "★★★★★ Loved by 5,000+ users",
+    stars: "⭐⭐⭐⭐⭐",
     testimonial:
-      "“It made staying consistent feel simple. I finally saw progress.”",
+      "I figured I'd just try the free month. It ended up being the easiest weight I've ever lost.",
   },
   urgencyLine: "Start your free trial today",
   cta: "Start losing weight today",

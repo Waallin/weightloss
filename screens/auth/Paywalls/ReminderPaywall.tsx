@@ -1,597 +1,570 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Animated, Easing, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { globalStyles } from "../../../constants/globalStyles";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, Linking, Text, TouchableOpacity, View } from "react-native";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
-import { Entypo } from "@expo/vector-icons";
-import { colors } from "../../../constants/colors";
+import { textStyles } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { colors } from "../../../constants/colors";
+import Svg, { Circle, G, Path, Text as SvgText } from "react-native-svg";
+import useConfettiStore from "../../../stores/useConfettiStore";
+import * as haptics from "expo-haptics";
+import { trackMixpanelEvent } from "../../../services/mixpanel";
+const WHEEL_SIZE = 260;
+const WHEEL_RADIUS = WHEEL_SIZE / 2;
+const FULL_TURNS = 8;
+const SEGMENT_COUNT = 5;
+const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
+const WINNING_INDEX = 0;
+const SPIN_DURATION_MS = 6500;
 import { useNavigation } from "@react-navigation/native";
-import { paywallCopy, reminderPaywallCopy, typography } from "../../../constants/texts";
 import useConfigStore from "../../../stores/useConfigStore";
-import * as Haptics from "expo-haptics";
+const WHEEL_SEGMENTS = [
+  { id: 0, label: "⭐ 1 Month", color: colors.ui.primary },
+  { label: "3 Days", color: "#E5E7EB" },
+  { label: "5 Days", color: "#A7F3D0" },
+  { label: "7 Days", color: "#6EE7B7" },
+  { label: "14 Days", color: "#34D399" },
+];
 
-type RevenueCatPackage = {
-    identifier: string;
-    product: {
-        price?: number;
-        priceString?: string;
-        currencyCode?: string;
-        subscriptionPeriod?: {
-            unit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
-            value?: number;
-        } | null;
-    };
+const polarToCartesian = (
+  cx: number,
+  cy: number,
+  r: number,
+  angleDeg: number,
+) => {
+  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
+  return {
+    x: cx + r * Math.cos(angleRad),
+    y: cy + r * Math.sin(angleRad),
+  };
 };
 
-type ReminderPaywallProps = {
-    onCTAPress?: (plan: "weekly" | "annual") => void;
-    loading?: boolean;
-    products?: {
-        weekly?: RevenueCatPackage | null;
-        annual?: RevenueCatPackage | null;
-    } | null;
-    onRestorePurchases?: () => void;
+const describeSegment = (
+  cx: number,
+  cy: number,
+  r: number,
+  startAngle: number,
+  endAngle: number,
+) => {
+  const start = polarToCartesian(cx, cy, r, endAngle);
+  const end = polarToCartesian(cx, cy, r, startAngle);
+  const largeArc = endAngle - startAngle <= 180 ? 0 : 1;
+  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
 };
 
-type PlanKey = "yearly" | "weekly";
+const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestorePurchases: () => void }> = ({
+  onCTAPress,
+  onRestorePurchases,
+}) => {
+  const [activeScreen, setActiveScreen] = useState(0);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  const ctaPulse = useRef(new Animated.Value(1)).current;
+  const { setVisibleConfetti } = useConfettiStore();
+  const { config } = useConfigStore();
+  const [showSpinner] = useState(config?.showSpinner);
+  const navigation = useNavigation();
+  useEffect(() => {
+    if (!hasSpun || activeScreen !== 2) {
+      ctaPulse.setValue(1);
+      return;
+    }
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(ctaPulse, {
+          toValue: 1.04,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(ctaPulse, {
+          toValue: 1,
+          duration: 700,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [hasSpun, activeScreen, ctaPulse]);
 
-const ReminderPaywall: React.FC<ReminderPaywallProps> = ({ onCTAPress, loading, products, onRestorePurchases }) => {
-    const [activeScreen, setActiveScreen] = useState(0);
-    const [selectedPlan, setSelectedPlan] = useState<PlanKey>("yearly");
-    const navigation = useNavigation();
-    const ctaPulse = useRef(new Animated.Value(1)).current;
-    const { config } = useConfigStore();
-    const benefits = useMemo(() => reminderPaywallCopy.screen3.benefits, []);
+  const handleCTAPress = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    if (activeScreen === 0) {
+      
+      setActiveScreen(showSpinner ? 2 : 3);
+    } else if (activeScreen === 1) {
+      setActiveScreen(showSpinner ? 2 : 3);
+    } else if (activeScreen === 2) {
+      hasSpun ? (setActiveScreen(3), setHasSpun(false)) : handleSpin();
+    } else {
+      onCTAPress("annual");
+    }
+  };
 
-    const getPeriodLabel = useMemo(() => {
-        return (pkg?: RevenueCatPackage | null): string | null => {
-            const unit = pkg?.product?.subscriptionPeriod?.unit;
-            if (!unit) return null;
-            if (unit === "WEEK") return "/ week";
-            if (unit === "MONTH") return "/ month";
-            if (unit === "YEAR") return "/ year";
-            if (unit === "DAY") return "/ day";
-            return null;
-        };
-    }, []);
+  const renderCTAText = () => {
+    switch (activeScreen) {
+      case 0:
+        return "Try for $0.00";
+      case 1:
+        return "Continue for FREE";
+      case 2:
+        return hasSpun ? "Claim 1 month free" : "Spin the wheel";
+      case 3:
+        return "Start FREE Trail";
+      default:
+        return "";
+    }
+  };
 
-    const weeklyPrice = products?.weekly?.product?.priceString ?? paywallCopy.weeklyPrice;
-    const weeklyPeriod = getPeriodLabel(products?.weekly) ?? paywallCopy.weeklyPeriod;
+  const handleRestorePurchases = () => {
+    onRestorePurchases();
+  };
+  const handleSpin = async () => {
+    if (isSpinning || hasSpun) return;
 
-    const yearlyPrice = products?.annual?.product?.priceString ?? paywallCopy.yearlyPrice;
-    const yearlyPeriod = getPeriodLabel(products?.annual) ?? paywallCopy.yearlyPeriod;
+    await trackMixpanelEvent(
+      "paywall_spin_wheel",
+    );
 
-    const yearlyPerWeekEquivalent = paywallCopy.yearlyPerWeekEquivalent({
-        yearlyPrice: products?.annual?.product?.price,
-        currencyCode: products?.annual?.product?.currencyCode,
-        periodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
-        periodValue: products?.annual?.product?.subscriptionPeriod?.value,
+    setIsSpinning(true);
+    // Continuous ease-out: crawl through previous segment, land at start of "1 month".
+    const winAngle = FULL_TURNS * 360 - SEGMENT_ANGLE / 2 + 8;
+
+    spinAnim.setValue(0);
+
+    // Native-driven spin can't drive JS listeners reliably — schedule ticks that thin out.
+    const hapticTimers: ReturnType<typeof setTimeout>[] = [];
+    let elapsed = 0;
+    while (elapsed < SPIN_DURATION_MS - 250) {
+      const progress = elapsed / SPIN_DURATION_MS;
+      elapsed += 50 + progress * progress * 320;
+      const delay = elapsed;
+      hapticTimers.push(
+        setTimeout(() => {
+          void haptics.selectionAsync();
+        }, delay),
+      );
+    }
+
+    Animated.timing(spinAnim, {
+      toValue: winAngle,
+      duration: SPIN_DURATION_MS,
+      easing: Easing.bezier(0.12, 0.75, 0.08, 1),
+      useNativeDriver: true,
+    }).start(() => {
+      hapticTimers.forEach(clearTimeout);
+      setIsSpinning(false);
+      setHasSpun(true);
+      setVisibleConfetti(true);
+      void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
+    });
+  };
+
+  const spinWheel = () => {
+    const rotate = spinAnim.interpolate({
+      inputRange: [0, 360],
+      outputRange: ["0deg", "360deg"],
     });
 
-    const yearlyPerWeekSubline = paywallCopy.yearlyPerWeekSubline({
-        weeklyPrice: products?.weekly?.product?.price,
-        weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
-        weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
-        yearlyPrice: products?.annual?.product?.price,
-        yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
-        yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
-    });
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View style={{ alignItems: "center" }}>
+          {/* Pointer */}
+          <View
+            style={{
+              width: 0,
+              height: 0,
+              borderLeftWidth: 12,
+              borderRightWidth: 12,
+              borderTopWidth: 20,
+              borderLeftColor: "transparent",
+              borderRightColor: "transparent",
+              borderTopColor: colors.text.primary,
+              zIndex: 2,
+              marginBottom: -6,
+            }}
+          />
 
+          <Animated.View
+            style={{
+              width: WHEEL_SIZE,
+              height: WHEEL_SIZE,
+              transform: [{ rotate }],
+            }}
+          >
+            <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
+              <G>
+                {WHEEL_SEGMENTS.map((segment, index) => {
+                  const startAngle = index * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
+                  const endAngle = startAngle + SEGMENT_ANGLE;
+                  const midAngle = startAngle + SEGMENT_ANGLE / 2;
+                  const labelPos = polarToCartesian(
+                    WHEEL_RADIUS,
+                    WHEEL_RADIUS,
+                    WHEEL_RADIUS * 0.58,
+                    midAngle,
+                  );
 
+                  return (
+                    <G key={segment.label}>
+                      <Path
+                        d={describeSegment(
+                          WHEEL_RADIUS,
+                          WHEEL_RADIUS,
+                          WHEEL_RADIUS - 2,
+                          startAngle,
+                          endAngle,
+                        )}
+                        fill={segment.color}
+                        stroke={colors.ui.white}
+                        strokeWidth={2}
+                      />
+                      <SvgText
+                        x={labelPos.x}
+                        y={labelPos.y}
+                        fill={colors.text.primary}
+                        fontSize={12}
+                        fontWeight="700"
+                        textAnchor="middle"
+                        alignmentBaseline="middle"
+                      >
+                        {segment.label}
+                      </SvgText>
+                    </G>
+                  );
+                })}
+                <Circle
+                  cx={WHEEL_RADIUS}
+                  cy={WHEEL_RADIUS}
+                  r={28}
+                  fill={colors.ui.white}
+                  stroke={colors.ui.cardBorder}
+                  strokeWidth={2}
+                />
+              </G>
+            </Svg>
+          </Animated.View>
+        </View>
+      </View>
+    );
+  };
 
-    useEffect(() => {
-        if (activeScreen !== 2) {
-            ctaPulse.setValue(1);
-            return;
-        }
+  const renderBelowButtonText = () => {
+    if (activeScreen === 3) {
+      return "30-day free trial • $154.99/year after trial";
+    }
+    return "No commitments. Cancel anytime.";
+  };
 
-        const loop = Animated.loop(
-            Animated.sequence([
-                Animated.timing(ctaPulse, {
-                    toValue: 1.03,
-                    duration: 900,
-                    easing: Easing.out(Easing.quad),
-                    useNativeDriver: true,
-                }),
-                Animated.timing(ctaPulse, {
-                    toValue: 1,
-                    duration: 900,
-                    easing: Easing.in(Easing.quad),
-                    useNativeDriver: true,
-                }),
-            ]),
-        );
+  const renderFirstScreen = () => {
+    return (
+      <View
+        style={{
+          marginTop: spacing.xxl,
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
+          We want you to try Kudoo for{" "}
+          <Text style={{ color: colors.ui.primary }}>free</Text>
+        </Text>
 
-        loop.start();
-        return () => loop.stop();
-    }, [activeScreen, ctaPulse]);
-
-    const cardStyle = useMemo(
-        () => ({
-            width: "100%" as const,
-
-            borderRadius: spacing.borderRadius,
+        <View
+          style={{
+            marginTop: spacing.xl,
             padding: spacing.lg,
-            alignItems: "center" as const,
+            backgroundColor: colors.ui.componentBackground,
+            borderWidth: 1,
             borderColor: colors.ui.cardBorder,
-        }),
-        [],
+            borderRadius: spacing.borderRadius + 4,
+            alignSelf: "stretch",
+          }}
+        >
+          <Text
+            style={{
+              textAlign: "center",
+              fontSize: 18,
+              letterSpacing: 2,
+            }}
+          >
+            ⭐⭐⭐⭐⭐
+          </Text>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              fontStyle: "italic",
+              textAlign: "center",
+              marginTop: spacing.sm,
+              color: colors.text.secondary,
+              lineHeight: 22,
+            }}
+          >
+            “I only planned to try the free trail. Three months later I’m down
+            34 lbs.”
+          </Text>
+        </View>
+      </View>
     );
+  };
 
-    const contentWrapperStyle = useMemo(
-        () => ({
+  const renderSecondScreen = () => {
+    return (
+      <View
+        style={{
+          marginTop: spacing.xxl,
+          flex: 1,
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
+          We'll send you a reminder before your trial ends.
+        </Text>
+        <View
+          style={{
             flex: 1,
-            justifyContent: "center" as const,
-            alignItems: "center" as const,
-            paddingVertical: spacing.lg,
-        }),
-        [],
-    );
-
-    const titleStyle = useMemo(
-        () => ({
-            ...typography.screenTitle,
-            color: colors.text.primary,
-            textAlign: "center" as const,
-            marginBottom: spacing.sm,
-        }),
-        [],
-    );
-
-    const bodyStyle = useMemo(
-        () => ({
-            ...typography.body,
-            color: colors.text.secondary,
-            textAlign: "center" as const,
-        }),
-        [],
-    );
-
-    const subheadlineStyle = useMemo(
-        () => ({
-            ...typography.body,
-            color: colors.text.secondary,
-            textAlign: "center" as const,
-            marginTop: spacing.xs,
-        }),
-        [],
-    );
-
-    const BenefitRow: React.FC<{ text: string }> = ({ text }) => {
-        return (
+            justifyContent: "center",
+            alignItems: "center",
+            transform: [{ rotate: "-18deg" }],
+          }}
+        >
+          <View>
             <View
-                style={{
-                    width: "100%",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: spacing.sm,
-                    paddingVertical: spacing.xs,
-                }}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                backgroundColor: "red",
+                position: "absolute",
+                zIndex: 100,
+                alignItems: "center",
+                justifyContent: "center",
+                top: 15,
+                right: 15,
+              }}
             >
-                <View
-                    style={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: spacing.rounded,
-                        backgroundColor: colors.ui.iconContainer,
-                        alignItems: "center",
-                        justifyContent: "center",
-                    }}
-                >
-                    <Entypo name="check" size={16} color={colors.ui.primary} />
-                </View>
-                <Text style={{ ...bodyStyle, textAlign: "left" }}>{text}</Text>
+              <Text
+                style={{
+                  ...textStyles.onboardingBody,
+                  fontWeight: "700",
+                  color: "white",
+                  textAlign: "center",
+                  fontSize: 16,
+                }}
+              >
+                1
+              </Text>
             </View>
-        );
-    };
+            <MaterialCommunityIcons name="bell" size={100} color={"#DBE6E7"} />
+          </View>
+        </View>
+      </View>
+    );
+  };
 
-    const ProgressDots: React.FC<{ activeIndex: number; total: number }> = ({
-        activeIndex,
-        total,
-    }) => {
-        const dots = Array.from({ length: total }, (_, i) => i);
-        return (
+  const renderThirdScreen = () => {
+    return (
+      <View
+        style={{
+          marginTop: spacing.xxl,
+          flex: 1,
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
+          Let’s see how long your FREE trial will be!
+        </Text>
+        {spinWheel()}
+      </View>
+    );
+  };
+
+  const renderTimelineStep = (step: any, isLast: any) => {
+    return (
+      <View style={{ flexDirection: "row", gap: 16 }}>
+        <View style={{ alignItems: "center", width: 40 }}>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 20,
+              backgroundColor: step.iconBg,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <MaterialCommunityIcons name={step.icon} size={20} color="white" />
+          </View>
+          {!isLast && (
             <View
-                style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: spacing.sm,
-                    marginTop: spacing.lg,
-                }}
-            ></View>
-        );
-    };
+              style={{
+                width: 3,
+                flex: 1,
+                minHeight: 56,
+                backgroundColor: step.lineColor,
+                marginTop: 4,
+                borderRadius: 999,
+              }}
+            />
+          )}
+        </View>
+        <View
+          style={{ flex: 1, paddingBottom: isLast ? 0 : 20, paddingTop: 2 }}
+        >
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              fontWeight: "700",
+              color: colors.text.primary,
+            }}
+          >
+            {step.title}
+          </Text>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              color: colors.text.secondary,
+              marginTop: 4,
+            }}
+          >
+            {step.subtitle}
+          </Text>
+        </View>
+      </View>
+    );
+  };
 
-    const renderFirstScreen = () => {
-        const previewBenefits = benefits.slice(0, 2);
-        return (
-            <View style={contentWrapperStyle}>
-                <View style={cardStyle}>
-                    <View
-                        style={{
-                            width: 120,
-                            height: 120,
-                            borderRadius: spacing.rounded,
+  const renderFourthScreen = () => {
+    const steps = [
+      {
+        title: "Today",
+        subtitle: "Unlock all Kudoo features and start your journey.",
+        icon: "lock-open-outline",
+        iconBg: colors.ui.primary,
+        lineColor: colors.ui.primary,
+      },
+      {
+        title: "In 7 Days",
+        subtitle: "97% of users start seeing results.",
+        icon: "trending-up",
+        iconBg: colors.ui.primary,
+        lineColor: "#D1D5DB",
+      },
+      // {
+      //   title: "In 28 Days — Reminder",
+      //   subtitle: "We'll send you a reminder that your trial is ending soon.",
+      //   icon: "bell-outline",
+      //   iconBg: colors.ui.primary,
+      //   lineColor: "#D1D5DB",
+      // },
+      {
+        title: "In 30 Days — Billing Starts",
+        subtitle: "Then $2.98/week (billed annually)",
+        icon: "crown-outline",
+        iconBg: "#111827",
+      },
+    ];
 
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginBottom: spacing.md,
-                        }}
-                    >
-                        <Entypo name="leaf" size={58} color={colors.ui.primary} />
-                    </View>
-                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_1}</Text>
-                    <Text style={subheadlineStyle}>
-                        {config?.reminderPaywallPhrases?.sub_1}
-                    </Text>
-                </View>
+    return (
+      <View
+        style={{
+          marginTop: spacing.xxl,
+          flex: 1,
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
+          Start your 30-day FREE trial to continue.
+        </Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            paddingHorizontal: spacing.lg,
+          }}
+        >
+          {steps.map((step, index) => (
+            <View key={index}>
+              {renderTimelineStep(step, index === steps.length - 1)}
             </View>
-        );
-    };
+          ))}
+        </View>
+      </View>
+    );
+  };
 
-    const renderSecondScreen = () => {
-        return (
-            <View style={contentWrapperStyle}>
-                <View style={cardStyle}>
-                    <View
-                        style={{
-                            width: 120,
-                            height: 120,
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginBottom: spacing.md,
-                        }}
-                    >
-                        <Entypo name="bell" size={60} color={colors.ui.primary} />
-                    </View>
-                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_2}</Text>
-                    <Text style={subheadlineStyle}>{config?.reminderPaywallPhrases?.sub_2}</Text>
-                </View>
-            </View>
-        );
-    };
+  const renderFooter = () => {
+    return (
+      <View
+        style={{
+          marginBottom: spacing.ctaButtonBottomPadding,
+          gap: spacing.componentGap,
+          paddingHorizontal: spacing.md,
+        }}
+      >
+        <Text
+          style={{
+            ...textStyles.primary,
+            textAlign: "center",
+            fontWeight: "bold",
+            color: colors.ui.primary,
+          }}
+        >
+          {hasSpun && activeScreen === 2
+            ? "🎉 You unlocked 1 month FREE"
+            : "✓ Nothing charged today"}
+        </Text>
+        <Animated.View style={{ transform: [{ scale: ctaPulse }] }}>
+          <PrimaryButtonComponent
+            title={renderCTAText()}
+            onPress={handleCTAPress}
+          />
+        </Animated.View>
 
-    const renderThirdScreen = () => {
-        return (
-            <View style={contentWrapperStyle}>
-                <View style={cardStyle}>
-                    <Text style={titleStyle}>{config?.reminderPaywallPhrases?.title_3}</Text>
-                    <View style={{ width: "100%", marginTop: spacing.sm }}>
-                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_1} />
-                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_2} />
-                        <BenefitRow text={config?.reminderPaywallPhrases?.benefit_3} />
-                    </View>
-                </View>
-            </View>
-        );
-    };
+        <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
+          {renderBelowButtonText()}
+        </Text>
 
-    const handleGoBack = () => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        if (activeScreen === 0) {
-            navigation.goBack();
-        } else {
-            setActiveScreen((prev) => prev - 1);
-        }
-    };
+        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+          <TouchableOpacity onPress={() => Linking.openURL("https://sites.google.com/view/privacypolicy--app/home")}>
+            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
+              Privacy
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleRestorePurchases}>
+            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
+              Restore Purchases
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL("https://sites.google.com/view/app--termsofuse/home")}>
+            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
+              Terms
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  };
 
-    const renderHeader = () => {
-        return (
-            <View style={{ paddingTop: spacing.md, paddingBottom: spacing.sm }}>
-                <TouchableOpacity
-                    activeOpacity={0.8}
-                    disabled={activeScreen === 0}
-                    onPress={handleGoBack}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    style={{ alignSelf: "flex-start" }}
-                >
-                    <Entypo name="chevron-left" size={24} color={colors.text.primary} />
-                </TouchableOpacity>
-            </View>
-        );
-    };
+  const renderScreens = () => {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{ flex: 1 }}>
+          {activeScreen === 0 && renderFirstScreen()}
+          {activeScreen === 1 && renderSecondScreen()}
+          {activeScreen === 2 && showSpinner && renderThirdScreen()}
+          {activeScreen === 3 && renderFourthScreen()}
+        </View>
+        {renderFooter()}
+      </View>
+    );
+  };
 
-    const renderPlanRow = (plan: {
-        key: PlanKey;
-        label: string;
-        price: string;
-        period: string;
-        subline: string;
-        metaLine?: string;
-        badge?: string;
-        rightHint?: string;
-    }) => {
-        const isSelected = selectedPlan === plan.key;
-        const isYearly = plan.key === "yearly";
-        const mainPriceLine = isYearly && plan.rightHint ? plan.rightHint : plan.price;
-        const secondaryRightHint = isYearly && plan.rightHint ? `${plan.price} ${plan.period}` : plan.rightHint;
-
-        return (
-            <Pressable
-                onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setSelectedPlan(plan.key);
-                }}
-                style={{
-                    height: spacing.paywallPlanRowHeight,
-                    borderRadius: 14,
-                    paddingHorizontal: spacing.lg,
-                    paddingVertical: spacing.md,
-                    backgroundColor: isSelected
-                        ? colors.ui.listRowIconBackground
-                        : colors.ui.componentBackground,
-                    borderWidth: 1,
-                    borderColor: isSelected ? colors.ui.primary : colors.ui.cardBorder,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: spacing.md,
-                    ...(isSelected
-                        ? {
-                              shadowColor: colors.ui.shadow,
-                              shadowOpacity: 0.12,
-                              shadowRadius: 12,
-                              shadowOffset: { width: 0, height: 6 },
-                              elevation: 2,
-                          }
-                        : null),
-                }}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected }}
-            >
-                <View style={{ flex: 1, gap: 2 }}>
-                    <View
-                        style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: spacing.sm,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                ...typography.bodySemiBold,
-                                color: colors.text.primary,
-                            }}
-                        >
-                            {plan.label}
-                        </Text>
-                        {!!plan.badge && (
-                            <View
-                                style={{
-                                    paddingHorizontal: spacing.sm,
-                                    paddingVertical: 4,
-                                    borderRadius: 999,
-                                    backgroundColor: colors.ui.listRowIconBackground,
-                                    borderWidth: 1,
-                                    borderColor: colors.ui.cardBorder,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        ...typography.captionSemiBold,
-                                        color: colors.text.primary,
-                                    }}
-                                >
-                                    {config?.reminderPaywallPhrases?.badge}
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-                    <Text
-                        style={{
-                            ...(isYearly ? typography.bodySemiBold : typography.small),
-                            color: isYearly ? colors.ui.primary : colors.text.secondary,
-                        }}
-                    >
-                        {plan.subline}
-                    </Text>
-                    {!!plan.metaLine && (
-                        <Text
-                            style={{
-                                ...typography.caption,
-                                color: colors.text.secondary,
-                            }}
-                        >
-                            {plan.metaLine}
-                        </Text>
-                    )}
-                </View>
-
-                <View style={{ alignItems: "flex-end", gap: 2 }}>
-                    <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
-                        {mainPriceLine}
-                        {!isYearly && (
-                            <Text style={{ ...typography.small, color: colors.text.secondary }}>
-                                {" "}
-                                {plan.period}
-                            </Text>
-                        )}
-                    </Text>
-                    {!!secondaryRightHint && (
-                        <Text
-                            style={{
-                                ...typography.caption,
-                                color: colors.ui.primary,
-                                fontSize: 12,
-                                lineHeight: 16,
-                            }}
-                        >
-                            {secondaryRightHint}
-                        </Text>
-                    )}
-                </View>
-            </Pressable>
-        );
-    };
-
-    const renderFooter = () => {
-        const isLastScreen = activeScreen === 2;
-        return (
-            <View style={{ paddingTop: spacing.sm, paddingBottom: spacing.md }}>
-                {isLastScreen ? (
-                    <View
-                        style={{ width: "100%", gap: spacing.sm, marginBottom: spacing.md }}
-                    >
-                        <View style={{ alignItems: "center" }}>
-                            <View
-                                style={{
-                                    paddingHorizontal: spacing.md,
-                                    paddingVertical: spacing.xs,
-                                    borderRadius: 999,
-                                    backgroundColor: colors.ui.componentBackground,
-                                    borderWidth: 1,
-                                    borderColor: colors.ui.cardBorder,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        ...typography.captionSemiBold,
-                                        color: colors.text.primary,
-                                        letterSpacing: 0.6,
-                                    }}
-                                >
-                                    {reminderPaywallCopy.freeTrialLabel}
-                                </Text>
-                            </View>
-                        </View>
-
-                        <View style={{ width: "100%", gap: spacing.sm }}>
-                            {renderPlanRow({
-                                key: "yearly",
-                                label: paywallCopy.yearlyLabel,
-                                badge: paywallCopy.yearlyTrialBadge,
-                                price: yearlyPrice,
-                                period: yearlyPeriod,
-                                subline: yearlyPerWeekSubline,
-                                metaLine: paywallCopy.yearlyTrialThenPriceLine({ yearlyPriceString: yearlyPrice }),
-                                rightHint: yearlyPerWeekEquivalent,
-                            })}
-
-                            {renderPlanRow({
-                                key: "weekly",
-                                label: paywallCopy.weeklyLabel,
-                                price: weeklyPrice,
-                                period: weeklyPeriod,
-                                subline: paywallCopy.weeklySubline,
-                            })}
-                        </View>
-
-                        <Text
-                            style={{
-                                ...typography.small,
-                                textAlign: "center",
-                                color: colors.text.secondary,
-                                marginTop: spacing.xs,
-                            }}
-                        >
-                            {reminderPaywallCopy.trialFootnote}
-                        </Text>
-                    </View>
-                ) : (
-                    <Text
-                        style={{
-                            ...typography.body,
-                            textAlign: "center",
-                            marginBottom: spacing.md,
-                            color: colors.text.secondary,
-                        }}
-                    >
-                        {reminderPaywallCopy.trialFootnote}
-                    </Text>
-                )}
-
-                <Animated.View
-                    style={
-                        isLastScreen ? { transform: [{ scale: ctaPulse }] } : undefined
-                    }
-                >
-                    <PrimaryButtonComponent
-                        title={
-                            isLastScreen
-                                ? selectedPlan === "weekly"
-                                    ? config?.reminderPaywallPhrases?.cta_3_weekly ??
-                                      config?.reminderPaywallPhrases?.cta_3
-                                    : config?.reminderPaywallPhrases?.cta_3
-                                : activeScreen === 1
-                                ? config?.reminderPaywallPhrases?.cta_2
-                                : config?.reminderPaywallPhrases?.cta_1
-                        }
-                   
-                        onPress={() => {
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            if (activeScreen === 2) {
-                                onCTAPress?.(selectedPlan === "yearly" ? "annual" : "weekly");
-                                return;
-                            }
-                            setActiveScreen((prev) => prev + 1);
-                        }}
-                        loading={loading}
-                    />
-                </Animated.View>
-                <View
-                    style={{
-                        paddingHorizontal: spacing.md,
-                        marginBottom: spacing.md,
-                        gap: spacing.xs,
-                        marginTop: spacing.md,
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={() => {
-                            onRestorePurchases?.();
-                        }}
-                        activeOpacity={0.8}
-                        style={{
-                            alignSelf: "center",
-                            paddingVertical: spacing.sm,
-                            paddingHorizontal: spacing.md,
-                            backgroundColor: colors.ui.componentBackground,
-                            borderRadius: 999,
-                            borderWidth: 1,
-                            borderColor: colors.ui.cardBorder,
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel={paywallCopy.restorePurchases}
-                    >
-                        <Text style={{ ...typography.bodyMedium, color: colors.ui.primary }}>
-                            {paywallCopy.restorePurchases}
-                        </Text>
-                    </TouchableOpacity>
-                    <Text
-                        style={{
-                            ...typography.small,
-                            color: colors.text.secondary,
-                            marginBottom: spacing.sm,
-                            textAlign: "center",
-                        }}
-                    >
-                        Subscription renews automatically unless canceled.
-                    </Text>
-                    <Text style={{ ...typography.small, textAlign: "center", color: colors.text.secondary }}>
-                        Cancel anytime in your App Store settings.
-                    </Text>
-                </View>
-        
-            </View>
-        );
-    };
-
-    const renderScreens = () => {
-        return (
-            <View style={{ flex: 1 }}>
-                {renderHeader()}
-                <View style={{ flex: 1 }}>
-                    {activeScreen === 0 && renderFirstScreen()}
-                    {activeScreen === 1 && renderSecondScreen()}
-                    {activeScreen === 2 && renderThirdScreen()}
-                </View>
-                {renderFooter()}
-            </View>
-        );
-    };
-
-    return <View style={globalStyles.container}>{renderScreens()}</View>;
+  return <View style={{ flex: 1 }}>{renderScreens()}</View>;
 };
 
 export default ReminderPaywall;

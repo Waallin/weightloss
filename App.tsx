@@ -29,7 +29,6 @@ import useRevCatStore from "./stores/useRevCatStore";
 import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
 import { initializeTikTokTracking } from "./services/tiktoksdk";
-import PaywallScreen from "./screens/auth/PaywallScreen";
 
 export default function App() {
 
@@ -218,7 +217,7 @@ export default function App() {
           {authState === "loggedInWithPremium" && <MainStack />}
           {authState === "unauthenticated" && <AuthNavigator />}
           {authState === "loggedInWithoutPremium" && (
-            <PaywallScreen />
+            <MainStack initialRouteName="Paywall" />
           )}
         </NavigationContainer>
       </View>
