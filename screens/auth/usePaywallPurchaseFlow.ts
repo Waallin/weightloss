@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
 import {
-  StackActions,
   type NavigationProp,
   type ParamListBase,
 } from "@react-navigation/native";
@@ -17,10 +16,16 @@ import {
 import { handleReminderNotification } from "../../services/notifications";
 import { logTikTokEvent } from "../../services/tiktoksdk";
 import { TikTokEventName } from "react-native-tiktok-business-sdk";
-function getPaywallSuccessRoute(
-  navigation: NavigationProp<ParamListBase>,
-): "PaywallSuccess" {
-  return "PaywallSuccess";
+function resetToApp(navigation: NavigationProp<ParamListBase>) {
+  const routeNames = navigation.getState()?.routeNames ?? [];
+  const routeName = routeNames.includes("MainStack")
+    ? "MainStack"
+    : "MainNavigator";
+
+  navigation.reset({
+    index: 0,
+    routes: [{ name: routeName }],
+  });
 }
 
 export type PaywallVariant = "default" | "reminder";
@@ -45,7 +50,6 @@ export function usePaywallPurchaseFlow({
   const handleCTAPress = useCallback(
     async (plan: PaywallPlan) => {
       
-      
       const productProps = getPaywallProductAnalytics(products, plan);
 
       setLoading(true);
@@ -67,10 +71,7 @@ export function usePaywallPurchaseFlow({
               revenuecat: purchase,
             });
           }
-          navigation.reset({
-            index: 0,
-            routes: [{ name: "MainStack" }],
-          });
+          resetToApp(navigation);
         } else {
           await trackMixpanelEvent("Paywall_purchase_failed", {
             variant,
@@ -91,9 +92,7 @@ export function usePaywallPurchaseFlow({
     const restored = await restorePurchases();
     if (restored) {
       alert("Purchases restored");
-      navigation.dispatch(
-        StackActions.replace(getPaywallSuccessRoute(navigation)),
-      );
+      resetToApp(navigation);
     } else {
       alert("Failed to restore purchases");
     }
