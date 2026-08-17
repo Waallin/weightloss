@@ -29,7 +29,10 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
-
+import { MotiView } from "moti";
+import RoundedButtonComponent from "../../../components/RoundedButtonComponent";
+import { ReduceMotion } from "react-native-reanimated";
+import { CameraView, useCameraPermissions } from "expo-camera";
 type DietListTab = "food" | "recipes";
 
 function itemTitleMatchesQuery(
@@ -120,6 +123,11 @@ const DietListScreen = () => {
     navigation.navigate("RecipeDetailScreen", { recipe });
   };
 
+  const handleNavigateToScanFoodScreen = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("ScanFoodScreen");
+  };
+
   const renderHeader = () => {
     return (
       <View
@@ -128,25 +136,52 @@ const DietListScreen = () => {
           paddingTop: insets.top + spacing.sm,
         }}
       >
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() => navigation.goBack()}
+        <View
           style={{
-            backgroundColor: colors.ui.componentBackground,
-            borderRadius: spacing.borderRadius,
-            ...globalStyles.shadow,
-            justifyContent: "center",
+            flexDirection: "row",
             alignItems: "center",
-            width: 44,
-            height: 44,
+            justifyContent: "space-between",
           }}
         >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={26}
-            color={colors.text.primary}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigation.goBack()}
+            style={{
+              backgroundColor: colors.ui.componentBackground,
+              borderRadius: spacing.borderRadius,
+              ...globalStyles.shadow,
+              justifyContent: "center",
+              alignItems: "center",
+              width: 44,
+              height: 44,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={26}
+              color={colors.text.primary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleNavigateToScanFoodScreen}
+            style={{
+              backgroundColor: colors.ui.componentBackground,
+              borderRadius: spacing.borderRadius,
+              ...globalStyles.shadow,
+              justifyContent: "center",
+              alignItems: "center",
+              width: 44,
+              height: 44,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="camera"
+              size={26}
+              color={colors.ui.primary}
+            />
+          </TouchableOpacity>
+        </View>
         <View
           style={{
             flexDirection: "row",
@@ -290,6 +325,34 @@ const DietListScreen = () => {
         {showContent === "food" && renderFoodItems()}
         {showContent === "recipes" && renderRecipesItems()}
       </View>
+    );
+  };
+
+  const renderScanFoodButton = () => {
+    return (
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{
+          type: "timing",
+          duration: 450,
+          delay: 220,
+          reduceMotion: ReduceMotion.Never,
+        }}
+        style={{
+          position: "absolute",
+          bottom: 40,
+          left: 0,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: spacing.md,
+        }}
+      >
+        <RoundedButtonComponent
+          handleNext={() => console.log("test")}
+          icon="plus"
+        />
+      </MotiView>
     );
   };
 
