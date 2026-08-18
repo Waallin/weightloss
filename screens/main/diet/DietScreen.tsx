@@ -22,6 +22,7 @@ import useUserStore from "../../../stores/useUserStore";
 import { useNavigation } from "@react-navigation/native";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
 import { trackMixpanelEvent } from "../../../services/mixpanel";  
+import { CameraView, useCameraPermissions } from "expo-camera";
 import AddedFoodItem, {
   AddedFoodItemData,
 } from "./components/AddedFoodItem";
@@ -66,8 +67,12 @@ function groupTodayDietBySourceId(
   const keyOrder: string[] = [];
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
-    const key =
-      entry.sourceId?.trim() !== "" ? entry.sourceId : `__row_${i}`;
+    // Bara gruppera om de har ett sourceId, annars unikt key för varje rad
+    const hasSourceId =
+      entry.sourceId !== undefined &&
+      entry.sourceId !== null &&
+      String(entry.sourceId).trim() !== "";
+    const key = hasSourceId ? String(entry.sourceId) : `__row_${i}`;
     if (!groups.has(key)) {
       groups.set(key, []);
       keyOrder.push(key);
@@ -87,6 +92,7 @@ const DietScreen = () => {
   const navigation = useNavigation();
   const { todayProgress } = useTodayProgressStore();
   const { todayDiet } = useTodayDietStore();
+  console.log("🚀 ~ DietScreen ~ todayDiet:", todayDiet)
 
   const groupedTodayDiet = useMemo(
     () => groupTodayDietBySourceId(todayDiet ?? []),
@@ -136,6 +142,7 @@ const DietScreen = () => {
     }
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("DietListScreen");
+
   };
   const renderHeroSection = () => {
     return (

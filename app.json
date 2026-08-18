@@ -8,6 +8,12 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "plugins": [
+      [
+        "expo-camera",
+        {
+          "recordAudioAndroid": false
+        }
+      ],
       "expo-apple-authentication",
       "apple-health",
       [

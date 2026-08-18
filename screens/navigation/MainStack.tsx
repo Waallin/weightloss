@@ -11,6 +11,7 @@ import { RootStackParamList } from "./types";
 import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
+import ScanFoodScreen from "../main/diet/ScanFoodScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -38,6 +39,11 @@ export const MainStack: React.FC<MainStackProps> = ({
       <Stack.Screen
         name="AddDietScreen"
         component={AddDietScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ScanFoodScreen"
+        component={ScanFoodScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

@@ -46,3 +46,36 @@ export const calculatePoints = (
         total
     };
 };
+
+const PROTEIN_PER_100_KCAL_REF = 8;
+const FIBER_PER_100_KCAL_REF = 2;
+const GRAMS_PER_100_KCAL_REF = 80;
+
+export type FoodPointInput = {
+    calories: number;
+    protein: number;
+    fiber: number;
+    estimatedGrams: number;
+};
+
+export const calculateFoodPoints = (food: FoodPointInput): number => {
+    const calories = food.calories ?? 0;
+    if (calories <= 0) return 0;
+
+    const protein = food.protein ?? 0;
+    const fiber = food.fiber ?? 0;
+    const estimatedGrams = food.estimatedGrams ?? 0;
+
+    const per100 = calories / 100;
+    const proteinScore = Math.min((protein / per100) / PROTEIN_PER_100_KCAL_REF, 1);
+    const fiberScore = Math.min((fiber / per100) / FIBER_PER_100_KCAL_REF, 1);
+    const volumeScore =
+        estimatedGrams > 0
+            ? Math.min((estimatedGrams / per100) / GRAMS_PER_100_KCAL_REF, 1)
+            : 0;
+
+    const satiety = proteinScore * 0.5 + fiberScore * 0.2 + volumeScore * 0.3;
+    const costMultiplier = 1.3 - satiety * 0.6;
+
+    return Math.max(0, Math.round(per100 * costMultiplier));
+};
