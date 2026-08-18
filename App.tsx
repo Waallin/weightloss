@@ -32,6 +32,7 @@ import { initializeTikTokTracking } from "./services/tiktoksdk";
 
 export default function App() {
 
+  
   const { isVisible, message } = useToastStore();
   const { user, setUser } = useUserStore();
   const {  setTodayProgress } = useTodayProgressStore();
