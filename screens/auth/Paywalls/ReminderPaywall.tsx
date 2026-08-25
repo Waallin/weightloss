@@ -113,7 +113,8 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
       case 2:
         return hasSpun ? "Claim 1 month free" : "Spin the wheel";
       case 3:
-        return "Start FREE Trail";
+
+      return "Start FREE Trial";
       default:
         return "";
     }
@@ -253,9 +254,7 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   };
 
   const renderBelowButtonText = () => {
-    if (activeScreen === 3) {
-      return "30-day free trial • $154.99/year after trial";
-    }
+
     return "No commitments. Cancel anytime.";
   };
 
@@ -415,24 +414,58 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
         <View
           style={{ flex: 1, paddingBottom: isLast ? 0 : 20, paddingTop: 2 }}
         >
-          <Text
-            style={{
-              ...textStyles.onboardingBody,
-              fontWeight: "700",
-              color: colors.text.primary,
-            }}
+          <View
+            style={
+              step.highlight
+                ? {
+                    backgroundColor: colors.ui.foodPointsChipBackground,
+                    borderRadius: spacing.borderRadius,
+                    paddingVertical: spacing.sm,
+                    paddingHorizontal: spacing.sm + 4,
+                  }
+                : undefined
+            }
           >
-            {step.title}
-          </Text>
-          <Text
-            style={{
-              ...textStyles.onboardingBody,
-              color: colors.text.secondary,
-              marginTop: 4,
-            }}
-          >
-            {step.subtitle}
-          </Text>
+            <Text
+              style={{
+                ...textStyles.onboardingBody,
+                fontWeight: "700",
+                color: colors.text.primary,
+              }}
+            >
+              {step.title}
+            </Text>
+            {step.highlight ? (
+              <Text
+                style={{
+                  ...textStyles.onboardingBody,
+                  color: colors.text.secondary,
+                  marginTop: 4,
+                }}
+              >
+                <Text
+                  style={{
+                    fontWeight: "700",
+                    fontSize: 16,
+                    color: colors.ui.primary,
+                  }}
+                >
+                  97%
+                </Text>{" "}
+                of users start seeing results.
+              </Text>
+            ) : (
+              <Text
+                style={{
+                  ...textStyles.onboardingBody,
+                  color: colors.text.secondary,
+                  marginTop: 4,
+                }}
+              >
+                {step.subtitle}
+              </Text>
+            )}
+          </View>
         </View>
       </View>
     );
@@ -453,17 +486,11 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
         icon: "trending-up",
         iconBg: colors.ui.primary,
         lineColor: "#D1D5DB",
+        highlight: true,
       },
-      // {
-      //   title: "In 28 Days — Reminder",
-      //   subtitle: "We'll send you a reminder that your trial is ending soon.",
-      //   icon: "bell-outline",
-      //   iconBg: colors.ui.primary,
-      //   lineColor: "#D1D5DB",
-      // },
       {
-        title: "In 30 Days — Billing Starts",
-        subtitle: "Then $2.98/week (billed annually)",
+        title: "In 30 Days — Only $2.98 a week",
+        subtitle: "Billed annually • $154.99",
         icon: "crown-outline",
         iconBg: "#111827",
       },
@@ -472,14 +499,88 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
     return (
       <View
         style={{
-          marginTop: spacing.xxl,
+          marginTop: spacing.xl,
           flex: 1,
           paddingHorizontal: spacing.md,
         }}
       >
-        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
-          Start your 30-day FREE trial to continue.
+        <View
+          style={{
+            alignSelf: "center",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.sm,
+            paddingVertical: spacing.xs + 2,
+            paddingHorizontal: spacing.md,
+            backgroundColor: colors.ui.componentBackground,
+            borderWidth: 1,
+            borderColor: colors.ui.cardBorder,
+            borderRadius: spacing.rounded,
+            marginBottom: spacing.md,
+          }}
+        >
+          <Text style={{ fontSize: 12, letterSpacing: 1 }}>⭐⭐⭐⭐⭐</Text>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              fontWeight: "700",
+              color: colors.text.primary,
+            }}
+          >
+            4.9 · 5,000+ reviews
+          </Text>
+        </View>
+
+        <Text
+          style={{
+            ...textStyles.onboardingTitle,
+            textAlign: "center",
+            lineHeight: 32,
+            paddingHorizontal: spacing.sm,
+          }}
+        >
+          Unlock your full potential with Kudoo
         </Text>
+
+        <View
+          style={{
+            marginTop: spacing.lg,
+            gap: spacing.sm,
+            alignSelf: "center",
+            alignItems: "flex-start",
+          }}
+        >
+          {[
+            "Personalized insights",
+            "Track your progress",
+            "No calorie counting",
+          ].map((benefit) => (
+            <View
+              key={benefit}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: spacing.sm,
+              }}
+            >
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={18}
+                color={colors.ui.primary}
+              />
+              <Text
+                style={{
+                  ...textStyles.onboardingBody,
+                  fontWeight: "500",
+                  color: colors.text.primary,
+                }}
+              >
+                {benefit}
+              </Text>
+            </View>
+          ))}
+        </View>
+
         <View
           style={{
             flex: 1,

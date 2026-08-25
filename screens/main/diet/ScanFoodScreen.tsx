@@ -35,6 +35,7 @@ import { addToDiet } from "../../../services/firebase";
 import { useNavigation } from "@react-navigation/native";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import useToastStore from "../../../stores/useToastStore";
+
 type PickedImage = {
   uri: string;
   base64: string;
@@ -54,6 +55,41 @@ function getResultHeadline(points: number): string {
   if (points <= 3) return "That's a steal";
   if (points <= 7) return "Looks tasty";
   return "Okay, that works";
+}
+
+const SCAN_DIM = "rgba(0,0,0,0.35)";
+const SCAN_CORNER_SIZE = 28;
+const SCAN_CORNER_THICKNESS = 4;
+
+function ScanFrameCorner({
+  top,
+  left,
+  right,
+  bottom,
+}: {
+  top?: boolean;
+  left?: boolean;
+  right?: boolean;
+  bottom?: boolean;
+}) {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        width: SCAN_CORNER_SIZE,
+        height: SCAN_CORNER_SIZE,
+        top: top ? 0 : undefined,
+        bottom: bottom ? 0 : undefined,
+        left: left ? 0 : undefined,
+        right: right ? 0 : undefined,
+        borderColor: "#fff",
+        borderTopWidth: top ? SCAN_CORNER_THICKNESS : 0,
+        borderBottomWidth: bottom ? SCAN_CORNER_THICKNESS : 0,
+        borderLeftWidth: left ? SCAN_CORNER_THICKNESS : 0,
+        borderRightWidth: right ? SCAN_CORNER_THICKNESS : 0,
+      }}
+    />
+  );
 }
 
 const SCANNING_COPY = [
@@ -406,6 +442,48 @@ Return JSON only.
           mode="picture"
         />
         <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 0,
+            right: 0,
+            bottom: 0,
+            left: 0,
+            paddingBottom: insets.bottom + spacing.lg + 80 + spacing.md,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: SCAN_DIM,
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingBottom: spacing.md,
+            }}
+          >
+            <Text
+              style={{
+                ...typography.headline,
+                color: "#fff",
+                textAlign: "center",
+              }}
+            >
+              Scan your meal
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row" }}>
+            <View style={{ width: "9%", backgroundColor: SCAN_DIM }} />
+            <View style={{ width: "82%", aspectRatio: 1 }}>
+              <ScanFrameCorner top left />
+              <ScanFrameCorner top right />
+              <ScanFrameCorner bottom left />
+              <ScanFrameCorner bottom right />
+            </View>
+            <View style={{ width: "9%", backgroundColor: SCAN_DIM }} />
+          </View>
+          <View style={{ flex: 1, backgroundColor: SCAN_DIM }} />
+        </View>
+        <View
           pointerEvents="box-none"
           style={{
             position: "absolute",
@@ -422,7 +500,7 @@ Return JSON only.
                 height: 80,
                 borderRadius: 40,
                 borderWidth: 4,
-                borderColor: colors.ui.primary,
+                borderColor: "white",
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: takingPhoto ? 0.6 : 1,
@@ -433,7 +511,7 @@ Return JSON only.
                   width: 62,
                   height: 62,
                   borderRadius: 31,
-                  backgroundColor: colors.ui.primary,
+                  backgroundColor: "white",
                 }}
               />
             </View>
@@ -655,14 +733,27 @@ Return JSON only.
           }}
         >
           <View style={{ alignItems: "center", gap: spacing.md }}>
-            <Image
-              source={require("../../../assets/mascot/thumbsUp.png")}
-              style={{
-                width: 200,
-                height: 200,
-              }}
-              resizeMode="contain"
-            />
+            {image?.uri ? (
+              <Image
+                source={{ uri: image.uri }}
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: spacing.borderRadius * 2,
+                  backgroundColor: colors.ui.componentBackground,
+                }}
+                resizeMode="cover"
+              />
+            ) : (
+              <View
+                style={{
+                  width: 200,
+                  height: 200,
+                  borderRadius: spacing.borderRadius * 2,
+                  backgroundColor: colors.ui.secondaryBackground,
+                }}
+              />
+            )}
             <Text
               style={{
                 ...typography.headline,
@@ -730,7 +821,7 @@ Return JSON only.
           </View>
         </View>
         <PrimaryButtonComponent
-          title={"Add to diet"}
+          title={`Add ${Number.isFinite(points) ? points : result?.points} points`}
           onPress={handleAddToDiet}
         />
       </View>
