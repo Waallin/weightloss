@@ -218,7 +218,7 @@ export default function App() {
           {authState === "loggedInWithPremium" && <MainStack />}
           {authState === "unauthenticated" && <AuthNavigator />}
           {authState === "loggedInWithoutPremium" && (
-            <MainStack initialRouteName="Paywall" />
+            <MainStack  />
           )}
         </NavigationContainer>
       </View>

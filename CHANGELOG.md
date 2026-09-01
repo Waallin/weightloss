@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] 
+
+### Added
+- Tracking to mixpanel when scanning food
+
+### Changed
+- Enhanced the UI/UX for the AI-based food scanning feature
+- Renamed the app as displayed in the App Store
+- Updated the app subtitle
+- Improved the design and flow of the paywall
+- Made scanned meals use shorter, more casual names instead of listing every ingredient
+- Changed paywall
+
+# Fixed
+- Fixed bug with opacity att scanview
+
 ## [1.0.11] - 2026-08-17
 
 ### Added

@@ -56,7 +56,7 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   onCTAPress,
   onRestorePurchases,
 }) => {
-  const [activeScreen, setActiveScreen] = useState(0);
+  const [activeScreen, setActiveScreen] = useState(3);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -541,46 +541,6 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
         >
           Unlock your full potential with Kudoo
         </Text>
-
-        <View
-          style={{
-            marginTop: spacing.lg,
-            gap: spacing.sm,
-            alignSelf: "center",
-            alignItems: "flex-start",
-          }}
-        >
-          {[
-            "Personalized insights",
-            "Track your progress",
-            "No calorie counting",
-          ].map((benefit) => (
-            <View
-              key={benefit}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.sm,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="check-circle"
-                size={18}
-                color={colors.ui.primary}
-              />
-              <Text
-                style={{
-                  ...textStyles.onboardingBody,
-                  fontWeight: "500",
-                  color: colors.text.primary,
-                }}
-              >
-                {benefit}
-              </Text>
-            </View>
-          ))}
-        </View>
-
         <View
           style={{
             flex: 1,

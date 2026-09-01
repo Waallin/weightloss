@@ -235,8 +235,8 @@ Return ONLY valid JSON in this exact format:
 
 {
   "isFood": true,
-  "name": "Chicken rice bowl",
-  "description": "Grilled chicken with rice, broccoli and sauce",
+  "name": "Chicken bowl",
+  "description": "Looks like chicken, rice, and some greens",
   "estimatedGrams": 420,
   "calories": 610,
   "protein": 48,
@@ -289,18 +289,21 @@ Foods high in protein, fiber, volume and satiety should generally get fewer poin
 Foods high in added sugar, saturated fat, oil or calorie density should generally get more points.
 
 When analyzing a complete meal:
-- Identify every meaningful component.
+- Identify every meaningful component internally for nutrition and points.
 - Estimate the visible portion size.
-- Include likely oils, sauces, dressings and toppings.
+- Include likely oils, sauces, dressings and toppings in the nutrition estimate.
 - Calculate one points value for the ENTIRE visible meal.
 - Do not assign points separately and return multiple foods.
 - Round points to the nearest whole number.
 - Minimum points is 0.
 - Never return negative points.
 
-Keep the food name short and user-friendly.
+Keep the food name short, casual, and approximate.
+Name the meal, not every ingredient. Prefer everyday labels like "Chicken bowl", "Pasta", or "Burger".
+Do not list cooking methods, sauces, toppings, or sides in the name.
 
-The description should be short and useful, preferably one sentence.
+The description should be one loose, everyday guess. Not a spec sheet.
+Do not list every visible ingredient, sauce, or topping. It is fine to be a little vague.
 
 confidence must be a number between 0 and 1 representing how confident you are in the identification and portion estimate.
 
