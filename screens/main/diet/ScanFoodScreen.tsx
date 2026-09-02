@@ -452,7 +452,6 @@ Return JSON only.
             right: 0,
             bottom: 0,
             left: 0,
-            paddingBottom: insets.bottom + spacing.lg + 80 + spacing.md,
           }}
         >
           <View
@@ -485,6 +484,12 @@ Return JSON only.
             <View style={{ width: "9%", backgroundColor: SCAN_DIM }} />
           </View>
           <View style={{ flex: 1, backgroundColor: SCAN_DIM }} />
+          <View
+            style={{
+              height: insets.bottom + spacing.lg + 80,
+              backgroundColor: SCAN_DIM,
+            }}
+          />
         </View>
         <View
           pointerEvents="box-none"
