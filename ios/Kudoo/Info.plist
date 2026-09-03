@@ -41,7 +41,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>fb2045759616362582</string>
+          <string>fb1530308582445977</string>
         </array>
       </dict>
     </array>
@@ -50,13 +50,13 @@
     <key>FacebookAdvertiserIDCollectionEnabled</key>
     <true/>
     <key>FacebookAppID</key>
-    <string>2045759616362582</string>
+    <string>1530308582445977</string>
     <key>FacebookAutoInitEnabled</key>
     <true/>
     <key>FacebookAutoLogAppEventsEnabled</key>
     <true/>
     <key>FacebookClientToken</key>
-    <string>7b9551bf874f26d6c443886b0a25aec9</string>
+    <string>87df39fb66ab9a7704e834bdf6c6b89c</string>
     <key>FacebookDisplayName</key>
     <string>Kudoo</string>
     <key>LSApplicationQueriesSchemes</key>
