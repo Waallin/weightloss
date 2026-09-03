@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Made scanned meals use shorter, more casual names instead of listing every ingredient
 - Changed paywall
 - Enchanced the UI/UX on onboarding
+- Changed meta-project
 
 # Fixed
 - Fixed bug with opacity att scanview
