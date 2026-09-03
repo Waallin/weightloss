@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Tracking to mixpanel when scanning food
+- Added dynamic prices at paywall
+- You can now use cm, m, pounds, and kg when entering measurements
 
 ### Changed
 - Enhanced the UI/UX for the AI-based food scanning feature
@@ -17,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved the design and flow of the paywall
 - Made scanned meals use shorter, more casual names instead of listing every ingredient
 - Changed paywall
+- Enchanced the UI/UX on onboarding
 
 # Fixed
 - Fixed bug with opacity att scanview

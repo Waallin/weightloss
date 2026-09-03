@@ -18,6 +18,7 @@ const PaywallScreen: React.FC = () => {
   const { config } = useConfigStore();
   const { user } = useUserStore();
   const { products } = useRevCatStore();
+  console.log("🚀 ~ PaywallScreen ~ products:", products)
 
   useEffect(() => {
     trackMixpanelEvent("Paywall_viewed");
@@ -41,7 +42,7 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "reminder") {
     return (
       <ReminderPaywall
-        products={products}
+        product={products?.annual.product}
         onCTAPress={handleCTAPress}
         loading={loading}
         onRestorePurchases={handleRestorePurchases}

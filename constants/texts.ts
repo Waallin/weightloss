@@ -46,7 +46,7 @@ export const typography = {
   },
   body: {
     fontFamily: fonts.primary.regular,
-    fontSize: textSizes.sm,
+    fontSize: textSizes.md,
     fontWeight: "400" as const,
   },
   small: {
@@ -83,7 +83,7 @@ export const typography = {
   },
   screenTitle: {
     fontFamily: fonts.primary.bold,
-    fontSize: textSizes.xxxl,
+    fontSize: textSizes.display,
     fontWeight: "700" as const,
   },
   headline: {
@@ -336,23 +336,27 @@ export const authCopy = {
     {
       id: 1,
       title: "Your day, simplified",
-      description: [
+      subtitle: "Three habits. That's the whole plan.",
+      items: [
         "Walk a little",
         "Stay hydrated",
-        " Stay within your points",
-      ].join("\n"),
-      imageKey: "threeFingers",
+        "Stay within your points",
+      ],
+      cta: "Make it simple",
+      imageKey: "waving",
     },
     {
       id: 2,
       title: "No calories. Just points",
-      description: "Our recipes are designed to make healthy eating feel simple",
+      subtitle: "No complicated tracking. Just follow your points.",
+      cta: "Yes, please",
       imageKey: "standing",
     },
     {
       id: 3,
       title: "You're all set",
-      description: "Start simple, results will follow",
+      subtitle: "Start simple, results will follow",
+      cta: "Let’s do this",
       imageKey: "thumbsUp",
     },
   ],

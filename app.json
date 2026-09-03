@@ -25,10 +25,10 @@
       [
         "react-native-fbsdk-next",
         {
-          "appID": "2045759616362582",
-          "clientToken": "7b9551bf874f26d6c443886b0a25aec9",
+          "appID": "1530308582445977",
+          "clientToken": "87df39fb66ab9a7704e834bdf6c6b89c",
           "displayName": "Kudoo",
-          "scheme": "fb2045759616362582",
+          "scheme": "fb1530308582445977",
           "advertiserIDCollectionEnabled": true,
           "autoLogAppEventsEnabled": true,
           "isAutoInitEnabled": true,

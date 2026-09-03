@@ -1,11 +1,12 @@
 import React, { useEffect } from "react";
 import { Text, View, ScrollView } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MotiView } from "moti";
 import { spacing } from "../../constants/spacing";
 import { ReduceMotion } from "react-native-reanimated";
 import SocialProofItem from "./components/SocialProofItem";
 import { globalStyles } from "../../constants/globalStyles";
-import { planBuildingCopy, typography } from "../../constants/texts";
+import { planBuildingCopy, textStyles } from "../../constants/texts";
 import { colors } from "../../constants/colors";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -21,44 +22,59 @@ import { trackMixpanelEvent } from "../../services/mixpanel";
 
 const dummySocialProof = [
   {
-    name: "Kudoo user",
+    name: "Sara L.",
+    role: "Kudoo user",
     rating: 4.9,
     ratingMax: 5,
     headline: "Feeling lighter in the first week",
     quote:
       "“I just followed the recipes and tracked points instead of calories. It’s so much easier to stick to.”",
+    avatarColor: colors.ui.listRowIconBackground,
+    avatarImage: require("../../assets/users/sara.jpg"),
   },
   {
-    name: "Kudoo user",
+    name: "Marcus K.",
+    role: "Kudoo user",
     rating: 5,
     ratingMax: 5,
     headline: "Finally seeing progress",
     quote:
       "“Not having to count calories changed everything. The points system just makes sense.”",
+    avatarColor: colors.ui.primarySoft,
+    avatarImage: require("../../assets/users/marcus.jpg"),
   },
   {
-    name: "Kudoo user",
+    name: "Amina T.",
+    role: "Kudoo user",
     rating: 5,
     ratingMax: 5,
-    headline: "Lost 13lb without overthinking",
+    headline: "Lost 13 lb without overthinking",
     quote:
       "“I don’t think about food all day anymore. I just follow the points and it works.”",
+    avatarColor: colors.ui.warning,
+    avatarImage: require("../../assets/users/amina.jpg"),
   },
   {
-    name: "Kudoo user",
+    name: "Jonas P.",
+    role: "Kudoo user",
     rating: 4.9,
     ratingMax: 5,
     headline: "Actually started moving more",
     quote:
       "“Seeing my steps affect my points made it fun to move more. I’ve never been this consistent.”",
+    avatarColor: colors.ui.accentSoft,
+    avatarImage: require("../../assets/users/jonas.jpg"),
   },
   {
-    name: "Kudoo user",
+    name: "Emily R.",
+    role: "Kudoo user",
     rating: 5,
     ratingMax: 5,
     headline: "So simple compared to calories",
     quote:
       "“Counting calories always stressed me out. Points are way easier and less overwhelming.”",
+    avatarColor: colors.ui.iconContainer,
+    avatarImage: require("../../assets/users/emily.jpg"),
   },
 ];
 
@@ -88,17 +104,13 @@ const SocialProofScreen = () => {
   const renderHeader = () => (
     <View
       style={{
-        marginBottom: spacing.xl,
+        marginBottom: spacing.lg,
         width: "100%",
-        alignItems: "center",
-        justifyContent: "center",
       }}
     >
       <Text
         style={{
-          ...typography.socialProofStat,
-          color: colors.text.primary,
-          textAlign: "center",
+          ...textStyles.onboardingTitle,
           marginBottom: spacing.xs,
         }}
       >
@@ -106,12 +118,11 @@ const SocialProofScreen = () => {
       </Text>
       <Text
         style={{
-          ...typography.bodyMedium,
-          color: colors.text.secondary,
-          textAlign: "center",
+          ...textStyles.onboardingBody,
+          lineHeight: 22,
         }}
       >
-        You're not alone in this
+        You're not alone in this.
       </Text>
     </View>
   );
@@ -152,12 +163,12 @@ const SocialProofScreen = () => {
   );
 
   return (
-    <View style={{ ...globalStyles.container }}>
+    <SafeAreaView style={{ ...globalStyles.container }} edges={["top"]}>
       <ScrollView
         style={{ flex: 1, width: "100%" }}
         contentContainerStyle={{
-          justifyContent: "center",
-          alignItems: "center",
+          paddingTop: spacing.md,
+          paddingBottom: spacing.md,
         }}
         showsVerticalScrollIndicator={false}
       >
@@ -167,7 +178,7 @@ const SocialProofScreen = () => {
       <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
         {isPlanReady ? renderButton() : renderLoadingComponent()}
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 

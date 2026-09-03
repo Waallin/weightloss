@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Animated, Easing, Linking, Text, TouchableOpacity, View } from "react-native";
+import {
+  Animated,
+  Easing,
+  Linking,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { textStyles } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
@@ -18,6 +25,7 @@ const WINNING_INDEX = 0;
 const SPIN_DURATION_MS = 6500;
 import { useNavigation } from "@react-navigation/native";
 import useConfigStore from "../../../stores/useConfigStore";
+
 const WHEEL_SEGMENTS = [
   { id: 0, label: "⭐ 1 Month", color: colors.ui.primary },
   { label: "3 Days", color: "#E5E7EB" },
@@ -52,10 +60,12 @@ const describeSegment = (
   return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
 };
 
-const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestorePurchases: () => void }> = ({
-  onCTAPress,
-  onRestorePurchases,
-}) => {
+const ReminderPaywall: React.FC<{
+  product: any;
+  onCTAPress: (plan: "annual") => void;
+  onRestorePurchases: () => void;
+}> = ({ product, onCTAPress, onRestorePurchases }) => {
+  console.log("🚀 ~ ReminderPaywall ~ product:", product);
   const [activeScreen, setActiveScreen] = useState(3);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
@@ -93,7 +103,6 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   const handleCTAPress = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     if (activeScreen === 0) {
-      
       setActiveScreen(showSpinner ? 2 : 3);
     } else if (activeScreen === 1) {
       setActiveScreen(showSpinner ? 2 : 3);
@@ -107,14 +116,13 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   const renderCTAText = () => {
     switch (activeScreen) {
       case 0:
-        return "Try for $0.00";
+        return `Try for ${product?.introPrice?.priceString ?? "0,00 kr"}`;
       case 1:
         return "Continue for FREE";
       case 2:
         return hasSpun ? "Claim 1 month free" : "Spin the wheel";
       case 3:
-
-      return "Start FREE Trial";
+        return "Start FREE Trial";
       default:
         return "";
     }
@@ -126,9 +134,7 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   const handleSpin = async () => {
     if (isSpinning || hasSpun) return;
 
-    await trackMixpanelEvent(
-      "paywall_spin_wheel",
-    );
+    await trackMixpanelEvent("paywall_spin_wheel");
 
     setIsSpinning(true);
     // Continuous ease-out: crawl through previous segment, land at start of "1 month".
@@ -254,8 +260,7 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
   };
 
   const renderBelowButtonText = () => {
-
-    return "No commitments. Cancel anytime.";
+    return `30-day free trial — then ${product?.priceString ?? ""}/${product?.subscriptionPeriod === "P1Y" ? "year" : "month"}`;
   };
 
   const renderFirstScreen = () => {
@@ -489,8 +494,8 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
         highlight: true,
       },
       {
-        title: "In 30 Days — Only $2.98 a week",
-        subtitle: "Billed annually • $154.99",
+        title: `In 30 Days — Only ${product?.pricePerWeekString ?? ""} a week`,
+        subtitle: `Billed annually`,
         icon: "crown-outline",
         iconBg: "#111827",
       },
@@ -591,7 +596,13 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
         </Text>
 
         <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity onPress={() => Linking.openURL("https://sites.google.com/view/privacypolicy--app/home")}>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://sites.google.com/view/privacypolicy--app/home",
+              )
+            }
+          >
             <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
               Privacy
             </Text>
@@ -601,7 +612,13 @@ const ReminderPaywall: React.FC<{ onCTAPress: (plan: "annual") => void, onRestor
               Restore Purchases
             </Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => Linking.openURL("https://sites.google.com/view/app--termsofuse/home")}>
+          <TouchableOpacity
+            onPress={() =>
+              Linking.openURL(
+                "https://sites.google.com/view/app--termsofuse/home",
+              )
+            }
+          >
             <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
               Terms
             </Text>

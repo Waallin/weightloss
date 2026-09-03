@@ -5,7 +5,7 @@ import { MotiView, MotiText } from 'moti';
 import { colors } from '../../../constants/colors';
 import { spacing } from '../../../constants/spacing';
 import { ReduceMotion } from 'react-native-reanimated';
-import { typography } from '../../../constants/texts';
+import { textStyles, typography } from '../../../constants/texts';
 
 interface ProfileStepSectionProps {
   title: string;
@@ -44,8 +44,7 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'timing', duration: 410, delay: 80, reduceMotion: ReduceMotion.Never }}
           style={{
-            alignItems: 'center',
-            gap: spacing.md,
+            gap: spacing.sm,
           }}
         >
           <MotiText
@@ -53,9 +52,7 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
             animate={{ opacity: 1, translateY: 0 }}
             transition={{ type: 'timing', duration: 450, delay: 120, reduceMotion: ReduceMotion.Never }}
             style={{
-              ...typography.socialProofStat,
-              color: colors.text.primary,
-              textAlign: 'center',
+              ...textStyles.onboardingTitle,
             }}
           >
             {title}
@@ -64,15 +61,11 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
             from={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ type: 'timing', duration: 440, delay: 200, reduceMotion: ReduceMotion.Never }}
-            style={{
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.md,
+            style={{       
               borderRadius: spacing.borderRadius,
               flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
               gap: spacing.xs,
-              width: '80%',
             }}
           >
             <MotiText
@@ -80,9 +73,8 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
               animate={{ opacity: 1, translateY: 0 }}
               transition={{ type: 'timing', duration: 440, delay: 230, reduceMotion: ReduceMotion.Never }}
               style={{
-                ...typography.titleMedium,
-                color: colors.text.primary,
-                textAlign: 'center',
+                ...textStyles.onboardingBody,
+                lineHeight: 22,
               }}
             >
               {description}
@@ -129,14 +121,14 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
           animate={{ opacity: 1, translateY: 0 }}
           transition={{ type: 'timing', duration: 420, delay: 350, reduceMotion: ReduceMotion.Never }}
           style={{
-            ...typography.titleMedium,
+            ...typography.body,
             color: colors.text.secondary,
           }}
         >
           {summaryLabel}{' '}
           <Text
             style={{
-              ...typography.cardTitle,
+              ...typography.bodySemiBold,
               color: colors.text.primary,
             }}
           >

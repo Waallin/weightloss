@@ -41,7 +41,7 @@ export const AuthNavigator = () => {
       <Stack.Screen
         name="ProfileDetails"
         component={ProfileDetailsScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false  }}
       />
       <Stack.Screen
         name="Auth"

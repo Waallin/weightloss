@@ -1,4 +1,6 @@
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { MaterialIcons } from "@expo/vector-icons";
 import React, { useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
@@ -19,9 +21,16 @@ import {
   feetInchesToCm,
   formatFeetInches,
   formatLb,
+  HEIGHT_MAX_CM,
+  HEIGHT_MIN_CM,
   kgToLb,
   lbToKg,
 } from "../../utils/units";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+const SPOTLIGHT_OUTER = Math.min(SCREEN_WIDTH * 0.78, 320);
+const SPOTLIGHT_IMAGE_SIZE = SPOTLIGHT_OUTER * 0.84;
 
 const currentYear = new Date().getFullYear();
 const BIRTH_YEARS = (() => {
@@ -36,8 +45,83 @@ const WEIGHT_IN_LB = (() => {
   return list;
 })();
 
+const WEIGHT_IN_KG = (() => {
+  const list: number[] = [];
+  for (let kg = 40; kg <= 120; kg += 1) list.push(kg);
+  return list;
+})();
+
+const HEIGHT_CM_OPTIONS = (() => {
+  const list: number[] = [];
+  for (let cm = HEIGHT_MIN_CM; cm <= HEIGHT_MAX_CM; cm += 1) list.push(cm);
+  return list;
+})();
+
+type GenderChoice = "Male" | "Female" | "Prefer not to say";
+
 const FEET_OPTIONS = [3, 4, 5, 6, 7];
 const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+
+const snapToRange = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, Math.round(value)));
+
+function UnitToggle<T extends string>({
+  options,
+  value,
+  onChange,
+}: {
+  options: readonly T[];
+  value: T;
+  onChange: (next: T) => void;
+}) {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignSelf: "center",
+        padding: spacing.xs,
+        backgroundColor: colors.ui.secondaryBackground,
+        borderRadius: spacing.borderRadius,
+        marginBottom: spacing.md,
+      }}
+    >
+      {options.map((option) => {
+        const active = value === option;
+        return (
+          <TouchableOpacity
+            key={option}
+            activeOpacity={0.85}
+            onPress={() => {
+              if (value === option) return;
+              haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+              onChange(option);
+            }}
+            style={{
+              paddingVertical: spacing.sm,
+              paddingHorizontal: spacing.lg,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: spacing.borderRadius,
+              backgroundColor: active ? colors.ui.white : "#E3E3E9",
+              borderWidth: active ? 1 : 0,
+              borderColor: colors.ui.cardBorder,
+              ...(active ? globalStyles.shadow : {}),
+            }}
+          >
+            <Text
+              style={{
+                ...(active ? typography.bodySemiBold : typography.body),
+                color: active ? colors.text.primary : colors.text.secondary,
+              }}
+            >
+              {option}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
 
 const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
   return (
@@ -69,7 +153,11 @@ const ProfileDetailsScreen = () => {
   const [startWeight, setStartWeight] = useState<number>(70);
   const [goalWeight, setGoalWeight] = useState<number>(70);
   const [height, setHeight] = useState<number>(175);
-  const [gender, setGender] = useState<"Male" | "Female">("Male");
+  const [genderChoice, setGenderChoice] = useState<GenderChoice>("Male");
+  const gender: "Male" | "Female" =
+    genderChoice === "Female" ? "Female" : "Male";
+  const [heightUnit, setHeightUnit] = useState<"ft" | "cm">("ft");
+  const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
 
@@ -119,11 +207,12 @@ const ProfileDetailsScreen = () => {
             <Text
               style={{
                 ...typography.headline,
-                color: colors.text.primary,
-                textDecorationLine: "underline",
+                fontWeight: "400",
+                color: colors.ui.primary,
+                
               }}
             >
-              ←
+              Back
             </Text>
           </TouchableOpacity>
         )}
@@ -144,7 +233,7 @@ const ProfileDetailsScreen = () => {
     return (
       <ProfileStepSection
         title="How old are you?"
-        description="So we set a plan that actually works for you."
+        description="We’ll use this so the plan actually fits you."
         summaryIconName="person"
         summaryLabel="Selected age:"
         summaryValue={`${age}`}
@@ -160,90 +249,258 @@ const ProfileDetailsScreen = () => {
   };
 
   const renderGenderStep = () => {
+    const options: Array<"Male" | "Female"> = ["Male", "Female"];
+    const renderOption = (option: GenderChoice) => {
+      const active = genderChoice === option;
+      return (
+        <TouchableOpacity
+          key={option}
+          activeOpacity={0.85}
+          onPress={() => {
+            if (genderChoice === option) return;
+            haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+            setGenderChoice(option);
+          }}
+          style={{
+            flex: 1,
+            paddingVertical: spacing.md,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: spacing.borderRadius,
+            backgroundColor: active ? colors.ui.white : "#E3E3E9",
+            borderWidth: active ? 1 : 0,
+            borderColor: colors.ui.cardBorder,
+            ...(active ? globalStyles.shadow : {}),
+          }}
+        >
+          <Text
+            style={{
+              ...(active ? typography.bodySemiBold : typography.body),
+              color: active ? colors.text.primary : colors.text.secondary,
+            }}
+          >
+            {option}
+          </Text>
+        </TouchableOpacity>
+      );
+    };
+
     return (
       <ProfileStepSection
         title="What is your gender?"
-        description="Used to tailor your plan."
+        description="Just so we can tailor your targets."
         summaryIconName="person"
         summaryLabel="Selected gender:"
-        summaryValue={gender}
+        summaryValue={genderChoice}
       >
-        <WheelPicker<string>
-          data={["Male", "Female"]}
-          value={gender}
-          onChange={(g) => setGender(g as "Male" | "Female")}
-          getLabel={(g) => g}
-        />
-      </ProfileStepSection>
-    );
-  };
-
-  const renderHeightStep = () => {
-    const { feet, inches } = cmToFeetInches(height);
-    return (
-      <ProfileStepSection
-        title="What is your height?"
-        description="So we can fine-tune your daily targets."
-        summaryIconName="person"
-        summaryLabel="Selected height:"
-        summaryValue={formatFeetInches(feet, inches)}
-      >
-        <View style={{ flexDirection: "row", width: "100%", gap: spacing.xl, justifyContent: "center" }}>
-          <View style={{}}>
-            <WheelPicker<number>
-              data={FEET_OPTIONS}
-              value={feet}
-              onChange={(ft) => setHeight(feetInchesToCm(ft, inches))}
-              getLabel={(ft) => `${ft} ft`}
-            />
+        <View style={{ width: "100%", gap: spacing.sm }}>
+          <View
+            style={{
+              flexDirection: "row",
+              padding: spacing.xs,
+              backgroundColor: colors.ui.secondaryBackground,
+              borderRadius: spacing.borderRadius,
+            }}
+          >
+            {options.map((option) => renderOption(option))}
           </View>
-          <View style={{}}>
-            <WheelPicker<number>
-              data={INCHES_OPTIONS}
-              value={inches}
-              onChange={(inch) => setHeight(feetInchesToCm(feet, inch))}
-              getLabel={(inch) => `${inch} in`}
-            />
+
+          <View
+            style={{
+              padding: spacing.xs,
+              backgroundColor: colors.ui.secondaryBackground,
+              borderRadius: spacing.borderRadius,
+            }}
+          >
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => {
+                if (genderChoice === "Prefer not to say") return;
+                haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+                setGenderChoice("Prefer not to say");
+              }}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: spacing.sm,
+                paddingVertical: spacing.md,
+                paddingHorizontal: spacing.md,
+                borderRadius: spacing.borderRadius,
+                backgroundColor:
+                  genderChoice === "Prefer not to say"
+                    ? colors.ui.white
+                    : "#E3E3E9",
+                borderWidth: genderChoice === "Prefer not to say" ? 1 : 0,
+                borderColor: colors.ui.cardBorder,
+                ...(genderChoice === "Prefer not to say"
+                  ? globalStyles.shadow
+                  : {}),
+              }}
+            >
+              <Text
+                style={{
+                  ...(genderChoice === "Prefer not to say"
+                    ? typography.bodySemiBold
+                    : typography.body),
+                  color:
+                    genderChoice === "Prefer not to say"
+                      ? colors.text.primary
+                      : colors.text.secondary,
+                }}
+              >
+                Prefer not to say
+              </Text>
+              <MaterialIcons
+                name="chevron-right"
+                size={20}
+                color={
+                  genderChoice === "Prefer not to say"
+                    ? colors.text.primary
+                    : colors.text.secondary
+                }
+              />
+            </TouchableOpacity>
           </View>
         </View>
       </ProfileStepSection>
     );
   };
 
+  const renderHeightStep = () => {
+    const { feet, inches } = cmToFeetInches(height);
+    const heightCm = snapToRange(height, HEIGHT_MIN_CM, HEIGHT_MAX_CM);
+    return (
+      <ProfileStepSection
+        title="What is your height?"
+        description="Helps us set your daily points."
+        summaryIconName="person"
+        summaryLabel="Selected height:"
+        summaryValue={
+          heightUnit === "ft"
+            ? formatFeetInches(feet, inches)
+            : `${heightCm} cm`
+        }
+      >
+        <View style={{ width: "100%", alignItems: "center" }}>
+          <UnitToggle
+            options={["ft", "cm"] as const}
+            value={heightUnit}
+            onChange={setHeightUnit}
+          />
+          {heightUnit === "ft" ? (
+            <View
+              style={{
+                flexDirection: "row",
+                width: "100%",
+                gap: spacing.xl,
+                justifyContent: "center",
+              }}
+            >
+              <View>
+                <WheelPicker<number>
+                  data={FEET_OPTIONS}
+                  value={feet}
+                  onChange={(ft) => setHeight(feetInchesToCm(ft, inches))}
+                  getLabel={(ft) => `${ft} ft`}
+                />
+              </View>
+              <View>
+                <WheelPicker<number>
+                  data={INCHES_OPTIONS}
+                  value={inches}
+                  onChange={(inch) => setHeight(feetInchesToCm(feet, inch))}
+                  getLabel={(inch) => `${inch} in`}
+                />
+              </View>
+            </View>
+          ) : (
+            <WheelPicker<number>
+              data={HEIGHT_CM_OPTIONS}
+              value={heightCm}
+              onChange={setHeight}
+              getLabel={(cm) => `${cm} cm`}
+            />
+          )}
+        </View>
+      </ProfileStepSection>
+    );
+  };
+
   const renderWeightStep = () => {
+    const weightKg = snapToRange(startWeight, 40, 120);
+    const isLb = weightUnit === "lb";
     return (
       <ProfileStepSection
         title="How much do you weigh?"
-        description="No pressure — just a starting point."
+        description="No pressure. Just a starting point."
         summaryIconName="person"
         summaryLabel="Selected weight:"
-        summaryValue={`${formatLb(kgToLb(startWeight))} lb`}
+        summaryValue={
+          isLb ? `${formatLb(kgToLb(startWeight))} lb` : `${weightKg} kg`
+        }
       >
-        <WheelPicker<number>
-          data={WEIGHT_IN_LB}
-          value={kgToLb(startWeight)}
-          onChange={(lb) => setStartWeight(lbToKg(lb))}
-          getLabel={(lb) => formatLb(lb)}
-        />
+        <View style={{ width: "100%", alignItems: "center" }}>
+          <UnitToggle
+            options={["lb", "kg"] as const}
+            value={weightUnit}
+            onChange={setWeightUnit}
+          />
+          {isLb ? (
+            <WheelPicker<number>
+              data={WEIGHT_IN_LB}
+              value={kgToLb(startWeight)}
+              onChange={(lb) => setStartWeight(lbToKg(lb))}
+              getLabel={(lb) => formatLb(lb)}
+            />
+          ) : (
+            <WheelPicker<number>
+              data={WEIGHT_IN_KG}
+              value={weightKg}
+              onChange={setStartWeight}
+              getLabel={(kg) => String(kg)}
+            />
+          )}
+        </View>
       </ProfileStepSection>
     );
   };
 
   const renderGoalWeightStep = () => {
+    const weightKg = snapToRange(goalWeight, 40, 120);
+    const isLb = weightUnit === "lb";
     return (
       <ProfileStepSection
         title="What is your goal weight?"
-        description="You can always adjust this later."
+        description="You can always change this later."
         summaryIconName="person"
         summaryLabel="Selected goal weight:"
-        summaryValue={`${formatLb(kgToLb(goalWeight))} lb`}
+        summaryValue={
+          isLb ? `${formatLb(kgToLb(goalWeight))} lb` : `${weightKg} kg`
+        }
       >
-        <WheelPicker<number>
-          data={WEIGHT_IN_LB}
-          value={kgToLb(goalWeight)}
-          onChange={(lb) => setGoalWeight(lbToKg(lb))}
-          getLabel={(lb) => formatLb(lb)}
-        />
+        <View style={{ width: "100%", alignItems: "center" }}>
+          <UnitToggle
+            options={["lb", "kg"] as const}
+            value={weightUnit}
+            onChange={setWeightUnit}
+          />
+          {isLb ? (
+            <WheelPicker<number>
+              data={WEIGHT_IN_LB}
+              value={kgToLb(goalWeight)}
+              onChange={(lb) => setGoalWeight(lbToKg(lb))}
+              getLabel={(lb) => formatLb(lb)}
+            />
+          ) : (
+            <WheelPicker<number>
+              data={WEIGHT_IN_KG}
+              value={weightKg}
+              onChange={setGoalWeight}
+              getLabel={(kg) => String(kg)}
+            />
+          )}
+        </View>
       </ProfileStepSection>
     );
   };
@@ -262,8 +519,24 @@ const ProfileDetailsScreen = () => {
   };
   const renderPlanCreated = () => {
     const goalDeltaKg = Math.abs((user?.goalWeight ?? 0) - (user?.startWeight ?? 0));
+    const goalDeltaLabel =
+      weightUnit === "lb"
+        ? `${formatLb(kgToLb(goalDeltaKg))} lbs`
+        : `${Math.round(goalDeltaKg)} kg`;
+    const targetValue =
+      goalDirection === "maintain"
+        ? "Maintain weight"
+        : `${goalDirection === "lose" ? "Lose" : "Gain"} ${goalDeltaLabel}`;
+
+    const planRows = [
+      { label: "Daily steps", value: "5,000", highlight: false },
+      { label: "Daily water", value: "10 glasses", highlight: false },
+      { label: "Recipes", value: "Personalized", highlight: false },
+      { label: "Target", value: targetValue, highlight: true },
+    ];
+
     return (
-      <View style={globalStyles.container}>
+      <SafeAreaView style={globalStyles.container} edges={["bottom"]}>
 
         <MotiView
           from={{ opacity: 0 }}
@@ -298,21 +571,29 @@ const ProfileDetailsScreen = () => {
                 reduceMotion: ReduceMotion.Never,
               }}
               style={{
-                width: 220,
-                height: 220,
-                borderRadius: 110,
-                backgroundColor: colors.ui.secondaryBackground,
+                width: SPOTLIGHT_OUTER,
+                height: SPOTLIGHT_OUTER,
                 alignItems: "center",
                 justifyContent: "center",
-                marginBottom: spacing.xl,
-                ...globalStyles.shadow,
-                overflow: "hidden",
+                marginBottom: spacing.md,
               }}
             >
+              <View
+                style={{
+                  position: "absolute",
+                  width: SPOTLIGHT_OUTER,
+                  height: SPOTLIGHT_OUTER,
+                  borderRadius: SPOTLIGHT_OUTER / 2,
+                  backgroundColor: "rgba(255,255,255,0.35)",
+                }}
+              />
               <Image
                 source={require("../../assets/mascot/thumbsUp.png")}
-                resizeMode="cover"
-                style={{ width: "100%", height: "100%" }}
+                resizeMode="contain"
+                style={{
+                  width: SPOTLIGHT_IMAGE_SIZE,
+                  height: SPOTLIGHT_IMAGE_SIZE,
+                }}
               />
             </MotiView>
 
@@ -329,8 +610,7 @@ const ProfileDetailsScreen = () => {
             >
               <Text
                 style={{
-                  ...typography.screenTitle,
-                  color: colors.text.primary,
+                  ...textStyles.onboardingTitle,
                   textAlign: "center",
                   marginBottom: spacing.sm,
                 }}
@@ -352,10 +632,10 @@ const ProfileDetailsScreen = () => {
             >
               <Text
                 style={{
-                  ...textStyles.secondary,
+                  ...textStyles.onboardingBody,
                   textAlign: "center",
                   paddingHorizontal: spacing.sm,
-                  lineHeight: 20,
+                  lineHeight: 22,
                   marginBottom: spacing.lg,
                 }}
               >
@@ -372,202 +652,85 @@ const ProfileDetailsScreen = () => {
                 delay: 210,
                 reduceMotion: ReduceMotion.Never,
               }}
-              style={{
-                width: "100%",
-                backgroundColor: colors.ui.componentBackground,
-                borderRadius: spacing.borderRadius,
-                padding: spacing.lg,
-                borderWidth: 1,
-                borderColor: colors.ui.cardBorder,
-                ...globalStyles.shadow,
-              }}
+              style={{ width: "100%" }}
             >
-              <View style={{ marginBottom: spacing.md }}>
-                <Text
-                  style={{
-                    ...typography.cardTitle,
-                    color: colors.text.primary,
-                    marginBottom: spacing.xs,
-                  }}
-                >
-                  Your personalized plan is ready
-                </Text>
-                <Text
-                  style={{
-                    ...textStyles.secondary,
-                    lineHeight: 20,
-                  }}
-                >
-                  Based on your goals and profile:
-                </Text>
-              </View>
-
-              <View style={{ gap: spacing.sm, marginBottom: spacing.md }}>
-
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    gap: spacing.sm,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 1,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.buttonSecondary,
-                        color: colors.ui.primary,
-                      }}
-                    >
-                      🚶
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...textStyles.secondary,
-                      flex: 1,
-                      lineHeight: 20,
-                    }}
-                  >
-                    Daily step goal: 5,000
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    gap: spacing.sm,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 1,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.buttonSecondary,
-                        color: colors.ui.primary,
-                      }}
-                    >
-                      💧
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...textStyles.secondary,
-                      flex: 1,
-                      lineHeight: 20,
-                    }}
-                  >
-                    Daily water goal: 10 glasses
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    gap: spacing.sm,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 1,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.buttonSecondary,
-                        color: colors.ui.primary,
-                      }}
-                    >
-                      🍽️
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...textStyles.secondary,
-                      flex: 1,
-                      lineHeight: 20,
-                    }}
-                  >
-                    Personalized recipes for every day
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "flex-start",
-                    gap: spacing.sm,
-                  }}
-                >
-                  <View
-                    style={{
-                      width: 22,
-                      height: 22,
-                      borderRadius: 11,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 1,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        ...typography.buttonSecondary,
-                        color: colors.ui.primary,
-                      }}
-                    >
-                      💪
-                    </Text>
-                  </View>
-                  <Text
-                    style={{
-                      ...textStyles.secondary,
-                      flex: 1,
-                      lineHeight: 20,
-                    }}
-                  >
-                    Designed to help you lose {formatLb(kgToLb(goalDeltaKg))} lbs
-                  </Text>
-                </View>
-              </View>
+              <Text
+                style={{
+                  ...typography.captionSemiBold,
+                  color: colors.text.secondary,
+                  letterSpacing: 0.6,
+                  marginBottom: spacing.sm,
+                }}
+              >
+                YOUR PERSONALIZED PLAN
+              </Text>
 
               <View
                 style={{
-                  backgroundColor: colors.ui.accentSoft,
-                  borderRadius: 999,
-                  paddingVertical: spacing.sm,
-                  paddingHorizontal: spacing.md,
-                  alignSelf: "flex-start",
+                  width: "100%",
+                  backgroundColor: colors.ui.componentBackground,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: colors.ui.cardBorder,
+                  ...globalStyles.shadow,
+                  overflow: "hidden",
                 }}
               >
-                <Text
-                  style={{
-                    ...typography.buttonSecondary,
-                    color: colors.text.primary,
-                  }}
-                >
-                  {authCopy.planReadySocialProof}
-                </Text>
+                {planRows.map((row, index) => (
+                  <View key={row.label}>
+                    {index > 0 ? (
+                      <View
+                        style={{
+                          height: 1,
+                          backgroundColor: colors.ui.cardBorder,
+                          marginHorizontal: spacing.md,
+                        }}
+                      />
+                    ) : null}
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: spacing.md,
+                        paddingVertical: spacing.md,
+                        paddingHorizontal: spacing.md,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          ...typography.body,
+                          color: colors.text.primary,
+                        }}
+                      >
+                        {row.label}
+                      </Text>
+                      <Text
+                        style={{
+                          ...(row.highlight
+                            ? typography.bodySemiBold
+                            : typography.body),
+                          color: row.highlight
+                            ? colors.ui.primary
+                            : colors.text.secondary,
+                        }}
+                      >
+                        {row.value}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
               </View>
+
+              <Text
+                style={{
+                  ...typography.small,
+                  color: colors.text.secondary,
+                  marginTop: spacing.sm,
+                }}
+              >
+                {authCopy.planReadySocialProof}
+              </Text>
             </MotiView>
           </MotiView>
           <MotiView
@@ -585,13 +748,13 @@ const ProfileDetailsScreen = () => {
             }}
           ></MotiView>
         </MotiView>
-        <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+        <View style={{ paddingBottom: spacing.sm }}>
           <PrimaryButtonComponent
             title="Unlock my plan"
             onPress={handleCreatePlan}
           />
         </View>
-      </View>
+      </SafeAreaView>
     );
   };
 
@@ -626,7 +789,7 @@ const ProfileDetailsScreen = () => {
   }
 
   return (
-    <View style={globalStyles.container}>
+    <SafeAreaView style={globalStyles.container} edges={["bottom"]}>
       <View style={{ flex: 1 }}>
         <View
           style={{
@@ -664,10 +827,10 @@ const ProfileDetailsScreen = () => {
           </View>
         </View>
       </View>
-      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
-        <PrimaryButtonComponent title={"Continue"} onPress={handleNext} />
+      <View style={{ paddingBottom: spacing.sm }}>
+        <PrimaryButtonComponent title="Continue" onPress={handleNext} />
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
