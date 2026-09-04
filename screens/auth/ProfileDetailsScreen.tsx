@@ -8,6 +8,7 @@ import { colors } from "../../constants/colors";
 import { authCopy, textStyles, typography } from "../../constants/texts";
 import { spacing } from "../../constants/spacing";
 import WheelPicker from "../../components/WheelPicker";
+import UnitToggle from "../../components/UnitToggle";
 import ProfileStepSection from "./components/ProfileStepSection";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
@@ -15,6 +16,7 @@ import * as haptics from "expo-haptics";
 import { MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
+import useUnitsStore from "../../stores/useUnitsStore";
 import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 import {
   cmToFeetInches,
@@ -41,13 +43,13 @@ const BIRTH_YEARS = (() => {
 
 const WEIGHT_IN_LB = (() => {
   const list: number[] = [];
-  for (let lb = kgToLb(40); lb <= kgToLb(120); lb += 1) list.push(lb);
+  for (let lb = kgToLb(40); lb <= kgToLb(200); lb += 1) list.push(lb);
   return list;
 })();
 
 const WEIGHT_IN_KG = (() => {
   const list: number[] = [];
-  for (let kg = 40; kg <= 120; kg += 1) list.push(kg);
+  for (let kg = 40; kg <= 200; kg += 1) list.push(kg);
   return list;
 })();
 
@@ -64,64 +66,6 @@ const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 
 const snapToRange = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, Math.round(value)));
-
-function UnitToggle<T extends string>({
-  options,
-  value,
-  onChange,
-}: {
-  options: readonly T[];
-  value: T;
-  onChange: (next: T) => void;
-}) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignSelf: "center",
-        padding: spacing.xs,
-        backgroundColor: colors.ui.secondaryBackground,
-        borderRadius: spacing.borderRadius,
-        marginBottom: spacing.md,
-      }}
-    >
-      {options.map((option) => {
-        const active = value === option;
-        return (
-          <TouchableOpacity
-            key={option}
-            activeOpacity={0.85}
-            onPress={() => {
-              if (value === option) return;
-              haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-              onChange(option);
-            }}
-            style={{
-              paddingVertical: spacing.sm,
-              paddingHorizontal: spacing.lg,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: spacing.borderRadius,
-              backgroundColor: active ? colors.ui.white : "#E3E3E9",
-              borderWidth: active ? 1 : 0,
-              borderColor: colors.ui.cardBorder,
-              ...(active ? globalStyles.shadow : {}),
-            }}
-          >
-            <Text
-              style={{
-                ...(active ? typography.bodySemiBold : typography.body),
-                color: active ? colors.text.primary : colors.text.secondary,
-              }}
-            >
-              {option}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
 
 const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
   return (
@@ -149,6 +93,8 @@ PaginationDot.displayName = "PaginationDot";
 const ProfileDetailsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, setUser } = useUserStore();
+  const { heightUnit, weightUnit, setHeightUnit, setWeightUnit } =
+    useUnitsStore();
   const [birthYear, setBirthYear] = useState<number>(currentYear - 25);
   const [startWeight, setStartWeight] = useState<number>(70);
   const [goalWeight, setGoalWeight] = useState<number>(70);
@@ -156,8 +102,6 @@ const ProfileDetailsScreen = () => {
   const [genderChoice, setGenderChoice] = useState<GenderChoice>("Male");
   const gender: "Male" | "Female" =
     genderChoice === "Female" ? "Female" : "Male";
-  const [heightUnit, setHeightUnit] = useState<"ft" | "cm">("ft");
-  const [weightUnit, setWeightUnit] = useState<"lb" | "kg">("lb");
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
 
@@ -383,11 +327,13 @@ const ProfileDetailsScreen = () => {
         }
       >
         <View style={{ width: "100%", alignItems: "center" }}>
-          <UnitToggle
-            options={["ft", "cm"] as const}
-            value={heightUnit}
-            onChange={setHeightUnit}
-          />
+          <View style={{ marginBottom: spacing.md }}>
+            <UnitToggle
+              options={["ft", "cm"] as const}
+              value={heightUnit}
+              onChange={setHeightUnit}
+            />
+          </View>
           {heightUnit === "ft" ? (
             <View
               style={{
@@ -441,11 +387,13 @@ const ProfileDetailsScreen = () => {
         }
       >
         <View style={{ width: "100%", alignItems: "center" }}>
-          <UnitToggle
-            options={["lb", "kg"] as const}
-            value={weightUnit}
-            onChange={setWeightUnit}
-          />
+          <View style={{ marginBottom: spacing.md }}>
+            <UnitToggle
+              options={["lb", "kg"] as const}
+              value={weightUnit}
+              onChange={setWeightUnit}
+            />
+          </View>
           {isLb ? (
             <WheelPicker<number>
               data={WEIGHT_IN_LB}
@@ -480,11 +428,13 @@ const ProfileDetailsScreen = () => {
         }
       >
         <View style={{ width: "100%", alignItems: "center" }}>
-          <UnitToggle
-            options={["lb", "kg"] as const}
-            value={weightUnit}
-            onChange={setWeightUnit}
-          />
+          <View style={{ marginBottom: spacing.md }}>
+            <UnitToggle
+              options={["lb", "kg"] as const}
+              value={weightUnit}
+              onChange={setWeightUnit}
+            />
+          </View>
           {isLb ? (
             <WheelPicker<number>
               data={WEIGHT_IN_LB}

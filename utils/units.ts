@@ -41,17 +41,21 @@ export function formatLb(lb: number): string {
 
 export function formatWeightFromKg(
   kg: number | null | undefined,
+  unit: "lb" | "kg" = "lb",
   notSet = "—",
 ): string {
   if (kg == null || Number.isNaN(Number(kg))) return notSet;
+  if (unit === "kg") return `${Math.round(Number(kg))} kg`;
   return `${formatLb(kgToLb(Number(kg)))} lb`;
 }
 
 export function formatHeightFromCm(
   cm: number | null | undefined,
+  unit: "ft" | "cm" = "ft",
   notSet = "—",
 ): string {
   if (cm == null || Number.isNaN(Number(cm))) return notSet;
+  if (unit === "cm") return `${Math.round(Number(cm))} cm`;
   const { feet, inches } = cmToFeetInches(Number(cm));
   return formatFeetInches(feet, inches);
 }

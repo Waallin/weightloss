@@ -26,6 +26,7 @@ const currentYear = new Date().getFullYear()
 import { getRevenueCatCustomerInfo, getProducts, initRevenueCat } from "./services/revenuecat";
 import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
 import useRevCatStore from "./stores/useRevCatStore"; 
+import useUnitsStore from "./stores/useUnitsStore";
 import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
 import { initializeTikTokTracking } from "./services/tiktoksdk";
@@ -45,6 +46,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { setProducts } = useRevCatStore();
+  const hydrateUnits = useUnitsStore((s) => s.hydrateUnits);
   useEffect(() => {
 
     const initializeApp = async () => {
@@ -56,6 +58,7 @@ export default function App() {
       const initializeMixpanelResult = await initializeMixpanel();
       const trackMixpanelInstall = await handleTrackMixpanelInstall();
       const scheduledNotifications = await scheduleActiveUserNotifications();
+      await hydrateUnits();
     }
     initializeApp();
     setTimeout(() => {

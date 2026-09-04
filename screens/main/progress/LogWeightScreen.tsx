@@ -17,6 +17,7 @@ import { logWeightCopy, textStyles, typography } from "../../../constants/texts"
 import * as haptics from "expo-haptics";
 import { updateDocument } from "../../../services/firebase";
 import useUserStore from "../../../stores/useUserStore";
+import useUnitsStore from "../../../stores/useUnitsStore";
 import { kgToLb, lbToKg } from "../../../utils/units";
 
 const IMAGE_SIZE = 220;
@@ -25,17 +26,23 @@ const LogWeightScreen: React.FC = () => {
   const navigation = useNavigation();
   const [weightInput, setWeightInput] = useState("");
   const { setUser, user } = useUserStore();
+  const { weightUnit } = useUnitsStore();
 
   useEffect(() => {
     const cw = user?.currentWeight;
     if (cw != null && !Number.isNaN(Number(cw))) {
-      setWeightInput(String(kgToLb(Number(cw))));
+      setWeightInput(
+        weightUnit === "lb"
+          ? String(kgToLb(Number(cw)))
+          : String(Math.round(Number(cw))),
+      );
     }
-  }, [user?.currentWeight]);
+  }, [user?.currentWeight, weightUnit]);
 
   const handleSave = async () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    const weightKg = lbToKg(parseFloat(weightInput));
+    const parsed = parseFloat(weightInput);
+    const weightKg = weightUnit === "lb" ? lbToKg(parsed) : parsed;
     const result = await updateDocument("users", user?.email as string, {
       currentWeight: weightKg,
     });
@@ -90,7 +97,7 @@ const LogWeightScreen: React.FC = () => {
           />
 
           <Text style={{ ...typography.titleMedium, color: colors.text.secondary }}>
-            {logWeightCopy.unitLb}
+            {weightUnit}
           </Text>
         </View>
       </View>

@@ -13,30 +13,40 @@ import { globalStyles } from "../../../constants/globalStyles";
 import { textStyles } from "../../../constants/texts";
 import { colors } from "../../../constants/colors";
 import useUserStore from "../../../stores/useUserStore";
+import useUnitsStore from "../../../stores/useUnitsStore";
 import { formatHeightFromCm, kgToLb } from "../../../utils/units";
 
 const ProfileScreen = () => {
   const { user } = useUserStore();
+  const { heightUnit, weightUnit } = useUnitsStore();
 
   const renderProfileSection = () => {
+    const weightValue =
+      weightUnit === "lb"
+        ? kgToLb(user?.currentWeight ?? 70)
+        : Math.round(user?.currentWeight ?? 70);
+    const goalWeightValue =
+      weightUnit === "lb"
+        ? kgToLb(user?.goalWeight ?? 70)
+        : Math.round(user?.goalWeight ?? 70);
     return (
       <View style={{ gap: spacing.sm }}>
         <ProfileItem
           title="Height"
-          value={formatHeightFromCm(user?.height ?? 175)}
+          value={formatHeightFromCm(user?.height ?? 175, heightUnit)}
           icon="human-male-height"
           disabled={true}
         />
         <ProfileItem
-          suffix="lb"
+          suffix={weightUnit}
           title="Weight"
-          value={kgToLb(user?.currentWeight ?? 70)}
+          value={weightValue}
           icon="weight-pound"
         />
         <ProfileItem
-          suffix="lb"
+          suffix={weightUnit}
           title="Goal Weight"
-          value={kgToLb(user?.goalWeight ?? 70)}
+          value={goalWeightValue}
           icon="target"
         />
         <ProfileItem
