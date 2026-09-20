@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Blocked account creation for users under 18 and lock the app after they confirm their age
+- Added more analytics events during onboarding
+
+### Changed
+- Updated event names to mixpanel
 
 ## [1.1.0] 2026-09-03
 

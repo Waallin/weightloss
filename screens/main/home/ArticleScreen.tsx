@@ -8,6 +8,7 @@ import { spacing } from "../../../constants/spacing";
 import { lineHeights, textStyles, typography } from "../../../constants/texts";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 
 const ICON_CONTAINER_SIZE = 52;
 
@@ -28,8 +29,8 @@ const ArticleScreen: React.FC<{ route: ArticleScreenRouteProp }> = ({
     typeof article?.content === "string" ? normalizeArticleContent(article.content) : "";
 
   useEffect(() => {
-    trackMixpanelEvent("article_viewed");
-  }, []);
+    trackMixpanelEvent(analyticsEvents.articleViewed, { title: article?.title });
+  }, [article?.title]);
 
   return (
     <ScrollView

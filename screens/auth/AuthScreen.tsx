@@ -19,6 +19,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
 import { scheduleActiveUserNotifications } from "../../services/notifications";
 import { identifyMixpanel, setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 import { isCustomerPremium } from "../../services/revenuecat";
 import { logTikTokEvent } from "../../services/tiktoksdk";
 import { TikTokEventName } from "react-native-tiktok-business-sdk";
@@ -28,6 +29,11 @@ const AuthScreen = () => {
   const navigation = useNavigation<any>();
   const { user, setUser } = useUserStore();
   const { config } = useConfigStore();
+
+  useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.authViewed);
+  }, []);
+
   useEffect(() => {
     if (appleToken) {
       const provider = new OAuthProvider("apple.com");
@@ -40,6 +46,7 @@ const AuthScreen = () => {
         })
         .catch((error) => {
           console.log("Error signing in with Apple:", error);
+          trackMixpanelEvent(analyticsEvents.appleLoginFailed);
           Alert.alert("Fel", "Kunde inte verifiera Apple-inloggningen");
         });
     }
@@ -47,6 +54,7 @@ const AuthScreen = () => {
 
   const handleAppleLogin = async () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    trackMixpanelEvent(analyticsEvents.appleLoginTapped);
     try {
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -58,10 +66,13 @@ const AuthScreen = () => {
         setAppleToken(credential.identityToken);
       } else {
         setAppleToken(undefined);
+        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
       }
     } catch (e: any) {
       if (e.code === "ERR_REQUEST_CANCELED") {
+        trackMixpanelEvent(analyticsEvents.appleLoginCanceled);
       } else {
+        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
         Alert.alert("Error", "Failed to verify Apple login");
       }
     }
@@ -87,7 +98,7 @@ const AuthScreen = () => {
         scheduleActiveUserNotifications();
 
         await setMixpanelPeopleProperty("email", email);
-        await trackMixpanelEvent("user_registered");
+        await trackMixpanelEvent(analyticsEvents.userRegistered);
         await logTikTokEvent(TikTokEventName.REGISTRATION);
         AsyncStorage.setItem("first_time", "true");
 

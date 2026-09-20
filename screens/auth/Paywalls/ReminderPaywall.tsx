@@ -19,6 +19,7 @@ import useConfettiStore from "../../../stores/useConfettiStore";
 import * as haptics from "expo-haptics";
 import * as StoreReview from "expo-store-review";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 import { useNavigation } from "@react-navigation/native";
 import {
   Easing as ReanimatedEasing,
@@ -178,8 +179,10 @@ const ReminderPaywall: React.FC<{
       setVisibleConfetti(true);
     
     void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
-    void askForStoreReview();
-    void trackMixpanelEvent("paywall_spin_wheel");
+    setTimeout(() => {
+      void askForStoreReview();
+    }, 1500);
+    void trackMixpanelEvent(analyticsEvents.paywallWheelSpun);
   };
 
   const handleSpin = () => {
@@ -386,11 +389,33 @@ const ReminderPaywall: React.FC<{
           style={{
             ...textStyles.onboardingTitle,
             textAlign: "center",
+            paddingHorizontal: spacing.lg,
             lineHeight: 32,
           }}
         >
-          Let’s see how long{"\n"}your{" "}
-          <Text style={{ color: colors.ui.primary }}>free</Text> trial will be!
+          {hasSpun ? (
+            <>
+                      You got the best one! 🎉
+                      {"\n"}
+                      <Text style={{ 
+                        ...textStyles.onboardingTitle, 
+                        fontWeight: "400", 
+                        fontSize: 14,
+                        opacity: 0.7,
+                        textAlign: "center",
+                      }}>
+                        You won the best prize — 1 month FREE!
+                      </Text>
+                 
+             
+            </>
+          ) : (
+            <>
+              Let’s see how long{"\n"}your{" "}
+              <Text style={{ color: colors.ui.primary }}>free</Text> trial will
+              be!
+            </>
+          )}
         </Text>
 
         <View

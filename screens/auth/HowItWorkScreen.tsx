@@ -10,6 +10,7 @@ import type { StackNavigationProp } from "@react-navigation/stack";
 import * as haptics from "expo-haptics";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -175,6 +176,16 @@ const HowItWorkScreen: React.FC = () => {
   const [activeIndex, setActiveIndex] = React.useState(0);
   const flatListRef = React.useRef<FlatList>(null);
 
+  React.useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.howItWorksViewed);
+  }, []);
+
+  React.useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.howItWorksSlideViewed, {
+      slide: activeIndex + 1,
+    });
+  }, [activeIndex]);
+
   const handleContinue = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     if (activeIndex < sections.length - 1) {
@@ -183,7 +194,7 @@ const HowItWorkScreen: React.FC = () => {
       setActiveIndex(nextIndex);
       return;
     }
-    trackMixpanelEvent("HowItWork_complete");
+    trackMixpanelEvent(analyticsEvents.howItWorksCompleted);
     navigation.replace("ProfileDetails");
   };
 

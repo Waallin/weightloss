@@ -26,6 +26,7 @@ import { calculateFoodPoints } from "../../../services/dietPoints";
 import { useEffect } from "react";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 
 import * as Haptics from "expo-haptics";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
@@ -705,7 +706,7 @@ Return JSON only.
     });
 
     try {
-      trackMixpanelEvent("scanned_food_added_to_diet", { food: result?.name });
+      trackMixpanelEvent(analyticsEvents.dietScanAdded, { food: result?.name });
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast("Food added to diet");

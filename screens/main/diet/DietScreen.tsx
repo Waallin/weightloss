@@ -21,7 +21,8 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useUserStore from "../../../stores/useUserStore";
 import { useNavigation } from "@react-navigation/native";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
-import { trackMixpanelEvent } from "../../../services/mixpanel";  
+import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";  
 import { CameraView, useCameraPermissions } from "expo-camera";
 import AddedFoodItem, {
   AddedFoodItemData,
@@ -106,7 +107,7 @@ const DietScreen = () => {
     pointsTotal > 0 ? (pointsUsed * 100) / pointsTotal : 0;
 
   useEffect(() => {
-    trackMixpanelEvent("diet_screen_viewed");
+    trackMixpanelEvent(analyticsEvents.dietViewed);
   }, []);
 
   const renderFoodItems = () => {

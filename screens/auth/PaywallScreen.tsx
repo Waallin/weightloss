@@ -10,6 +10,7 @@ import useConfigStore from "../../stores/useConfigStore";
 import useUserStore from "../../stores/useUserStore";
 import useRevCatStore from "../../stores/useRevCatStore";
 import { trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 import { logMetaEvent } from "../../services/metasdk";
 import { usePaywallPurchaseFlow } from "./usePaywallPurchaseFlow";
 
@@ -20,11 +21,11 @@ const PaywallScreen: React.FC = () => {
   const { products } = useRevCatStore();
   console.log("🚀 ~ PaywallScreen ~ products:", products)
 
-  useEffect(() => {
-    trackMixpanelEvent("Paywall_viewed");
-  }, []);
-
   const variant = config?.showPaywall === "reminder" ? "reminder" : "default";
+
+  useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.paywallViewed, { variant });
+  }, [variant]);
 
   const { loading, handleCTAPress, handleRestorePurchases } =
     usePaywallPurchaseFlow({

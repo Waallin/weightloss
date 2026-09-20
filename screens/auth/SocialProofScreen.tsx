@@ -19,6 +19,7 @@ import { getNotificationToken } from "../../services/notifications";
 import useUserStore from "../../stores/useUserStore";
 import useConfigStore from "../../stores/useConfigStore";
 import { trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 
 const dummySocialProof = [
   {
@@ -96,8 +97,13 @@ const SocialProofScreen = () => {
     }, 1000);
   }, []);
 
+  useEffect(() => {
+    if (!isPlanReady) return;
+    trackMixpanelEvent(analyticsEvents.socialProofViewed);
+  }, [isPlanReady]);
+
   const handleGetPermissions = async () => {
-    trackMixpanelEvent("SocialProof_complete");
+    trackMixpanelEvent(analyticsEvents.socialProofCompleted);
     navigation.replace("Auth");
   };
 

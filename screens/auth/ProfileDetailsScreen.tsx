@@ -18,6 +18,7 @@ import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
 import useUnitsStore from "../../stores/useUnitsStore";
 import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import UnderageBlockedScreen, {
   UNDERAGE_BLOCKED_KEY,
@@ -119,9 +120,31 @@ const ProfileDetailsScreen = () => {
 
   useEffect(() => {
     if (!ageBlocked) return;
-    trackMixpanelEvent("profile_details_age_blocked");
+    trackMixpanelEvent(analyticsEvents.underageBlocked);
     navigation.setOptions({ gestureEnabled: false });
   }, [ageBlocked, navigation]);
+
+  useEffect(() => {
+    if (ageBlocked || createdPlan) return;
+    const stepName =
+      step === 1
+        ? "birthday"
+        : step === 2
+          ? "gender"
+          : step === 3
+            ? "height"
+            : step === 4
+              ? "weight"
+              : "goal";
+    trackMixpanelEvent(analyticsEvents.profileDetailsStepViewed, {
+      step: stepName,
+    });
+  }, [step, ageBlocked, createdPlan]);
+
+  useEffect(() => {
+    if (!createdPlan) return;
+    trackMixpanelEvent(analyticsEvents.planReadyViewed);
+  }, [createdPlan]);
 
   const goalDeltaKg = useMemo(
     () => Math.abs(startWeight - goalWeight),
@@ -468,7 +491,7 @@ const ProfileDetailsScreen = () => {
 
   const handleCreatePlan = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    trackMixpanelEvent("ProfileDetails_complete", { age, gender, height, startWeight, goalWeight })
+    trackMixpanelEvent(analyticsEvents.profileDetailsCompleted, { age, gender, height, startWeight, goalWeight })
     setMixpanelPeopleProperty("age", age);
     setMixpanelPeopleProperty("gender", gender);
     setMixpanelPeopleProperty("height", height);

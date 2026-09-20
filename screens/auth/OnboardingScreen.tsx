@@ -9,6 +9,7 @@ import type { StackNavigationProp } from "@react-navigation/stack";
 import * as haptics from "expo-haptics";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { trackMixpanelEvent } from "../../services/mixpanel";
+import { analyticsEvents } from "../../constants/analytics";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -168,6 +169,16 @@ const OnboardingScreen: React.FC = () => {
   const flatListRef = React.useRef<FlatList>(null);
   const navigation = useNavigation<StackNavigationProp<AuthStackParamList>>();
 
+  React.useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.onboardingViewed);
+  }, []);
+
+  React.useEffect(() => {
+    trackMixpanelEvent(analyticsEvents.onboardingSlideViewed, {
+      slide: activeIndex + 1,
+    });
+  }, [activeIndex]);
+
   const handleContinue = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     if (activeIndex < sections.length - 1) {
@@ -176,7 +187,7 @@ const OnboardingScreen: React.FC = () => {
       setActiveIndex(nextIndex);
       return;
     }
-    trackMixpanelEvent("Onboarding_complete");
+    trackMixpanelEvent(analyticsEvents.onboardingCompleted);
     navigation.replace("HowItWork");
   };
 

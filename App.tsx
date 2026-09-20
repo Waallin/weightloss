@@ -25,6 +25,7 @@ import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
 import { getRevenueCatCustomerInfo, getProducts, initRevenueCat } from "./services/revenuecat";
 import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
+import { analyticsEvents } from "./constants/analytics";
 import useRevCatStore from "./stores/useRevCatStore"; 
 import useUnitsStore from "./stores/useUnitsStore";
 import { scheduleActiveUserNotifications } from "./services/notifications";
@@ -167,7 +168,7 @@ export default function App() {
   const handleTrackMixpanelInstall = async () => {
     const mixpanelInstalled = await AsyncStorage.getItem("mixpanel_installed");
     if (mixpanelInstalled) return;
-    const trackMixPanelInstall = await trackMixpanelEvent("app_installed");
+    const trackMixPanelInstall = await trackMixpanelEvent(analyticsEvents.appInstalled);
     await AsyncStorage.setItem("mixpanel_installed", "true");
   };
 
@@ -195,7 +196,7 @@ export default function App() {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
       });
-      trackMixpanelEvent("app_opened");
+      trackMixpanelEvent(analyticsEvents.appOpened);
       setTodayDiet(todayDiet);
       setUser(userData)
       

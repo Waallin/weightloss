@@ -29,6 +29,7 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useToastStore from "../../../stores/useToastStore";
 import * as haptics from "expo-haptics";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 import { MotiView } from "moti";
 import RoundedButtonComponent from "../../../components/RoundedButtonComponent";
 import { ReduceMotion } from "react-native-reanimated";
@@ -108,7 +109,7 @@ const DietListScreen = () => {
         used: todayProgress.points.used + parseInt(foodItem.points),
       },
     });
-    trackMixpanelEvent("food_added_to_diet", { foodItem: foodItem.title });
+    trackMixpanelEvent(analyticsEvents.dietFoodAdded, { foodItem: foodItem.title });
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
   };

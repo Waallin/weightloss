@@ -50,6 +50,7 @@ import { syncToday } from "../../../services/firebase";
 import * as StoreReview from 'expo-store-review';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 const articles = [
   {
     id: 1,
@@ -257,7 +258,7 @@ const HomeScreen = () => {
   const { requestPermission } = useHealthKitPermissions();
 
   useEffect(() => {
-    trackMixpanelEvent("dashboard_viewed");    
+    trackMixpanelEvent(analyticsEvents.homeViewed);    
   }, []);
 
   useEffect(() => {
@@ -274,13 +275,13 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (guideStep === 1) {
-      trackMixpanelEvent("first_time_guide_step_1_viewed");
+      trackMixpanelEvent(analyticsEvents.guideWaterViewed);
     } else if (guideStep === 2) {
-      trackMixpanelEvent("first_time_guide_step_2_viewed");
+      trackMixpanelEvent(analyticsEvents.guideRecipeViewed);
     } else if (guideStep === 3) {
-      trackMixpanelEvent("first_time_guide_step_3_viewed");
+      trackMixpanelEvent(analyticsEvents.guideHealthViewed);
     } else if (guideStep === 4) {
-      trackMixpanelEvent("first_time_guide_step_4_viewed");
+      trackMixpanelEvent(analyticsEvents.guideReadyViewed);
     }
   }, [guideStep]);
 
@@ -288,7 +289,7 @@ const HomeScreen = () => {
     if (guideStep === 1 && todayProgress?.completion?.water === true) {
       AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "2");
       setGuideStep(2);
-      trackMixpanelEvent("first_time_guide_step_1_completed");
+      trackMixpanelEvent(analyticsEvents.guideWaterCompleted);
     }
   }, [guideStep, todayProgress?.completion?.water]);
 
@@ -445,7 +446,7 @@ const HomeScreen = () => {
     updateTodayProgress(user?.email as string, {
       "completion.steps": true,
     });
-    trackMixpanelEvent("steps_reward_claimed");
+    trackMixpanelEvent(analyticsEvents.stepsGoalCompleted);
   };
 
   const handleAddWater = () => {
@@ -460,7 +461,7 @@ const HomeScreen = () => {
     if (reachedGoal && guideStep === 1) {
       AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "2");
       setGuideStep(2);
-      trackMixpanelEvent("first_time_guide_step_1_completed");
+      trackMixpanelEvent(analyticsEvents.guideWaterCompleted);
     }
 
     if (firstTime) {
@@ -468,7 +469,7 @@ const HomeScreen = () => {
       AsyncStorage.setItem("first_time", "false");
       askForStoreReview();
       setFirstTime(false);
-      trackMixpanelEvent("first_time_water_completed");
+      trackMixpanelEvent(analyticsEvents.firstWaterLogged);
       
     }
 
@@ -496,7 +497,7 @@ const HomeScreen = () => {
     if (reachedGoal) {
       setVisibleConfetti(true);
     }
-    trackMixpanelEvent("water_reward_claimed");
+    trackMixpanelEvent(analyticsEvents.waterLogged);
   };
 
   const handleClaimPointsReward = () => {
@@ -537,7 +538,7 @@ const HomeScreen = () => {
             updateTodayProgress(user?.email as string, {
               "completion.points": true,
             });
-            trackMixpanelEvent("points_reward_claimed");
+            trackMixpanelEvent(analyticsEvents.pointsGoalCompleted);
           },
         },
       ],
@@ -556,21 +557,21 @@ const HomeScreen = () => {
     setVisibleConfetti(true);
     AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "4");
     setGuideStep(4);
-    trackMixpanelEvent("first_time_guide_step_3_completed");
+    trackMixpanelEvent(analyticsEvents.guideHealthCompleted);
   };
 
   const handleBeginJourney = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "done");
     setGuideStep(0);
-    trackMixpanelEvent("first_time_guide_step_4_completed");
+    trackMixpanelEvent(analyticsEvents.guideCompleted);
   };
 
   const handleOpenRecipesGuide = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     AsyncStorage.setItem(FIRST_TIME_GUIDE_STEP_KEY, "3");
     setGuideStep(3);
-    trackMixpanelEvent("first_time_guide_step_2_completed");
+    trackMixpanelEvent(analyticsEvents.guideRecipeCompleted);
     navigation.navigate("Diet" as never);
   };
 

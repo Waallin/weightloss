@@ -49,8 +49,12 @@ export function usePaywallPurchaseFlow({
 
   const handleCTAPress = useCallback(
     async (plan: PaywallPlan) => {
-      
       const productProps = getPaywallProductAnalytics(products, plan);
+
+      void trackMixpanelEvent(analyticsEvents.paywallCtaTapped, {
+        variant,
+        plan,
+      });
 
       setLoading(true);
       try {
@@ -59,7 +63,7 @@ export function usePaywallPurchaseFlow({
           const baseProps = { variant, plan, ...productProps };
        
             await trackMixpanelEvent(
-              "paywall_start_subscription",
+              analyticsEvents.paywallPurchaseSucceeded,
               baseProps,
             );
 
@@ -73,7 +77,7 @@ export function usePaywallPurchaseFlow({
           }
           resetToApp(navigation);
         } else {
-          await trackMixpanelEvent("Paywall_purchase_failed", {
+          await trackMixpanelEvent(analyticsEvents.paywallPurchaseFailed, {
             variant,
             plan,
 
@@ -88,7 +92,7 @@ export function usePaywallPurchaseFlow({
   );
 
   const handleRestorePurchases = useCallback(async () => {
-    trackMixpanelEvent("Paywall_restore_tap", { variant: showPaywallRaw });
+    trackMixpanelEvent(analyticsEvents.paywallRestoreTapped, { variant: showPaywallRaw });
     const restored = await restorePurchases();
     if (restored) {
       alert("Purchases restored");
