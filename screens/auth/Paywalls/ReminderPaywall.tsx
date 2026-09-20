@@ -174,16 +174,16 @@ const ReminderPaywall: React.FC<{
     if (!showSpinner) return;
     setIsSpinning(false);
     setHasSpun(true);
-    if (!reduceMotion) {
+  
       setVisibleConfetti(true);
-    }
+    
     void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
     void askForStoreReview();
     void trackMixpanelEvent("paywall_spin_wheel");
   };
 
   const handleSpin = () => {
-    if (!showSpinner || isSpinning || hasSpun) return;
+   if (!showSpinner || isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     // Continuous ease-out: crawl through previous segment, land at start of "1 month".
