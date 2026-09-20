@@ -35,7 +35,6 @@ import UnderageBlockedScreen, {
 } from "./screens/auth/UnderageBlockedScreen";
 
 export default function App() {
-
   
   const { isVisible, message } = useToastStore();
   const { user, setUser } = useUserStore();
@@ -234,8 +233,8 @@ export default function App() {
             {authState === "loggedInWithPremium" && <MainStack />}
             {authState === "unauthenticated" && <AuthNavigator />}
             {authState === "loggedInWithoutPremium" && (
-              <AuthNavigator />
-            )}
+            <MainStack initialRouteName="Paywall" />
+          )}
           </NavigationContainer>
         )}
       </View>

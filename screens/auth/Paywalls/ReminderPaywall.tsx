@@ -43,8 +43,8 @@ const ReminderPaywall: React.FC<{
   const { setVisibleConfetti } = useConfettiStore();
   const { config } = useConfigStore();
   const insets = useSafeAreaInsets();
-  const [showSpinner] = useState(config?.showSpinner);
-  const [activeScreen, setActiveScreen] = useState(config?.showSpinner ? 2 : 3);
+  const showSpinner = config?.showSpinner === true;
+  const [activeScreen, setActiveScreen] = useState(showSpinner ? 2 : 3);
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -66,6 +66,12 @@ const ReminderPaywall: React.FC<{
       subscription.remove();
     };
   }, []);
+
+  useEffect(() => {
+    if (!showSpinner && activeScreen === 2) {
+      setActiveScreen(3);
+    }
+  }, [showSpinner, activeScreen]);
 
   useEffect(() => {
     if (!hasSpun || activeScreen !== 2) {
@@ -100,6 +106,10 @@ const ReminderPaywall: React.FC<{
     } else if (activeScreen === 1) {
       setActiveScreen(showSpinner ? 2 : 3);
     } else if (activeScreen === 2) {
+      if (!showSpinner) {
+        setActiveScreen(3);
+        return;
+      }
       hasSpun ? (setActiveScreen(3), setHasSpun(false)) : handleSpin();
     } else {
       onCTAPress("annual");
@@ -139,6 +149,7 @@ const ReminderPaywall: React.FC<{
   };
 
   const finishSpin = () => {
+    if (!showSpinner) return;
     setIsSpinning(false);
     setHasSpun(true);
     if (!reduceMotion) {
@@ -150,7 +161,7 @@ const ReminderPaywall: React.FC<{
   };
 
   const handleSpin = () => {
-    if (isSpinning || hasSpun) return;
+    if (!showSpinner || isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     // Continuous ease-out: crawl through previous segment, land at start of "1 month".
@@ -158,7 +169,7 @@ const ReminderPaywall: React.FC<{
       FULL_TURNS * 360 -
       WINNING_INDEX * WHEEL_SEGMENT_ANGLE -
       WHEEL_SEGMENT_ANGLE / 2 +
-      8;
+      5;
 
     spinAnim.setValue(0);
 
