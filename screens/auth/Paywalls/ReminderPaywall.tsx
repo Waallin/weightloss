@@ -20,12 +20,34 @@ import * as haptics from "expo-haptics";
 import * as StoreReview from "expo-store-review";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { useNavigation } from "@react-navigation/native";
+import {
+  Easing as ReanimatedEasing,
+  ReduceMotion,
+  runOnJS,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import useConfigStore from "../../../stores/useConfigStore";
 import TrialSpinWheel, { WHEEL_SEGMENT_ANGLE } from "./TrialSpinWheel";
+import SocialProofItem, {
+  SocialProofTestimonial,
+} from "../components/SocialProofItem";
 
 const FULL_TURNS = 8;
 const WINNING_INDEX = 0;
 const SPIN_DURATION_MS = 6500;
+
+const paywallTestimonial: SocialProofTestimonial = {
+  name: "Sara L.",
+  role: "Kudoo user",
+  rating: 4.9,
+  ratingMax: 5,
+  headline: "Feeling lighter in the first week",
+  quote:
+    "“I only planned to try the free trail. Three months later I’m down 34 lbs.”",
+  avatarColor: colors.ui.listRowIconBackground,
+  avatarImage: require("../../../assets/users/sara.jpg"),
+};
 
 const formatTrialEndDate = () => {
   const date = new Date();
@@ -48,7 +70,7 @@ const ReminderPaywall: React.FC<{
   const [isSpinning, setIsSpinning] = useState(false);
   const [hasSpun, setHasSpun] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
-  const spinAnim = useRef(new Animated.Value(0)).current;
+  const spinAnim = useSharedValue(0);
   const ctaPulse = useRef(new Animated.Value(1)).current;
   const navigation = useNavigation();
 
@@ -171,14 +193,6 @@ const ReminderPaywall: React.FC<{
       WHEEL_SEGMENT_ANGLE / 2 +
       5;
 
-    spinAnim.setValue(0);
-
-    if (reduceMotion) {
-      spinAnim.setValue(winAngle);
-      finishSpin();
-      return;
-    }
-
     // Native-driven spin can't drive JS listeners reliably — schedule ticks that thin out.
     const hapticTimers: ReturnType<typeof setTimeout>[] = [];
     let elapsed = 0;
@@ -193,15 +207,24 @@ const ReminderPaywall: React.FC<{
       );
     }
 
-    Animated.timing(spinAnim, {
-      toValue: winAngle,
-      duration: SPIN_DURATION_MS,
-      easing: Easing.bezier(0.08, 0.9, 0.12, 1),
-      useNativeDriver: true,
-    }).start(() => {
+    const onSpinComplete = () => {
       hapticTimers.forEach(clearTimeout);
       finishSpin();
-    });
+    };
+
+    spinAnim.value = 0;
+    spinAnim.value = withTiming(
+      winAngle,
+      {
+        duration: SPIN_DURATION_MS,
+        easing: ReanimatedEasing.bezier(0.08, 0.9, 0.12, 1),
+        reduceMotion: ReduceMotion.Never,
+      },
+      (finished) => {
+        if (!finished) return;
+        runOnJS(onSpinComplete)();
+      },
+    );
   };
 
   const periodLabel = product?.subscriptionPeriod === "P1Y" ? "year" : "month";
@@ -466,11 +489,11 @@ const ReminderPaywall: React.FC<{
             style={
               step.highlight
                 ? {
-                    backgroundColor: colors.ui.foodPointsChipBackground,
-                    borderRadius: spacing.borderRadius,
-                    paddingVertical: spacing.sm,
-                    paddingHorizontal: spacing.sm + 4,
-                  }
+                  backgroundColor: colors.ui.foodPointsChipBackground,
+                  borderRadius: spacing.borderRadius,
+                  paddingVertical: spacing.sm,
+                  paddingHorizontal: spacing.sm + 4,
+                }
                 : undefined
             }
           >
@@ -590,7 +613,7 @@ const ReminderPaywall: React.FC<{
           }}
         >
           Your <Text style={{ color: colors.ui.primary }}>free</Text> month is ready
-     
+
         </Text>
         <Text
           style={{
@@ -603,10 +626,23 @@ const ReminderPaywall: React.FC<{
         >
           Try everything in Kudoo free for the next 30 days.
         </Text>
+        <View style={{flex: 0.5, justifyContent: "center"}}>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              textAlign: "center",
+              color: colors.text.secondary,
+              marginTop: spacing.sm,
+              paddingHorizontal: spacing.lg,
+            }}
+          >
+            "I only planned to try the free trail. Three months later I’m down 34 lbs."
+          </Text>
+        </View>
         <View
           style={{
             flex: 1,
-            justifyContent: "center",
+            
             paddingHorizontal: spacing.lg,
           }}
         >
@@ -734,15 +770,15 @@ const ReminderPaywall: React.FC<{
           >
             {renderBelowButtonText()}
           </Text>
-        ) :         <Text
-        style={{
-          ...typography.small,
-          textAlign: "center",
-          color: colors.text.secondary,
-        }}
-      >
-        
-      </Text>}
+        ) : <Text
+          style={{
+            ...typography.small,
+            textAlign: "center",
+            color: colors.text.secondary,
+          }}
+        >
+
+        </Text>}
 
         {renderLegalLinks(true)}
       </View>

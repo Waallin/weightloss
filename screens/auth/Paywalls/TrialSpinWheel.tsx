@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, Easing, Text, useWindowDimensions, View } from "react-native";
+import { Animated as RNAnimated, Easing, Text, useWindowDimensions, View } from "react-native";
+import Animated, { useAnimatedStyle, type SharedValue } from "react-native-reanimated";
 import Svg, { Circle, G, Path, Polygon } from "react-native-svg";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { colors, confettiPalette } from "../../../constants/colors";
@@ -75,7 +76,7 @@ const describeSegment = (
 };
 
 const TrialSpinWheel: React.FC<{
-  spinAnim: Animated.Value;
+  spinAnim: SharedValue<number>;
   hasSpun: boolean;
 }> = ({ spinAnim, hasSpun }) => {
   const { width, height } = useWindowDimensions();
@@ -87,7 +88,7 @@ const TrialSpinWheel: React.FC<{
   const hubSize = Math.round(size * 0.26);
   const labelBox = Math.round(size * 0.34);
   const outer = size + rim * 2;
-  const glow = useRef(new Animated.Value(0.4)).current;
+  const glow = useRef(new RNAnimated.Value(0.4)).current;
 
   useEffect(() => {
     if (!hasSpun) {
@@ -95,15 +96,15 @@ const TrialSpinWheel: React.FC<{
       return;
     }
     glow.setValue(0.45);
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(glow, {
+    const pulse = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(glow, {
           toValue: 0.9,
           duration: 900,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(glow, {
+        RNAnimated.timing(glow, {
           toValue: 0.35,
           duration: 900,
           easing: Easing.inOut(Easing.ease),
@@ -115,14 +116,12 @@ const TrialSpinWheel: React.FC<{
     return () => pulse.stop();
   }, [hasSpun, glow]);
 
-  const rotate = spinAnim.interpolate({
-    inputRange: [0, 360],
-    outputRange: ["0deg", "360deg"],
-  });
-  const counterRotate = spinAnim.interpolate({
-    inputRange: [0, 360],
-    outputRange: ["0deg", "-360deg"],
-  });
+  const wheelStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${spinAnim.value}deg` }],
+  }));
+  const labelStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${-spinAnim.value}deg` }],
+  }));
 
   return (
     <View
@@ -174,7 +173,7 @@ const TrialSpinWheel: React.FC<{
 
         <View style={{ alignItems: "center", justifyContent: "center" }}>
           {hasSpun ? (
-            <Animated.View
+            <RNAnimated.View
               pointerEvents="none"
               style={{
                 position: "absolute",
@@ -204,11 +203,13 @@ const TrialSpinWheel: React.FC<{
           >
           <View style={{ width: size, height: size }}>
             <Animated.View
-              style={{
-                width: size,
-                height: size,
-                transform: [{ rotate }],
-              }}
+              style={[
+                {
+                  width: size,
+                  height: size,
+                },
+                wheelStyle,
+              ]}
             >
               <Svg width={size} height={size}>
                 <G>
@@ -262,16 +263,18 @@ const TrialSpinWheel: React.FC<{
                   <Animated.View
                     key={segment.label}
                     pointerEvents="none"
-                    style={{
-                      position: "absolute",
-                      left: labelPos.x - labelBox / 2,
-                      top: labelPos.y - labelBox / 2,
-                      width: labelBox,
-                      height: labelBox,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transform: [{ rotate: counterRotate }],
-                    }}
+                    style={[
+                      {
+                        position: "absolute",
+                        left: labelPos.x - labelBox / 2,
+                        top: labelPos.y - labelBox / 2,
+                        width: labelBox,
+                        height: labelBox,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      },
+                      labelStyle,
+                    ]}
                   >
                     {segment.bestPrize ? (
                       <MaterialCommunityIcons
