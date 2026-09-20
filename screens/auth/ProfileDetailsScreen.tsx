@@ -1,7 +1,7 @@
 import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { colors } from "../../constants/colors";
@@ -18,6 +18,10 @@ import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
 import useUnitsStore from "../../stores/useUnitsStore";
 import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import UnderageBlockedScreen, {
+  UNDERAGE_BLOCKED_KEY,
+} from "./UnderageBlockedScreen";
 import {
   cmToFeetInches,
   feetInchesToCm,
@@ -104,6 +108,7 @@ const ProfileDetailsScreen = () => {
     genderChoice === "Female" ? "Female" : "Male";
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
+  const [ageBlocked, setAgeBlocked] = useState<boolean>(false);
 
   const totalSteps = 5;
   const activeIndex = step - 1;
@@ -111,6 +116,12 @@ const ProfileDetailsScreen = () => {
     const computed = currentYear - birthYear;
     return computed > 0 ? computed : 0;
   }, [birthYear, currentYear]);
+
+  useEffect(() => {
+    if (!ageBlocked) return;
+    trackMixpanelEvent("profile_details_age_blocked");
+    navigation.setOptions({ gestureEnabled: false });
+  }, [ageBlocked, navigation]);
 
   const goalDeltaKg = useMemo(
     () => Math.abs(startWeight - goalWeight),
@@ -708,7 +719,12 @@ const ProfileDetailsScreen = () => {
     );
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (step === 1 && age < 18) {
+      await AsyncStorage.setItem(UNDERAGE_BLOCKED_KEY, "true");
+      setAgeBlocked(true);
+      return;
+    }
     const userObj = {
       birthYear,
       gender,
@@ -733,6 +749,10 @@ const ProfileDetailsScreen = () => {
     }
     if (navigation.canGoBack()) navigation.goBack();
   };
+
+  if (ageBlocked) {
+    return <UnderageBlockedScreen />;
+  }
 
   if (createdPlan) {
     return renderPlanCreated();

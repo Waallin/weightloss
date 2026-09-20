@@ -321,6 +321,9 @@ export const planBuildingCopy = {
 } as const;
 
 export const authCopy = {
+  underageBlockedTitle: "Kudoo is designed for adults",
+  underageBlockedBody:
+    "Kudoo’s weight-loss program is intended for people aged 18 and older. Because you indicated that you’re under 18, you can’t create a Kudoo account.",
   planReadyTitle: "Your plan is ready",
   planReadySubtitle:
     "We tailored your routine to fit your body and goal—so you can focus on showing up.",

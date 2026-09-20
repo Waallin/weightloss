@@ -30,6 +30,9 @@ import useUnitsStore from "./stores/useUnitsStore";
 import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
 import { initializeTikTokTracking } from "./services/tiktoksdk";
+import UnderageBlockedScreen, {
+  UNDERAGE_BLOCKED_KEY,
+} from "./screens/auth/UnderageBlockedScreen";
 
 export default function App() {
 
@@ -51,6 +54,7 @@ export default function App() {
 
     const initializeApp = async () => {
       const authStatus = await checkInUser()
+      if (authStatus === "blocked") return;
       const config = await handleConfig(); 
       const revenueCatInitialized = await initRevenueCat(); 
       const products = await handleRevCatProducts();
@@ -169,6 +173,12 @@ export default function App() {
   };
 
   const checkInUser = async () => {
+    const underageBlocked = await AsyncStorage.getItem(UNDERAGE_BLOCKED_KEY);
+    if (underageBlocked === "true") {
+      setAuthState("underageBlocked");
+      return "blocked";
+    }
+
     const user = await AsyncStorage.getItem("user");
 
     if (!user) {
@@ -217,13 +227,17 @@ export default function App() {
       />
       <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
         <SafeAreaView />
-        <NavigationContainer>
-          {authState === "loggedInWithPremium" && <MainStack />}
-          {authState === "unauthenticated" && <AuthNavigator />}
-          {authState === "loggedInWithoutPremium" && (
-            <MainStack initialRouteName="Paywall" />
-          )}
-        </NavigationContainer>
+        {authState === "underageBlocked" ? (
+          <UnderageBlockedScreen />
+        ) : (
+          <NavigationContainer>
+            {authState === "loggedInWithPremium" && <MainStack />}
+            {authState === "unauthenticated" && <AuthNavigator />}
+            {authState === "loggedInWithoutPremium" && (
+              <AuthNavigator />
+            )}
+          </NavigationContainer>
+        )}
       </View>
     </View>
   );

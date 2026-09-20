@@ -1,63 +1,38 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
+  AccessibilityInfo,
   Animated,
   Easing,
   Linking,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
-import { textStyles } from "../../../constants/texts";
+import { textStyles, typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { colors } from "../../../constants/colors";
-import Svg, { Circle, G, Path, Text as SvgText } from "react-native-svg";
 import useConfettiStore from "../../../stores/useConfettiStore";
 import * as haptics from "expo-haptics";
+import * as StoreReview from "expo-store-review";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
-const WHEEL_SIZE = 260;
-const WHEEL_RADIUS = WHEEL_SIZE / 2;
-const FULL_TURNS = 8;
-const SEGMENT_COUNT = 5;
-const SEGMENT_ANGLE = 360 / SEGMENT_COUNT;
-const WINNING_INDEX = 0;
-const SPIN_DURATION_MS = 6500;
 import { useNavigation } from "@react-navigation/native";
 import useConfigStore from "../../../stores/useConfigStore";
+import TrialSpinWheel, { WHEEL_SEGMENT_ANGLE } from "./TrialSpinWheel";
 
-const WHEEL_SEGMENTS = [
-  { id: 0, label: "⭐ 1 Month", color: colors.ui.primary },
-  { label: "3 Days", color: "#E5E7EB" },
-  { label: "5 Days", color: "#A7F3D0" },
-  { label: "7 Days", color: "#6EE7B7" },
-  { label: "14 Days", color: "#34D399" },
-];
+const FULL_TURNS = 8;
+const WINNING_INDEX = 0;
+const SPIN_DURATION_MS = 6500;
 
-const polarToCartesian = (
-  cx: number,
-  cy: number,
-  r: number,
-  angleDeg: number,
-) => {
-  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(angleRad),
-    y: cy + r * Math.sin(angleRad),
-  };
-};
-
-const describeSegment = (
-  cx: number,
-  cy: number,
-  r: number,
-  startAngle: number,
-  endAngle: number,
-) => {
-  const start = polarToCartesian(cx, cy, r, endAngle);
-  const end = polarToCartesian(cx, cy, r, startAngle);
-  const largeArc = endAngle - startAngle <= 180 ? 0 : 1;
-  return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y} Z`;
+const formatTrialEndDate = () => {
+  const date = new Date();
+  date.setDate(date.getDate() + 30);
+  return date
+    .toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    .toUpperCase();
 };
 
 const ReminderPaywall: React.FC<{
@@ -65,16 +40,33 @@ const ReminderPaywall: React.FC<{
   onCTAPress: (plan: "annual") => void;
   onRestorePurchases: () => void;
 }> = ({ product, onCTAPress, onRestorePurchases }) => {
-  console.log("🚀 ~ ReminderPaywall ~ product:", product);
-  const [activeScreen, setActiveScreen] = useState(3);
-  const [isSpinning, setIsSpinning] = useState(false);
-  const [hasSpun, setHasSpun] = useState(false);
-  const spinAnim = useRef(new Animated.Value(0)).current;
-  const ctaPulse = useRef(new Animated.Value(1)).current;
   const { setVisibleConfetti } = useConfettiStore();
   const { config } = useConfigStore();
+  const insets = useSafeAreaInsets();
   const [showSpinner] = useState(config?.showSpinner);
+  const [activeScreen, setActiveScreen] = useState(config?.showSpinner ? 2 : 3);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [hasSpun, setHasSpun] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  const ctaPulse = useRef(new Animated.Value(1)).current;
   const navigation = useNavigation();
+
+  useEffect(() => {
+    let mounted = true;
+    AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
+      if (mounted) setReduceMotion(enabled);
+    });
+    const subscription = AccessibilityInfo.addEventListener(
+      "reduceMotionChanged",
+      setReduceMotion,
+    );
+    return () => {
+      mounted = false;
+      subscription.remove();
+    };
+  }, []);
+
   useEffect(() => {
     if (!hasSpun || activeScreen !== 2) {
       ctaPulse.setValue(1);
@@ -101,6 +93,7 @@ const ReminderPaywall: React.FC<{
   }, [hasSpun, activeScreen, ctaPulse]);
 
   const handleCTAPress = () => {
+    if (isSpinning) return;
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     if (activeScreen === 0) {
       setActiveScreen(showSpinner ? 2 : 3);
@@ -120,9 +113,9 @@ const ReminderPaywall: React.FC<{
       case 1:
         return "Continue for FREE";
       case 2:
-        return hasSpun ? "Claim 1 month free" : "Spin the wheel";
+        return hasSpun ? "Claim My Free Month →" : "Spin the wheel  →";
       case 3:
-        return "Start FREE Trial";
+        return "Claim My Free Month →";
       default:
         return "";
     }
@@ -131,16 +124,49 @@ const ReminderPaywall: React.FC<{
   const handleRestorePurchases = () => {
     onRestorePurchases();
   };
-  const handleSpin = async () => {
-    if (isSpinning || hasSpun) return;
 
-    await trackMixpanelEvent("paywall_spin_wheel");
+  const askForStoreReview = async () => {
+    try {
+      const isAvailable = await StoreReview.isAvailableAsync();
+      if (isAvailable) {
+        await StoreReview.requestReview();
+      } else {
+        console.log("Store review is not available on this device.");
+      }
+    } catch (error) {
+      console.log("Error requesting store review:", error);
+    }
+  };
+
+  const finishSpin = () => {
+    setIsSpinning(false);
+    setHasSpun(true);
+    if (!reduceMotion) {
+      setVisibleConfetti(true);
+    }
+    void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
+    void askForStoreReview();
+    void trackMixpanelEvent("paywall_spin_wheel");
+  };
+
+  const handleSpin = () => {
+    if (isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     // Continuous ease-out: crawl through previous segment, land at start of "1 month".
-    const winAngle = FULL_TURNS * 360 - SEGMENT_ANGLE / 2 + 8;
+    const winAngle =
+      FULL_TURNS * 360 -
+      WINNING_INDEX * WHEEL_SEGMENT_ANGLE -
+      WHEEL_SEGMENT_ANGLE / 2 +
+      8;
 
     spinAnim.setValue(0);
+
+    if (reduceMotion) {
+      spinAnim.setValue(winAngle);
+      finishSpin();
+      return;
+    }
 
     // Native-driven spin can't drive JS listeners reliably — schedule ticks that thin out.
     const hapticTimers: ReturnType<typeof setTimeout>[] = [];
@@ -159,105 +185,15 @@ const ReminderPaywall: React.FC<{
     Animated.timing(spinAnim, {
       toValue: winAngle,
       duration: SPIN_DURATION_MS,
-      easing: Easing.bezier(0.12, 0.75, 0.08, 1),
+      easing: Easing.bezier(0.08, 0.9, 0.12, 1),
       useNativeDriver: true,
     }).start(() => {
       hapticTimers.forEach(clearTimeout);
-      setIsSpinning(false);
-      setHasSpun(true);
-      setVisibleConfetti(true);
-      void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
+      finishSpin();
     });
   };
 
-  const spinWheel = () => {
-    const rotate = spinAnim.interpolate({
-      inputRange: [0, 360],
-      outputRange: ["0deg", "360deg"],
-    });
-
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <View style={{ alignItems: "center" }}>
-          {/* Pointer */}
-          <View
-            style={{
-              width: 0,
-              height: 0,
-              borderLeftWidth: 12,
-              borderRightWidth: 12,
-              borderTopWidth: 20,
-              borderLeftColor: "transparent",
-              borderRightColor: "transparent",
-              borderTopColor: colors.text.primary,
-              zIndex: 2,
-              marginBottom: -6,
-            }}
-          />
-
-          <Animated.View
-            style={{
-              width: WHEEL_SIZE,
-              height: WHEEL_SIZE,
-              transform: [{ rotate }],
-            }}
-          >
-            <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
-              <G>
-                {WHEEL_SEGMENTS.map((segment, index) => {
-                  const startAngle = index * SEGMENT_ANGLE - SEGMENT_ANGLE / 2;
-                  const endAngle = startAngle + SEGMENT_ANGLE;
-                  const midAngle = startAngle + SEGMENT_ANGLE / 2;
-                  const labelPos = polarToCartesian(
-                    WHEEL_RADIUS,
-                    WHEEL_RADIUS,
-                    WHEEL_RADIUS * 0.58,
-                    midAngle,
-                  );
-
-                  return (
-                    <G key={segment.label}>
-                      <Path
-                        d={describeSegment(
-                          WHEEL_RADIUS,
-                          WHEEL_RADIUS,
-                          WHEEL_RADIUS - 2,
-                          startAngle,
-                          endAngle,
-                        )}
-                        fill={segment.color}
-                        stroke={colors.ui.white}
-                        strokeWidth={2}
-                      />
-                      <SvgText
-                        x={labelPos.x}
-                        y={labelPos.y}
-                        fill={colors.text.primary}
-                        fontSize={12}
-                        fontWeight="700"
-                        textAnchor="middle"
-                        alignmentBaseline="middle"
-                      >
-                        {segment.label}
-                      </SvgText>
-                    </G>
-                  );
-                })}
-                <Circle
-                  cx={WHEEL_RADIUS}
-                  cy={WHEEL_RADIUS}
-                  r={28}
-                  fill={colors.ui.white}
-                  stroke={colors.ui.cardBorder}
-                  strokeWidth={2}
-                />
-              </G>
-            </Svg>
-          </Animated.View>
-        </View>
-      </View>
-    );
-  };
+  const periodLabel = product?.subscriptionPeriod === "P1Y" ? "year" : "month";
 
   const renderBelowButtonText = () => {
     return `30-day free trial — then ${product?.priceString ?? ""}/${product?.subscriptionPeriod === "P1Y" ? "year" : "month"}`;
@@ -374,15 +310,111 @@ const ReminderPaywall: React.FC<{
     return (
       <View
         style={{
-          marginTop: spacing.xxl,
           flex: 1,
+          paddingTop: insets.top + spacing.sm,
           paddingHorizontal: spacing.md,
+          paddingBottom: spacing.sm,
         }}
       >
-        <Text style={{ ...textStyles.onboardingTitle, textAlign: "center" }}>
-          Let’s see how long your FREE trial will be!
+        <View
+          accessible
+          accessibilityLabel="Your free trial"
+          style={{
+            alignSelf: "center",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+            backgroundColor: colors.ui.iconContainer,
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: spacing.rounded,
+            marginBottom: spacing.md,
+          }}
+        >
+          <MaterialCommunityIcons
+            name="gift"
+            size={14}
+            color={colors.confetti.violet}
+          />
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              fontWeight: "700",
+              color: colors.text.primary,
+              letterSpacing: 1.2,
+            }}
+          >
+            YOUR FREE TRIAL
+          </Text>
+        </View>
+
+        <Text
+          style={{
+            ...textStyles.onboardingTitle,
+            textAlign: "center",
+            lineHeight: 32,
+          }}
+        >
+          Let’s see how long{"\n"}your{" "}
+          <Text style={{ color: colors.ui.primary }}>free</Text> trial will be!
         </Text>
-        {spinWheel()}
+
+        <View
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            marginVertical: spacing.md,
+          }}
+        >
+          <TrialSpinWheel spinAnim={spinAnim} hasSpun={hasSpun} />
+        </View>
+
+        <View
+          accessible
+          accessibilityLabel="Nothing charged today. You can cancel anytime before your trial ends."
+          style={{
+            backgroundColor: colors.ui.listRowIconBackground,
+            borderRadius: 16,
+            paddingVertical: spacing.md,
+            paddingHorizontal: spacing.md,
+            alignItems: "center",
+            marginBottom: spacing.sm,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="check-circle"
+              size={18}
+              color={colors.ui.listRowIconTint}
+            />
+            <Text
+              style={{
+                ...textStyles.onboardingBody,
+                fontWeight: "700",
+                color: colors.text.primary,
+              }}
+            >
+              Nothing charged today
+            </Text>
+          </View>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              color: colors.text.secondary,
+              textAlign: "center",
+              marginTop: 4,
+            }}
+          >
+            You can cancel anytime before your trial ends.
+          </Text>
+        </View>
       </View>
     );
   };
@@ -477,10 +509,11 @@ const ReminderPaywall: React.FC<{
   };
 
   const renderFourthScreen = () => {
+    const todayPrice = product?.introPrice?.priceString ?? "$0.00";
     const steps = [
       {
-        title: "Today",
-        subtitle: "Unlock all Kudoo features and start your journey.",
+        title: `TODAY — ${todayPrice}`,
+        subtitle: "Full access unlocked",
         icon: "lock-open-outline",
         iconBg: colors.ui.primary,
         lineColor: colors.ui.primary,
@@ -494,8 +527,8 @@ const ReminderPaywall: React.FC<{
         highlight: true,
       },
       {
-        title: `In 30 Days — Only ${product?.pricePerWeekString ?? ""} a week`,
-        subtitle: `Billed annually`,
+        title: `${formatTrialEndDate()} — Only ${product?.pricePerWeekString ?? ""} a week`,
+        subtitle: "Billed annually",
         icon: "crown-outline",
         iconBg: "#111827",
       },
@@ -510,16 +543,16 @@ const ReminderPaywall: React.FC<{
         }}
       >
         <View
+          accessible
+          accessibilityLabel="Your reward"
           style={{
             alignSelf: "center",
             flexDirection: "row",
             alignItems: "center",
-            gap: spacing.sm,
-            paddingVertical: spacing.xs + 2,
-            paddingHorizontal: spacing.md,
-            backgroundColor: colors.ui.componentBackground,
-            borderWidth: 1,
-            borderColor: colors.ui.cardBorder,
+            gap: 6,
+            backgroundColor: colors.ui.iconContainer,
+            paddingVertical: 6,
+            paddingHorizontal: 12,
             borderRadius: spacing.rounded,
             marginBottom: spacing.md,
           }}
@@ -530,6 +563,7 @@ const ReminderPaywall: React.FC<{
               ...textStyles.onboardingBody,
               fontWeight: "700",
               color: colors.text.primary,
+              letterSpacing: 1.2,
             }}
           >
             4.9 · 5,000+ reviews
@@ -544,7 +578,19 @@ const ReminderPaywall: React.FC<{
             paddingHorizontal: spacing.sm,
           }}
         >
-          Unlock your full potential with Kudoo
+          Your <Text style={{ color: colors.ui.primary }}>free</Text> month is ready
+     
+        </Text>
+        <Text
+          style={{
+            ...textStyles.onboardingBody,
+            textAlign: "center",
+            color: colors.text.secondary,
+            marginTop: spacing.sm,
+            paddingHorizontal: spacing.sm,
+          }}
+        >
+          Try everything in Kudoo free for the next 30 days.
         </Text>
         <View
           style={{
@@ -563,27 +609,103 @@ const ReminderPaywall: React.FC<{
     );
   };
 
+  const renderLegalLinks = (muted: boolean) => {
+    const linkStyle = {
+      ...textStyles.onboardingBody,
+      textAlign: "center" as const,
+      color: muted ? colors.text.secondary : colors.text.primary,
+      fontSize: muted ? 12 : undefined,
+    };
+    return (
+      <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+        <TouchableOpacity
+          accessibilityRole="link"
+          accessibilityLabel="Privacy"
+          onPress={() =>
+            Linking.openURL(
+              "https://sites.google.com/view/privacypolicy--app/home",
+            )
+          }
+        >
+          <Text style={linkStyle}>Privacy</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="button"
+          accessibilityLabel="Restore Purchases"
+          onPress={handleRestorePurchases}
+        >
+          <Text style={linkStyle}>Restore Purchases</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          accessibilityRole="link"
+          accessibilityLabel="Terms"
+          onPress={() =>
+            Linking.openURL(
+              "https://sites.google.com/view/app--termsofuse/home",
+            )
+          }
+        >
+          <Text style={linkStyle}>Terms</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   const renderFooter = () => {
+    if (activeScreen === 0 || activeScreen === 1) {
+      return (
+        <View
+          style={{
+            marginBottom: spacing.ctaButtonBottomPadding,
+            gap: spacing.componentGap,
+            paddingHorizontal: spacing.md,
+          }}
+        >
+          <Text
+            style={{
+              ...textStyles.primary,
+              textAlign: "center",
+              fontWeight: "bold",
+              color: colors.ui.primary,
+            }}
+          >
+            ✓ Nothing charged today
+          </Text>
+          <Animated.View style={{ transform: [{ scale: ctaPulse }] }}>
+            <PrimaryButtonComponent
+              title={renderCTAText()}
+              onPress={handleCTAPress}
+            />
+          </Animated.View>
+
+          {renderLegalLinks(false)}
+        </View>
+      );
+    }
+
+    const aboveButtonText =
+      activeScreen === 3 ? "✓ Nothing charged today" : null;
+
     return (
       <View
         style={{
-          marginBottom: spacing.ctaButtonBottomPadding,
-          gap: spacing.componentGap,
+          paddingBottom: Math.max(insets.bottom, spacing.md),
+          gap: spacing.sm,
           paddingHorizontal: spacing.md,
         }}
       >
-        <Text
-          style={{
-            ...textStyles.primary,
-            textAlign: "center",
-            fontWeight: "bold",
-            color: colors.ui.primary,
-          }}
-        >
-          {hasSpun && activeScreen === 2
-            ? "🎉 You unlocked 1 month FREE"
-            : "✓ Nothing charged today"}
-        </Text>
+        {aboveButtonText ? (
+          <Text
+            style={{
+              ...textStyles.primary,
+              textAlign: "center",
+              fontWeight: "bold",
+              color: colors.ui.primary,
+            }}
+          >
+            {aboveButtonText}
+          </Text>
+        ) : null}
         <Animated.View style={{ transform: [{ scale: ctaPulse }] }}>
           <PrimaryButtonComponent
             title={renderCTAText()}
@@ -591,39 +713,27 @@ const ReminderPaywall: React.FC<{
           />
         </Animated.View>
 
-        <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
-          {renderBelowButtonText()}
-        </Text>
+        {activeScreen === 3 ? (
+          <Text
+            style={{
+              ...typography.small,
+              textAlign: "center",
+              color: colors.text.secondary,
+            }}
+          >
+            {renderBelowButtonText()}
+          </Text>
+        ) :         <Text
+        style={{
+          ...typography.small,
+          textAlign: "center",
+          color: colors.text.secondary,
+        }}
+      >
+        
+      </Text>}
 
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
-          <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                "https://sites.google.com/view/privacypolicy--app/home",
-              )
-            }
-          >
-            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
-              Privacy
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleRestorePurchases}>
-            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
-              Restore Purchases
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() =>
-              Linking.openURL(
-                "https://sites.google.com/view/app--termsofuse/home",
-              )
-            }
-          >
-            <Text style={{ ...textStyles.onboardingBody, textAlign: "center" }}>
-              Terms
-            </Text>
-          </TouchableOpacity>
-        </View>
+        {renderLegalLinks(true)}
       </View>
     );
   };
@@ -642,7 +752,16 @@ const ReminderPaywall: React.FC<{
     );
   };
 
-  return <View style={{ flex: 1 }}>{renderScreens()}</View>;
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: activeScreen === 2 ? colors.ui.background : undefined,
+      }}
+    >
+      {renderScreens()}
+    </View>
+  );
 };
 
 export default ReminderPaywall;
