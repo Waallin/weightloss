@@ -10,16 +10,19 @@ const PrimaryButtonComponent = ({
   color,
   backgroundColor,
   loading,
+  disabled,
 }: {
   title: string;
   onPress: () => void;
   color?: string;
   backgroundColor?: string;
   loading?: boolean;
+  disabled?: boolean;
   }) => {
   return (
     <TouchableOpacity
       activeOpacity={0.8}
+      disabled={disabled}
       onPress={onPress}
       style={{
         backgroundColor: backgroundColor || colors.ui.primary,

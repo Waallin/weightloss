@@ -50,6 +50,23 @@ const paywallTestimonial: SocialProofTestimonial = {
   avatarImage: require("../../../assets/users/sara.jpg"),
 };
 
+const formatLikeStorePrice = (template: string, amount: number) => {
+  const match = template.match(/^(\D*)([\d\s.,]+)(\D*)$/);
+  if (!match) return null;
+  const [, prefix, numeric, suffix] = match;
+  const lastComma = numeric.lastIndexOf(",");
+  const lastDot = numeric.lastIndexOf(".");
+  const decimalIndex = Math.max(lastComma, lastDot);
+  const fractionDigits =
+    decimalIndex >= 0 ? numeric.length - decimalIndex - 1 : 0;
+  const decimalSep = lastComma > lastDot ? "," : ".";
+  const fixed = amount.toFixed(fractionDigits);
+  const [whole, fraction] = fixed.split(".");
+  const formatted =
+    fractionDigits > 0 ? `${whole}${decimalSep}${fraction}` : whole;
+  return `${prefix}${formatted}${suffix}`;
+};
+
 const formatTrialEndDate = () => {
   const date = new Date();
   date.setDate(date.getDate() + 30);
@@ -233,7 +250,28 @@ const ReminderPaywall: React.FC<{
   const periodLabel = product?.subscriptionPeriod === "P1Y" ? "year" : "month";
 
   const renderBelowButtonText = () => {
-    return `30-day free trial — then ${product?.priceString ?? ""}/${product?.subscriptionPeriod === "P1Y" ? "year" : "month"}`;
+    const priceString = product?.priceString ?? "";
+    const amount =
+      typeof product?.price === "number" && product.price > 0
+        ? product.price
+        : null;
+    const comparePrice =
+      amount != null && priceString
+        ? formatLikeStorePrice(priceString, amount * 2)
+        : null;
+
+    return (
+      <>
+        {"30-day free trial — then only "}
+        {comparePrice ? (
+          <Text style={{ textDecorationLine: "line-through" }}>
+            {comparePrice}
+          </Text>
+        ) : null}
+        {comparePrice ? " " : ""}
+        {`${priceString}/${periodLabel}`}
+      </>
+    );
   };
 
   const renderFirstScreen = () => {
@@ -569,6 +607,17 @@ const ReminderPaywall: React.FC<{
 
   const renderFourthScreen = () => {
     const todayPrice = product?.introPrice?.priceString ?? "$0.00";
+    const weeklyAmount =
+      typeof product?.pricePerWeek === "number" && product.pricePerWeek > 0
+        ? product.pricePerWeek
+        : typeof product?.price === "number" && product.price > 0
+          ? product.price / 52
+          : null;
+    const weeklyPrice = product?.pricePerWeekString ?? "";
+    const compareWeeklyPrice =
+      weeklyAmount != null && weeklyPrice
+        ? formatLikeStorePrice(weeklyPrice, weeklyAmount * 2)
+        : null;
     const steps = [
       {
         title: `TODAY — ${todayPrice}`,
@@ -586,7 +635,26 @@ const ReminderPaywall: React.FC<{
         highlight: true,
       },
       {
-        title: `${formatTrialEndDate()} — Only ${product?.pricePerWeekString ?? ""} a week`,
+        title: (
+          <>
+            {`${formatTrialEndDate()} — Only `}
+            {compareWeeklyPrice ? (
+              <Text
+                style={{
+                  textDecorationLine: "line-through",
+                  color: colors.ui.delete,
+                }}
+              >
+                {compareWeeklyPrice}
+              </Text>
+            ) : null}
+            {compareWeeklyPrice ? " " : ""}
+            <Text style={{ color: colors.ui.primary, fontWeight: "700" }}>
+              {weeklyPrice}
+            </Text>
+            {" a week"}
+          </>
+        ),
         subtitle: "Billed annually",
         icon: "crown-outline",
         iconBg: "#111827",
@@ -780,6 +848,7 @@ const ReminderPaywall: React.FC<{
         ) : null}
         <Animated.View style={{ transform: [{ scale: ctaPulse }] }}>
           <PrimaryButtonComponent
+            disabled={isSpinning}
             title={renderCTAText()}
             onPress={handleCTAPress}
           />
