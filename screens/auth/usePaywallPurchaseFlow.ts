@@ -68,7 +68,7 @@ export function usePaywallPurchaseFlow({
             );
 
             await logMetaEvent("Subscribe", baseProps);
-            await logTikTokEvent(TikTokEventName.SUBSCRIBE, undefined, baseProps);
+            await logTikTokEvent(TikTokEventName.START_TRIAL, undefined, baseProps);
 
           if (userEmail) {
             updateDocument("users", userEmail, {

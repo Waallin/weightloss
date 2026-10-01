@@ -14,8 +14,6 @@ import { analyticsEvents } from "../../constants/analytics";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const SPOTLIGHT_OUTER = Math.min(SCREEN_WIDTH * 0.78, 320);
-const SPOTLIGHT_MID = SPOTLIGHT_OUTER * 0.82;
-const SPOTLIGHT_INNER = SPOTLIGHT_OUTER * 0.64;
 const IMAGE_SIZE = SPOTLIGHT_OUTER * 0.84;
 const DOT_SIZE = 8;
 const DOT_INACTIVE = "#D8D8D6";
@@ -52,14 +50,14 @@ const sections: OnboardingSection[] = [
     title: "Tired of logging everything you eat?",
     description: "Just snap a photo. We’ll do the rest.",
     cta: "Show me how",
-    image: require("../../assets/mascot/walk.png"),
+    image: require("../../assets/mascot/logging.png"),
   },
   {
     id: 3,
     title: "Don’t feel like going to the gym?",
     description: "You’re not alone. You don’t need it to make real progress.",
     cta: "Let’s do this",
-    image: require("../../assets/mascot/pushUps.png"),
+    image: require("../../assets/mascot/gym.png"),
   },
   {
     id: 4,
@@ -67,21 +65,21 @@ const sections: OnboardingSection[] = [
     description:
       "You start strong… then life happens. That’s why this is built to be simple.",
     cta: "Sounds good",
-    image: require("../../assets/mascot/jump.png"),
+    image: require("../../assets/mascot/consistent.png"),
   },
   {
     id: 5,
     title: "Wish it was just… easier?",
     description: "Just follow three small habits each day. That’s enough.",
     cta: "Keep going",
-    image: require("../../assets/mascot/threeFingers.png"),
+    image: require("../../assets/mascot/easier.png"),
   },
   {
     id: 6,
     title: "Ready to try something different?",
     description: "No pressure. Just a simple reset—focus on one day at a time.",
     cta: "That’s more like it",
-    image: require("../../assets/mascot/walk.png"),
+    image: require("../../assets/mascot/somethingnew.png"),
   },
 ];
 
@@ -109,10 +107,6 @@ const OnboardingSlide = React.memo(({ item }: { item: OnboardingSection }) => {
         <View
           style={{
             position: "absolute",
-            width: SPOTLIGHT_OUTER,
-            height: SPOTLIGHT_OUTER,
-            borderRadius: SPOTLIGHT_OUTER / 2,
-            backgroundColor: "rgba(255,255,255,0.35)",
           }}
         />
 

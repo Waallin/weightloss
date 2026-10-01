@@ -23,17 +23,6 @@ import { analyticsEvents } from "../../constants/analytics";
 
 const dummySocialProof = [
   {
-    name: "Sara L.",
-    role: "Kudoo user",
-    rating: 4.9,
-    ratingMax: 5,
-    headline: "Feeling lighter in the first week",
-    quote:
-      "“I just followed the recipes and tracked points instead of calories. It’s so much easier to stick to.”",
-    avatarColor: colors.ui.listRowIconBackground,
-    avatarImage: require("../../assets/users/sara.jpg"),
-  },
-  {
     name: "Marcus K.",
     role: "Kudoo user",
     rating: 5,

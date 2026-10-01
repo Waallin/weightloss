@@ -37,9 +37,9 @@ type AuthStackParamList = {
 };
 
 const imageByKey: Record<HowItWorkImageKey, number> = {
-  waving: require("../../assets/mascot/waving.png"),
-  standing: require("../../assets/mascot/standing.png"),
-  thumbsUp: require("../../assets/mascot/thumbsUp.png"),
+  waving: require("../../assets/mascot/easier.png"),
+  standing: require("../../assets/mascot/justPoints.png"),
+  thumbsUp: require("../../assets/mascot/allSet.png"),
 };
 
 const sections: HowItWorkSection[] = authCopy.howItWorkSections.map((s) => ({
@@ -118,8 +118,6 @@ const HowItWorkSlide = React.memo(({ item }: { item: HowItWorkSection }) => {
             position: "absolute",
             width: SPOTLIGHT_OUTER,
             height: SPOTLIGHT_OUTER,
-            borderRadius: SPOTLIGHT_OUTER / 2,
-            backgroundColor: "rgba(255,255,255,0.35)",
           }}
         />
         <Image

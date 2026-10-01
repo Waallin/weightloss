@@ -122,7 +122,7 @@ const LogWeightScreen: React.FC = () => {
         ]}
       >
         <Image
-          source={require("../../../assets/mascot/standing.png")}
+          source={require("../../../assets/mascot/scale.png")}
           resizeMode="cover"
           style={{ width: "100%", height: "100%" }}
         />

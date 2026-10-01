@@ -192,9 +192,9 @@ const ReminderPaywall: React.FC<{
     if (!showSpinner) return;
     setIsSpinning(false);
     setHasSpun(true);
-  
-      setVisibleConfetti(true);
-    
+
+    setVisibleConfetti(true);
+
     void haptics.notificationAsync(haptics.NotificationFeedbackType.Success);
     setTimeout(() => {
       void askForStoreReview();
@@ -203,7 +203,7 @@ const ReminderPaywall: React.FC<{
   };
 
   const handleSpin = () => {
-   if (!showSpinner || isSpinning || hasSpun) return;
+    if (!showSpinner || isSpinning || hasSpun) return;
 
     setIsSpinning(true);
     // Continuous ease-out: crawl through previous segment, land at start of "1 month".
@@ -289,39 +289,8 @@ const ReminderPaywall: React.FC<{
           <Text style={{ color: colors.ui.primary }}>free</Text>
         </Text>
 
-        <View
-          style={{
-            marginTop: spacing.xl,
-            padding: spacing.lg,
-            backgroundColor: colors.ui.componentBackground,
-            borderWidth: 1,
-            borderColor: colors.ui.cardBorder,
-            borderRadius: spacing.borderRadius + 4,
-            alignSelf: "stretch",
-          }}
-        >
-          <Text
-            style={{
-              textAlign: "center",
-              fontSize: 18,
-              letterSpacing: 2,
-            }}
-          >
-            ⭐⭐⭐⭐⭐
-          </Text>
-          <Text
-            style={{
-              ...textStyles.onboardingBody,
-              fontStyle: "italic",
-              textAlign: "center",
-              marginTop: spacing.sm,
-              color: colors.text.secondary,
-              lineHeight: 22,
-            }}
-          >
-            “I only planned to try the free trail. Three months later I’m down
-            34 lbs.”
-          </Text>
+        <View style={{ marginTop: spacing.xl, alignSelf: "stretch" }}>
+          <SocialProofItem item={paywallTestimonial} />
         </View>
       </View>
     );
@@ -433,19 +402,19 @@ const ReminderPaywall: React.FC<{
         >
           {hasSpun ? (
             <>
-                      You got the best one! 🎉
-                      {"\n"}
-                      <Text style={{ 
-                        ...textStyles.onboardingTitle, 
-                        fontWeight: "400", 
-                        fontSize: 14,
-                        opacity: 0.7,
-                        textAlign: "center",
-                      }}>
-                        You won the best prize — 1 month FREE!
-                      </Text>
-                 
-             
+              You got the best one! 🎉
+              {"\n"}
+              <Text style={{
+                ...textStyles.onboardingTitle,
+                fontWeight: "400",
+                fontSize: 14,
+                opacity: 0.7,
+                textAlign: "center",
+              }}>
+                You won the best prize — 1 month FREE!
+              </Text>
+
+
             </>
           ) : (
             <>
@@ -719,23 +688,11 @@ const ReminderPaywall: React.FC<{
         >
           Try everything in Kudoo free for the next 30 days.
         </Text>
-        <View style={{flex: 0.5, justifyContent: "center"}}>
-          <Text
-            style={{
-              ...textStyles.onboardingBody,
-              textAlign: "center",
-              color: colors.text.secondary,
-              marginTop: spacing.sm,
-              paddingHorizontal: spacing.lg,
-            }}
-          >
-            "I only planned to try the free trail. Three months later I’m down 34 lbs."
-          </Text>
-        </View>
         <View
           style={{
             flex: 1,
-            
+
+            justifyContent: "center",
             paddingHorizontal: spacing.lg,
           }}
         >
@@ -744,6 +701,9 @@ const ReminderPaywall: React.FC<{
               {renderTimelineStep(step, index === steps.length - 1)}
             </View>
           ))}
+          <View style={{ marginTop: spacing.lg, marginBottom: spacing.md }}>
+            <SocialProofItem item={paywallTestimonial} />
+          </View>
         </View>
       </View>
     );

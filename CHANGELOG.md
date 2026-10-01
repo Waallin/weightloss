@@ -10,9 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Blocked account creation for users under 18 and lock the app after they confirm their age
 - Added more analytics events during onboarding
+- Added spinning wheel to paywall
+- Added social proof to paywall
 
 ### Changed
 - Updated event names to mixpanel
+- Changed tiktok-event from TikTokEventName.SUBSCRIBE to TikTokEventName.START_TRAIL
+- Changed Kudoos design
 
 ## [1.1.0] 2026-09-03
 

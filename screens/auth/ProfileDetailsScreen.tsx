@@ -567,12 +567,11 @@ const ProfileDetailsScreen = () => {
                   position: "absolute",
                   width: SPOTLIGHT_OUTER,
                   height: SPOTLIGHT_OUTER,
-                  borderRadius: SPOTLIGHT_OUTER / 2,
-                  backgroundColor: "rgba(255,255,255,0.35)",
+  
                 }}
               />
               <Image
-                source={require("../../assets/mascot/thumbsUp.png")}
+                source={require("../../assets/mascot/allSet.png")}
                 resizeMode="contain"
                 style={{
                   width: SPOTLIGHT_IMAGE_SIZE,

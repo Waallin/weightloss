@@ -14,7 +14,7 @@ import { auth } from "../../services/firebaseConfig";
 import useUserStore from "../../stores/useUserStore";
 import Constants from "expo-constants";
 import { setDocument } from "../../services/firebase";
-const IMAGE_SIZE = 250;
+const IMAGE_SIZE = 350;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
 import { scheduleActiveUserNotifications } from "../../services/notifications";
@@ -138,8 +138,6 @@ const AuthScreen = () => {
             {
               width: IMAGE_SIZE,
               height: IMAGE_SIZE,
-              borderRadius: IMAGE_SIZE / 2,
-              backgroundColor: colors.ui.secondaryBackground,
               alignItems: "center",
               justifyContent: "center",
               marginBottom: spacing.xl,
@@ -150,7 +148,7 @@ const AuthScreen = () => {
           ]}
         >
           <Image
-            source={require("../../assets/mascot/thumbsUp.png")}
+            source={require("../../assets/mascot/almostReady.png")}
             resizeMode="cover"
             style={{ width: "100%", height: "100%" }}
           />
