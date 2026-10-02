@@ -5,18 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1] 2026-09-03
+## [1.1.1]
 
 ### Added
 - Blocked account creation for users under 18 and lock the app after they confirm their age
 - Added more analytics events during onboarding
 - Added spinning wheel to paywall
 - Added social proof to paywall
+- First-day guide after the paywall: scan a meal, connect Apple Health, log a glass, then start the day
+- Mixpanel events for the first-day guide: viewed, slide viewed, and completed
 
 ### Changed
 - Updated event names to mixpanel
 - Changed tiktok-event from TikTokEventName.SUBSCRIBE to TikTokEventName.START_TRAIL
 - Changed Kudoos design
+- Removed the home-screen first-time guide, including the 9/10 water shortcut and the review prompt on the first glass
 
 ## [1.1.0] 2026-09-03
 

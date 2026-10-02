@@ -33,7 +33,9 @@ import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useUserStore from "../../../stores/useUserStore";
 import { addToDiet } from "../../../services/firebase";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import { RootStackParamList } from "../../navigation/types";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import useToastStore from "../../../stores/useToastStore";
 
@@ -135,7 +137,8 @@ const ScanFoodScreen = () => {
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { user } = useUserStore();
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "ScanFoodScreen">>();
   const { showToast } = useToastStore();
   useEffect(() => {
     if (image && !result) {
@@ -205,6 +208,7 @@ const ScanFoodScreen = () => {
     }
 
     const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+    
     if (!apiKey) {
       setScanning(false);
       Alert.alert("API key missing", "EXPO_PUBLIC_OPENAI_API_KEY is not set.");
@@ -400,10 +404,10 @@ Return JSON only.
             }}
           >
             <Image
-              source={require("../../../assets/mascot/standing.png")}
+              source={require("../../../assets/mascot/camera.png")}
               style={{
-                width: 200,
-                height: 200,
+                width: 300,
+                height: 300,
               }}
               resizeMode="contain"
             />
@@ -645,12 +649,12 @@ Return JSON only.
             gap: spacing.md,
           }}
         >
-          {result && (
+          {!result && (
             <Image
-              source={require("../../../assets/mascot/waving.png")}
+              source={require("../../../assets/mascot/noFood.png")}
               style={{
-                width: 200,
-                height: 200,
+                width: 300,
+                height: 300,
               }}
               resizeMode="contain"
             />
@@ -710,7 +714,11 @@ Return JSON only.
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast("Food added to diet");
-      navigation.pop(2);
+      if (route.params?.fromFirstDayGuide) {
+        navigation.navigate("FirstDayGuide", { mealLogged: true });
+      } else {
+        navigation.pop(2);
+      }
     } catch (error) {
       console.error(error);
     } finally {

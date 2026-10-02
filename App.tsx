@@ -198,8 +198,7 @@ export default function App() {
       });
       trackMixpanelEvent(analyticsEvents.appOpened);
       setTodayDiet(todayDiet);
-      setUser(userData)
-      
+      setUser(userData);
       return true;
     } else {
 

@@ -12,10 +12,11 @@ import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
 import ScanFoodScreen from "../main/diet/ScanFoodScreen";
+import FirstDayGuideScreen from "../main/home/FirstDayGuideScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export type MainStackInitialRoute = "MainNavigator" | "Paywall";
+export type MainStackInitialRoute = "MainNavigator" | "Paywall" | "FirstDayGuide";
 
 interface MainStackProps {
   initialRouteName?: MainStackInitialRoute;
@@ -29,6 +30,11 @@ export const MainStack: React.FC<MainStackProps> = ({
       <Stack.Screen
         name="MainNavigator"
         component={MainNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FirstDayGuide"
+        component={FirstDayGuideScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

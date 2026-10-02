@@ -18,13 +18,23 @@ import { logTikTokEvent } from "../../services/tiktoksdk";
 import { TikTokEventName } from "react-native-tiktok-business-sdk";
 function resetToApp(navigation: NavigationProp<ParamListBase>) {
   const routeNames = navigation.getState()?.routeNames ?? [];
-  const routeName = routeNames.includes("MainStack")
-    ? "MainStack"
-    : "MainNavigator";
+
+  if (routeNames.includes("MainStack")) {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "MainStack",
+          state: { routes: [{ name: "FirstDayGuide" }] },
+        },
+      ],
+    });
+    return;
+  }
 
   navigation.reset({
     index: 0,
-    routes: [{ name: routeName }],
+    routes: [{ name: "FirstDayGuide" }],
   });
 }
 

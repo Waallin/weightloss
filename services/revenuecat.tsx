@@ -15,7 +15,6 @@ export async function initRevenueCat() {
 
 export async function isCustomerPremium() {
   const customerInfo = await Purchases.getCustomerInfo();
-  console.log("🚀 ~ isCustomerPremium ~ customerInfo:", customerInfo)
   return customerInfo?.entitlements.active["Kudoo Premium"] !== undefined;
 }
 

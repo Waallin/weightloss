@@ -204,7 +204,7 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
 
                         <View style={{ alignItems: "center", gap: spacing.md, marginTop: 40 }}>
                             <Image
-                                source={require("../../../assets/mascot/thumbsUp.png")}
+                                source={require("../../../assets/mascot/doLess.png")}
                                 style={{ width: spacing.paywallMascotSize, height: spacing.paywallMascotSize }}
                                 resizeMode="contain"
                             />

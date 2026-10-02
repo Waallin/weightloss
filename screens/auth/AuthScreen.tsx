@@ -100,7 +100,6 @@ const AuthScreen = () => {
         await setMixpanelPeopleProperty("email", email);
         await trackMixpanelEvent(analyticsEvents.userRegistered);
         await logTikTokEvent(TikTokEventName.REGISTRATION);
-        AsyncStorage.setItem("first_time", "true");
 
         if (!config?.showPaywall) {
           navigation.replace("MainStack");

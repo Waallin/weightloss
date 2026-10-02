@@ -20,7 +20,8 @@ export type RootStackParamList = {
   Paywall: undefined;
   AuthNavigator: undefined;
   DietListScreen: { initialTab?: "food" | "recipes" };
-  ScanFoodScreen: undefined;
+  ScanFoodScreen: { fromFirstDayGuide?: boolean } | undefined;
+  FirstDayGuide: { mealLogged?: boolean } | undefined;
   AddDietScreen: undefined;
   ProfileScreen: undefined;
   PreferencesScreen: undefined;

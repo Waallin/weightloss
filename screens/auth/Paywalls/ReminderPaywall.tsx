@@ -693,7 +693,7 @@ const ReminderPaywall: React.FC<{
             flex: 1,
 
             justifyContent: "center",
-            paddingHorizontal: spacing.lg,
+            
           }}
         >
           {steps.map((step, index) => (

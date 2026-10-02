@@ -14,7 +14,6 @@ import { deleteUser as deleteFirebaseAuthUser } from "firebase/auth";
 import { auth, database } from "./firebaseConfig";
 import { getDateKey } from "../utils/dateUtils";
 import * as haptics from "expo-haptics";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 const debug = false;
 
 
@@ -199,12 +198,11 @@ export const syncToday = async (
     const daySnap = await getDoc(dayRef);
 
     if (!daySnap.exists()) {
-      const firstTime = await AsyncStorage.getItem("first_time");
       const newDay = {
         dateKey,
 
         progress: {
-          water: firstTime === "true" ? 9 : 0,
+          water: 0,
           steps: 0,
         },
 
