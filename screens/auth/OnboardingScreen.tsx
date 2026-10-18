@@ -43,7 +43,7 @@ const sections: OnboardingSection[] = [
     description:
       "It’s hard to keep up. What if you didn’t have to think about it at all?",
     cta: "I’m in",
-    image: require("../../assets/mascot/standing.png"),
+    image: require("../../assets/mascot/tiredOfCounting.png"),
   },
   {
     id: 2,
@@ -70,7 +70,7 @@ const sections: OnboardingSection[] = [
   {
     id: 5,
     title: "Wish it was just… easier?",
-    description: "Just follow three small habits each day. That’s enough.",
+    description: "Just two simple goals: eat smart and move daily. That’s it.",
     cta: "Keep going",
     image: require("../../assets/mascot/easier.png"),
   },

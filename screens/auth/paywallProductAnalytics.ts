@@ -1,4 +1,4 @@
-export type PaywallPlan = "weekly" | "annual";
+export type PaywallPlan = "weekly" | "annual" | "monthly";
 
 export type PaywallOfferPackage = {
   identifier: string;
@@ -17,6 +17,7 @@ export type PaywallOfferPackage = {
 export type PaywallOfferProducts = {
   weekly?: PaywallOfferPackage | null;
   annual?: PaywallOfferPackage | null;
+  monthly?: PaywallOfferPackage | null;
 } | null;
 
 export type PaywallProductAnalytics = {
@@ -30,13 +31,14 @@ export type PaywallProductAnalytics = {
 const PACKAGE_IDS: Record<PaywallPlan, string> = {
   weekly: "$rc_weekly",
   annual: "$rc_annual",
+  monthly: "$rc_monthly",
 };
 
 export function getPaywallProductAnalytics(
   products: PaywallOfferProducts,
   plan: PaywallPlan,
 ): PaywallProductAnalytics {
-  const pkg = plan === "annual" ? products?.annual : products?.weekly;
+  const pkg = products?.[plan];
   if (!pkg) {
     return { packageIdentifier: PACKAGE_IDS[plan] };
   }

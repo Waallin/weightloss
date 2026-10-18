@@ -1,6 +1,7 @@
-import { Image, View } from "react-native";
+import { View } from "react-native";
 import React, { useEffect } from "react";
 import { MotiText, MotiView } from "moti";
+import { useVideoPlayer, VideoView } from "expo-video";
 import { colors } from "./constants/colors";
 import { textStyles } from "./constants/texts";
 import { ReduceMotion } from "react-native-reanimated";
@@ -12,6 +13,12 @@ interface CustomSplashScreenProps {
 const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
   onFinish,
 }) => {
+  const player = useVideoPlayer(require("./assets/mascot/doLess.mp4"), (player) => {
+    player.loop = true;
+    player.muted = true;
+    player.play();
+  });
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       onFinish?.();
@@ -35,16 +42,22 @@ const CustomSplashScreen: React.FC<CustomSplashScreenProps> = ({
         transition={{ type: "timing", duration: 800, reduceMotion: ReduceMotion.Never }}
         style={{ alignItems: "center" }}
       >
-        <Image
-          resizeMode="contain"
-          source={require("./assets/mascot/doLess.png")}
+        <View
           style={{
             width: 300,
             height: 300,
             borderRadius: 99999,
+            overflow: "hidden",
             marginBottom: 20,
           }}
-        />
+        >
+          <VideoView
+            player={player}
+            contentFit="cover"
+            nativeControls={false}
+            style={{ width: 300, height: 300 }}
+          />
+        </View>
         <MotiText
           from={{ opacity: 0, translateY: 6 }}
           animate={{ opacity: 1, translateY: 0 }}

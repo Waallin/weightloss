@@ -3,22 +3,22 @@ const ACTIVE_NOTIFICATION_DAYS = 3;
 
 const dailyNotifications = [
   {
-    hour: 7,
-    minute: 0,
-    title: "Start with water 💧",
-    body: 'One glass is an easy first win today.',
-  },
-  {
     hour: 12,
     minute: 0,
-    title: "Lunch walk? 🚶",
-    body: 'A short walk helps you get closer to 5k',
+    title: "Lunch time? 📸",
+    body: 'Snap your meal and see how it fits your daily points.',
+  },
+  {
+    hour: 16,
+    minute: 0,
+    title: "A little walk? 🚶",
+    body: "Every step counts. You're getting closer to your 5,000-step goal.",
   },
   {
     hour: 20,
     minute: 0,
-    title: "Finish strong 💪",
-    body: 'Check your points and mark today as done.',
+    title: "How did today go? ✨",
+    body: 'Check your two goals and see how your day is shaping up.',
   }
 ]
 

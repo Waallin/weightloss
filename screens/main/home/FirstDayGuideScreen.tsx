@@ -1,167 +1,75 @@
 import React, { useEffect, useState } from "react";
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as haptics from "expo-haptics";
-import { increment } from "firebase/firestore";
+import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
-import { textStyles } from "../../../constants/texts";
-import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
+import { typography } from "../../../constants/texts";
 import { RootStackParamList } from "../../navigation/types";
-import { useHealthKitPermissions } from "../../../services/healthkit";
+import { useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
-import { updateTodayProgress } from "../../../services/firebase";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import useUserStore from "../../../stores/useUserStore";
-import useConfettiStore from "../../../stores/useConfettiStore";
+import useUnitsStore from "../../../stores/useUnitsStore";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { analyticsEvents } from "../../../constants/analytics";
+import ConnectHealthSheet from "../../../components/ConnectHealthSheet";
+import useHealthConnected from "../../../hooks/useHealthConnected";
+import { formatWeightFromKg } from "../../../utils/units";
+import { formatNumber } from "../../../utils/goals";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-const SPOTLIGHT_OUTER = Math.min(SCREEN_WIDTH * 0.78, 320);
-const IMAGE_SIZE = SPOTLIGHT_OUTER * 0.84;
-const DOT_SIZE = 8;
-const DOT_INACTIVE = "#D8D8D6";
-const STEP_COUNT = 4;
 const currentYear = new Date().getFullYear();
 
 export const FIRST_DAY_GUIDE_STEP_KEY = "first_day_guide_step";
 
-type GuideStep = 1 | 2 | 3 | 4;
-
-const parseGuideStep = (value: string | null): GuideStep => {
-  if (value === "2" || value === "3" || value === "4") {
-    return Number(value) as GuideStep;
-  }
-  return 1;
+const cardStyle = {
+  backgroundColor: colors.ui.white,
+  borderRadius: 24,
+  padding: spacing.md,
+  flexDirection: "row" as const,
+  gap: 14,
+  shadowColor: colors.goals.dark,
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.06,
+  shadowRadius: 24,
+  elevation: 4,
 };
 
 const FirstDayGuideScreen = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "FirstDayGuide">>();
-  const { requestPermission } = useHealthKitPermissions();
-  const { todayProgress, setTodayProgress } = useTodayProgressStore();
+  const { todayProgress } = useTodayProgressStore();
   const { user } = useUserStore();
-  const { setVisibleConfetti } = useConfettiStore();
-  const [step, setStep] = useState<GuideStep>(1);
+  const { weightUnit } = useUnitsStore();
+  const todaySteps = useTodaySteps();
+  const { connected: healthConnected, markRequested } = useHealthConnected(todaySteps);
+  const [connectVisible, setConnectVisible] = useState(false);
   const [ready, setReady] = useState(false);
-  const [waterCelebrated, setWaterCelebrated] = useState(false);
-  const [connectingHealth, setConnectingHealth] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const hydrate = async () => {
-      if (route.params?.mealLogged) {
-        setStep(2);
-        setWaterCelebrated(false);
-        await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "2");
-        navigation.setParams({ mealLogged: undefined });
-        if (!cancelled) setReady(true);
-        return;
-      }
-
-      const storedStep = await AsyncStorage.getItem(FIRST_DAY_GUIDE_STEP_KEY);
-      if (cancelled) return;
-      setStep(parseGuideStep(storedStep));
-      setReady(true);
-    };
-
-    hydrate();
-    return () => {
-      cancelled = true;
-    };
-  }, [route.params?.mealLogged, navigation]);
-
-  useEffect(() => {
-    if (!ready) return;
-    trackMixpanelEvent(analyticsEvents.firstDayGuideViewed);
-  }, [ready]);
-
-  useEffect(() => {
-    if (!ready) return;
-    trackMixpanelEvent(analyticsEvents.firstDayGuideSlideViewed, {
-      slide: step,
-    });
-  }, [ready, step]);
-
-  const goToStep = (nextStep: GuideStep) => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    if (nextStep === 3) setWaterCelebrated(false);
-    setStep(nextStep);
-    AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, String(nextStep));
-  };
-
-  const handlePrimaryPress = async () => {
-    if (step === 1) {
-      haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-      navigation.navigate("ScanFoodScreen", { fromFirstDayGuide: true });
-      return;
-    }
-
-    if (step === 2) {
-      haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-      setConnectingHealth(true);
-      try {
-        await requestPermission();
-      } catch (error) {
-        console.log("Error requesting HealthKit permission:", error);
-      } finally {
-        setConnectingHealth(false);
-      }
-      setWaterCelebrated(false);
-      setStep(3);
-      AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "3");
-      return;
-    }
-
-    if (step === 3) {
-      if (!waterCelebrated) {
-        haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-        if (todayProgress?.progress && user?.email) {
-          const currentWater = todayProgress.progress.water ?? 0;
-          const nextWater = currentWater + 1;
-          const reachedGoal = nextWater >= 10;
-
-          setTodayProgress({
-            ...todayProgress,
-            progress: {
-              ...todayProgress.progress,
-              water: nextWater,
-            },
-            ...(reachedGoal
-              ? {
-                  completion: {
-                    ...todayProgress.completion,
-                    water: true,
-                  },
-                }
-              : {}),
-          });
-
-          updateTodayProgress(user.email, {
-            "progress.water": increment(1),
-            ...(reachedGoal ? { "completion.water": true } : {}),
-          });
-          trackMixpanelEvent(analyticsEvents.waterLogged);
-        }
-        setVisibleConfetti(true);
-        setWaterCelebrated(true);
-        return;
-      }
-
-      goToStep(4);
-      return;
-    }
-
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+  const finishGuide = async () => {
     trackMixpanelEvent(analyticsEvents.firstDayGuideCompleted);
     await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "done");
     navigation.replace("MainNavigator");
   };
+
+  useEffect(() => {
+    if (route.params?.mealLogged) {
+      finishGuide();
+      return;
+    }
+    setReady(true);
+  }, [route.params?.mealLogged]);
+
+  useEffect(() => {
+    if (!ready) return;
+    trackMixpanelEvent(analyticsEvents.firstDayGuideViewed);
+    trackMixpanelEvent(analyticsEvents.firstDayGuideSlideViewed, { slide: 1 });
+  }, [ready]);
 
   const fallbackPoints = calculatePoints(
     user?.currentWeight ?? user?.startWeight ?? 0,
@@ -172,52 +80,20 @@ const FirstDayGuideScreen = () => {
   ).total;
   const points = todayProgress?.points?.total || fallbackPoints;
 
-  const title =
-    step === 1
-      ? "Let’s log your first meal"
-      : step === 2
-        ? "Make your points more accurate"
-        : step === 3
-          ? waterCelebrated
-            ? "Nice. You’ve already started 🎉"
-            : "Log your first glass 💧"
-          : "Your plan is ready 🎉";
+  const hasPlanWeights = user?.startWeight != null && user?.goalWeight != null;
+  const planLine = hasPlanWeights
+    ? ` Built from your plan: ${formatWeightFromKg(user?.startWeight, weightUnit)} → ${formatWeightFromKg(user?.goalWeight, weightUnit)}.`
+    : "";
 
-  const description =
-    step === 1
-      ? "Snap a photo and we’ll turn your meal into points — automatically."
-      : step === 2
-        ? "Your daily points adjust to your activity. The more you move, the more points you can earn."
-        : step === 3
-          ? waterCelebrated
-            ? "1 glass down. Your first day is officially underway."
-            : "One tap. You’re already building the habit."
-          : `${points} points · 10 glasses · 5,000 steps`;
+  const handleScan = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("ScanFoodScreen", { fromFirstDayGuide: true });
+  };
 
-  const cta =
-    step === 1
-      ? "Scan a meal"
-      : step === 2
-        ? "Connect Apple Health"
-        : step === 3
-          ? waterCelebrated
-            ? "Keep going →"
-            : "Log a glass"
-          : "Start my first day →";
-
-  const secondary =
-    step === 1 ? "I don’t have food right now" : step === 2 ? "Not now" : null;
-
-  const image =
-    step === 1
-      ? require("../../../assets/mascot/logging.png")
-      : step === 2
-        ? require("../../../assets/mascot/steps.png")
-        : step === 3
-          ? waterCelebrated
-            ? require("../../../assets/mascot/waterCompleted.png")
-            : require("../../../assets/mascot/water.png")
-          : require("../../../assets/mascot/allSet.png");
+  const handleLookAround = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    finishGuide();
+  };
 
   if (!ready) {
     return (
@@ -230,166 +106,157 @@ const FirstDayGuideScreen = () => {
 
   return (
     <SafeAreaView
-      style={{
-        flex: 1,
-        backgroundColor: colors.ui.background,
-      }}
+      style={{ flex: 1, backgroundColor: colors.ui.background }}
       edges={["top", "bottom"]}
     >
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          paddingHorizontal: spacing.lg,
-          
-          justifyContent: "center",
-        }}
-      >
-        <View
-          style={{
-            width: SPOTLIGHT_OUTER,
-            height: SPOTLIGHT_OUTER,
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: spacing.lg,
-          }}
-        >
+      <View style={{ flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.md }}>
+        <View style={{ alignItems: "center" }}>
           <Image
-            source={image}
+            source={require("../../../assets/mascot/allSet.png")}
             resizeMode="contain"
-            style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
+            style={{ width: 124, height: 141 }}
           />
         </View>
-
-        <Text
-          style={{
-            ...textStyles.onboardingTitle,
-            textAlign: "center",
-            marginBottom: spacing.sm,
-          }}
-        >
-          {title}
-        </Text>
-        {description ? (
+        <View style={{ alignItems: "center", marginTop: 10 }}>
+          <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: colors.goals.eat }}>
+            You're all set
+          </Text>
           <Text
             style={{
-              ...textStyles.onboardingBody,
+              ...typography.screenTitle,
+              fontSize: 30,
+              lineHeight: 36,
+              color: colors.text.primary,
               textAlign: "center",
-              paddingHorizontal: spacing.sm,
-              lineHeight: 22,
+              marginTop: 6,
             }}
           >
-            {description}
+            Two simple goals.{"\n"}Every day.
           </Text>
-        ) : null}
-        {step === 3 && waterCelebrated ? (
-          <View
-            style={{
-              width: "100%",
-              marginTop: spacing.lg,
-              paddingVertical: spacing.md,
-              paddingHorizontal: spacing.md,
-              borderRadius: spacing.borderRadius,
-        
-              alignItems: "center",
-              gap: spacing.sm,
-            }}
-          >
-            <Text
-              style={{
-                ...textStyles.listItemEmphasis,
-                textAlign: "center",
-              }}
-            >
-              💧 1 / 10 glasses
-            </Text>
+        </View>
+
+        <View style={{ marginTop: 22, gap: 10 }}>
+          <View style={cardStyle}>
             <View
               style={{
-                width: "100%",
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: colors.ui.dotInactive,
-                overflow: "hidden",
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: colors.goals.eatSoft,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              <View
-                style={{
-                  width: "10%",
-                  height: "100%",
-                  backgroundColor: colors.ui.primary,
-                  borderRadius: 3,
-                }}
-              />
+              <MaterialCommunityIcons name="target" size={22} color={colors.goals.eat} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+                <Text style={{ ...typography.titleBold, fontSize: 17, color: colors.text.primary }}>Eat smart</Text>
+                <Text style={{ ...typography.titleBold, fontSize: 15, color: colors.goals.eat }}>{points} points</Text>
+              </View>
+              <Text style={{ ...typography.bodyMedium, lineHeight: 20, color: colors.goals.muted, marginTop: 3 }}>
+                Snap your meals and we count the points.{planLine}
+              </Text>
             </View>
           </View>
-        ) : null}
-      </View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: spacing.lg,
-          gap: spacing.sm,
-        }}
-      >
-        {Array.from({ length: STEP_COUNT }, (_, index) => {
-          const isActive = index + 1 === step;
-          return (
+          <View style={cardStyle}>
             <View
-              key={index}
               style={{
-                width: DOT_SIZE,
-                height: DOT_SIZE,
-                borderRadius: DOT_SIZE / 2,
-                backgroundColor: isActive ? colors.ui.primary : DOT_INACTIVE,
-              }}
-            />
-          );
-        })}
-      </View>
-
-      <View
-        style={{
-          paddingHorizontal: spacing.md,
-          paddingBottom: spacing.sm,
-        }}
-      >
-        <PrimaryButtonComponent
-        
-          title={cta}
-          onPress={handlePrimaryPress}
-          loading={connectingHealth}
-          disabled={connectingHealth}
-        />
-      
-          <TouchableOpacity
-          disabled={!secondary}
-            activeOpacity={0.7}
-            onPress={() => {
-              haptics.impactAsync(haptics.ImpactFeedbackStyle.Medium);
-              if (connectingHealth) return;
-              goToStep((step + 1) as GuideStep);
-            }}
-            style={{
-              alignItems: "center",
-              justifyContent: "center",
-              paddingVertical: spacing.sm,
-              marginTop: spacing.sm,
-            }}
-          >
-            <Text
-              style={{
-                ...textStyles.onboardingBody,
-                textAlign: "center",
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: colors.goals.moveSoft,
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              {secondary}
-            </Text>
-          </TouchableOpacity>
-       
+              <MaterialCommunityIcons name="shoe-print" size={22} color={colors.goals.move} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline" }}>
+                <Text style={{ ...typography.titleBold, fontSize: 17, color: colors.text.primary }}>Move daily</Text>
+                <Text style={{ ...typography.titleBold, fontSize: 15, color: colors.goals.move }}>5,000 steps</Text>
+              </View>
+              <Text style={{ ...typography.bodyMedium, lineHeight: 20, color: colors.goals.muted, marginTop: 3 }}>
+                Counted automatically from Apple Health. Nothing to log.
+              </Text>
+              {healthConnected ? (
+                <View style={{ marginTop: spacing.sm, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="checkmark" size={16} color={colors.goals.move} />
+                  <Text style={{ ...typography.bodySemiBold, color: colors.goals.move }}>
+                    Connected · {formatNumber(todaySteps)} steps so far today
+                  </Text>
+                </View>
+              ) : (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+                    setConnectVisible(true);
+                  }}
+                  style={{
+                    marginTop: 10,
+                    alignSelf: "flex-start",
+                    height: 40,
+                    paddingHorizontal: 14,
+                    borderRadius: 14,
+                    backgroundColor: colors.goals.moveSoft,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ ...typography.buttonSecondary, fontSize: 15, color: colors.goals.move }}>
+                    Connect Apple Health
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </View>
+
+        <Text style={{ ...typography.bodyMedium, color: colors.goals.muted, textAlign: "center", marginTop: 14 }}>
+          Hit both and the day gets a check in your week.
+        </Text>
+
+        <View style={{ flex: 1 }} />
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={handleScan}
+          style={{
+            height: 58,
+            borderRadius: 14,
+            backgroundColor: colors.goals.eat,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            shadowColor: colors.goals.eat,
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: 0.28,
+            shadowRadius: 10,
+            elevation: 6,
+          }}
+        >
+          <Ionicons name="camera-outline" size={22} color={colors.ui.white} />
+          <Text style={{ ...typography.button, fontSize: 18, color: colors.ui.white }}>
+            Scan your first meal
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={handleLookAround}
+          style={{ height: 44, alignItems: "center", justifyContent: "center", marginTop: spacing.sm }}
+        >
+          <Text style={{ ...typography.cardTitle, color: colors.goals.muted }}>Look around first</Text>
+        </TouchableOpacity>
       </View>
+
+      <ConnectHealthSheet
+        visible={connectVisible}
+        onClose={() => setConnectVisible(false)}
+        onConnected={markRequested}
+      />
     </SafeAreaView>
   );
 };

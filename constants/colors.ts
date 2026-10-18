@@ -72,6 +72,23 @@ export const colors = {
     paywallSelectedOutline: "rgba(255,255,255,0.22)",
     paywallBadgeFill: "rgba(255,255,255,0.10)",
   },
+  /** Daily goals — Eat smart (green) and Move daily (violet) */
+  goals: {
+    eat: "#0B8655",
+    eatRing: "#1CB57A",
+    eatSoft: "#E6F6EE",
+    eatSoftText: "#0A5E3C",
+    move: "#4B3FC4",
+    moveRing: "#6C5CE7",
+    moveSoft: "#EEEBFD",
+    moveSoftBorder: "#C9C3F2",
+    over: "#B26A00",
+    overRing: "#E8A33D",
+    ringTrack: "#ECECEF",
+    dark: "#2E2A4F",
+    muted: "#6B6880",
+    dotEmpty: "#BDBDC6",
+  },
   text: {
     primary: "#3B3551",
     secondary: "#969598",

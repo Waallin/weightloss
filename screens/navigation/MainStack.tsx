@@ -13,6 +13,8 @@ import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
 import ScanFoodScreen from "../main/diet/ScanFoodScreen";
 import FirstDayGuideScreen from "../main/home/FirstDayGuideScreen";
+import SettingsScreen from "../main/settings/SettingsScreen";
+import MoveGoalRewardScreen from "../main/home/MoveGoalRewardScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -51,6 +53,16 @@ export const MainStack: React.FC<MainStackProps> = ({
         name="ScanFoodScreen"
         component={ScanFoodScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="SettingsScreen"
+        component={SettingsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MoveGoalReward"
+        component={MoveGoalRewardScreen}
+        options={{ headerShown: false, presentation: "modal", gestureEnabled: false }}
       />
       <Stack.Screen
         name="ProfileScreen"

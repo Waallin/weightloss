@@ -339,11 +339,10 @@ export const authCopy = {
     {
       id: 1,
       title: "Your day, simplified",
-      subtitle: "Three habits. That's the whole plan.",
+      subtitle: "Two simple habits. That's the whole plan.",
       items: [
-        "Walk a little",
-        "Stay hydrated",
-        "Stay within your points",
+        { title: "Eat Smart", description: "Stay within your daily points", tone: "eat" },
+        { title: "Move Daily", description: "Walk 5,000 steps. Earn extra points.", tone: "move" },
       ],
       cta: "Make it simple",
       imageKey: "waving",

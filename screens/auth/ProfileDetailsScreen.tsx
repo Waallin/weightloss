@@ -5,7 +5,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { colors } from "../../constants/colors";
-import { authCopy, textStyles, typography } from "../../constants/texts";
+import { textStyles, typography } from "../../constants/texts";
 import { spacing } from "../../constants/spacing";
 import WheelPicker from "../../components/WheelPicker";
 import UnitToggle from "../../components/UnitToggle";
@@ -20,6 +20,8 @@ import useUnitsStore from "../../stores/useUnitsStore";
 import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 import { analyticsEvents } from "../../constants/analytics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { calculatePoints } from "../../services/dietPoints";
+import { STEP_GOAL, formatNumber } from "../../utils/goals";
 import UnderageBlockedScreen, {
   UNDERAGE_BLOCKED_KEY,
 } from "./UnderageBlockedScreen";
@@ -512,11 +514,18 @@ const ProfileDetailsScreen = () => {
         ? "Maintain weight"
         : `${goalDirection === "lose" ? "Lose" : "Gain"} ${goalDeltaLabel}`;
 
+    const dailyPoints = calculatePoints(
+      user?.currentWeight ?? user?.startWeight ?? 0,
+      user?.height ?? 0,
+      currentYear - (user?.birthYear ?? currentYear),
+      user?.gender ?? "Male",
+      0,
+    ).total;
+
     const planRows = [
-      { label: "Daily steps", value: "5,000", highlight: false },
-      { label: "Daily water", value: "10 glasses", highlight: false },
-      { label: "Recipes", value: "Personalized", highlight: false },
-      { label: "Target", value: targetValue, highlight: true },
+      { label: "Eat Smart", detail: `Daily points budget: ${formatNumber(dailyPoints)}`, highlight: false },
+      { label: "Move Daily", detail: `Daily step goal: ${formatNumber(STEP_GOAL)} steps`, highlight: false },
+      { label: "Weight goal", detail: targetValue, highlight: true },
     ];
 
     return (
@@ -622,7 +631,7 @@ const ProfileDetailsScreen = () => {
                   marginBottom: spacing.lg,
                 }}
               >
-                Just follow this. We’ll handle the rest.
+                Two simple daily goals. Your plan is ready.
               </Text>
             </MotiView>
 
@@ -672,17 +681,14 @@ const ProfileDetailsScreen = () => {
                     ) : null}
                     <View
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: spacing.md,
+                        gap: 2,
                         paddingVertical: spacing.md,
                         paddingHorizontal: spacing.md,
                       }}
                     >
                       <Text
                         style={{
-                          ...typography.body,
+                          ...typography.bodySemiBold,
                           color: colors.text.primary,
                         }}
                       >
@@ -698,22 +704,12 @@ const ProfileDetailsScreen = () => {
                             : colors.text.secondary,
                         }}
                       >
-                        {row.value}
+                        {row.detail}
                       </Text>
                     </View>
                   </View>
                 ))}
               </View>
-
-              <Text
-                style={{
-                  ...typography.small,
-                  color: colors.text.secondary,
-                  marginTop: spacing.sm,
-                }}
-              >
-                {authCopy.planReadySocialProof}
-              </Text>
             </MotiView>
           </MotiView>
           <MotiView

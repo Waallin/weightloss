@@ -28,6 +28,21 @@ export async function getProducts() {
 }
 
 
+// true = eligible, false = ineligible or unknown (RevenueCat recommends showing non-intro pricing when unknown)
+export async function checkTrialEligibility(productIdentifier: string) {
+  try {
+    const result = await Purchases.checkTrialOrIntroductoryPriceEligibility([productIdentifier]);
+    return (
+      result[productIdentifier]?.status ===
+      Purchases.INTRO_ELIGIBILITY_STATUS.INTRO_ELIGIBILITY_STATUS_ELIGIBLE
+    );
+  } catch (e: any) {
+    console.log("Trial eligibility error:", e);
+    return false;
+  }
+}
+
+
 export async function purchasePlan(plan: "weekly" | "annual" | "monthly") {
   try {
     const offerings = await Purchases.getOfferings();

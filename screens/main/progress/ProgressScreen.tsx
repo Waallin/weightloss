@@ -7,38 +7,31 @@ import { colors } from "../../../constants/colors";
 import { spacing } from "../../../constants/spacing";
 import {
   logWeightCopy,
-  progressCalendarCopy,
   progressGaugeCopy,
   progressWeightsCopy,
-  textSizes,
   typography,
 } from "../../../constants/texts";
-import { Calendar } from "react-native-calendars";
-import type { Theme } from "react-native-calendars/src/types";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import useUserStore from "../../../stores/useUserStore";
-import {
-  formatJourneyStartedDate,
-  formatLocalYmd,
-  parseUserCreatedAt,
-} from "../../../utils/dateUtils";
+import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
-import { getDaysProgress } from "../../../services/firebase";
+import { getDays } from "../../../services/firebase";
 import { formatWeightFromKg, kgToLb } from "../../../utils/units";
 import useUnitsStore from "../../../stores/useUnitsStore";
+import {
+  DayDoc,
+  buildWeek,
+  formatNumber,
+  getJourneyPosition,
+} from "../../../utils/goals";
 
 const CIRCLE_SIZE = 200;
 const CIRCLE_WIDTH = 15;
-
-type DaysProgress = {
-  allDone: string[];
-  someDone: string[];
-};
+const CARD_RADIUS = 24;
 
 const ProgressScreen = () => {
-  const todayYmd = formatLocalYmd(new Date());
   const navigation = useNavigation();
   const { user } = useUserStore();
   const { weightUnit } = useUnitsStore();
@@ -47,107 +40,36 @@ const ProgressScreen = () => {
   };
   const formatWeightNumber = (kg: number) =>
     weightUnit === "lb" ? kgToLb(kg) : Math.round(kg);
-  const [daysProgress, setDaysProgress] = useState<DaysProgress>({
-    allDone: [],
-    someDone: [],
-  });
+  const { todayProgress } = useTodayProgressStore();
+  const [days, setDays] = useState<DayDoc[]>([]);
 
   useFocusEffect(useCallback(() => {
-    const fetchDays = async () => {
-      if (!user?.email) return;
-      const daysProgress = await getDaysProgress(user?.email as string);
-      setDaysProgress(daysProgress);
-    };
-    fetchDays();
+    if (!user?.email) return;
+    getDays(user.email as string).then((result) => setDays(result as DayDoc[]));
   }, [user?.email]));
-  const startYmd = useMemo(() => {
-    const d = parseUserCreatedAt(user?.createdAt);
-    let ymd = formatLocalYmd(d);
-    const today = formatLocalYmd(new Date());
-    if (ymd > today) ymd = today;
-    return ymd;
-  }, [user?.createdAt]);
 
-  const journeyStartedLabel = useMemo(() => {
-    const d = parseUserCreatedAt(user?.createdAt);
-    return formatJourneyStartedDate(d);
-  }, [user?.createdAt]);
-
-  const calendarMarkedDates = useMemo(
-    () => {
-      const baseContainer = {
-        width: spacing.calendarTodayCircleSize,
-        height: spacing.calendarTodayCircleSize,
-        borderRadius: spacing.calendarTodayCircleSize / 2,
-        alignItems: "center" as const,
-        justifyContent: "center" as const,
-      };
-
-      const marked: Record<string, { customStyles: { container: object; text: object } }> =
-        {};
-
-      for (const ymd of daysProgress.someDone) {
-        marked[ymd] = {
-          customStyles: {
-            container: {
-              ...baseContainer,
-              backgroundColor: colors.ui.progressCalendarSomeDone,
-            },
-            text: {
-              color: colors.text.primary,
-              fontWeight: typography.cardTitle.fontWeight,
-            },
-          },
-        };
-      }
-
-      for (const ymd of daysProgress.allDone) {
-        marked[ymd] = {
-          customStyles: {
-            container: {
-              ...baseContainer,
-              backgroundColor: colors.ui.progressCalendarAllDone,
-            },
-            text: {
-              color: colors.ui.white,
-              fontWeight: typography.cardTitle.fontWeight,
-            },
-          },
-        };
-      }
-
-      if (!marked[todayYmd]) {
-        marked[todayYmd] = {
-          customStyles: {
-            container: {
-              ...baseContainer,
-              backgroundColor: "transparent",
-            },
-            text: {
-              color: colors.ui.primary,
-              fontWeight: typography.cardTitle.fontWeight,
-            },
-          },
-        };
-      }
-
-      // Always show today's green border, even if today is allDone/someDone.
-      marked[todayYmd] = {
-        ...marked[todayYmd],
-        customStyles: {
-          ...marked[todayYmd].customStyles,
-          container: {
-            ...(marked[todayYmd].customStyles.container as object),
-            borderWidth: spacing.calendarTodayBorderWidth,
-            borderColor: colors.text.primary,
-          },
-        },
-      };
-
-      return marked;
-    },
-    [daysProgress.allDone, daysProgress.someDone, todayYmd]
+  const journey = useMemo(() => getJourneyPosition(user?.createdAt), [user?.createdAt]);
+  const week = useMemo(
+    () => buildWeek(user?.createdAt, days, todayProgress),
+    [user?.createdAt, days, todayProgress],
   );
+  const pastDays = week.filter((d) => d.hasData);
+  const eatCount = pastDays.filter((d) => d.eat).length;
+  const moveCount = pastDays.filter((d) => d.move).length;
+  const avgSteps = useMemo(() => {
+    const keys = new Set(pastDays.map((d) => d.dateKey));
+    const stepDays = days.filter((d) => d.dateKey && keys.has(d.dateKey) && (d.progress?.steps ?? 0) > 0);
+    if (stepDays.length === 0) return 0;
+    const sum = stepDays.reduce((a, d) => a + (d.progress?.steps ?? 0), 0);
+    return Math.round(sum / stepDays.length / 10) * 10;
+  }, [days, pastDays]);
+
+  const checkInDate = useMemo(() => {
+    const d = new Date(journey.blockStart);
+    d.setDate(d.getDate() + 6);
+    return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+  }, [journey.blockStart]);
+  const daysToCheckIn = 7 - journey.dayInWeek;
 
   const totalChangeKg = useMemo(() => {
     const start = user?.startWeight;
@@ -254,88 +176,130 @@ const ProgressScreen = () => {
     navigation.navigate("LogWeightScreen");
   };
 
-  const renderCalendarComponent = () => {
+  const renderSummary = () => {
     return (
       <MotiView
         from={{ opacity: 0, translateY: 10, scale: 0.98 }}
         animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          delay: 100,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={{
-          backgroundColor: colors.ui.componentBackground,
-          ...globalStyles.shadow,
-          padding: spacing.md,
-          borderRadius: spacing.borderRadius,
-          gap: spacing.sm,
-        }}
+        transition={{ type: "timing", duration: 450, reduceMotion: ReduceMotion.Never }}
+        style={{ gap: 12 }}
       >
-        <View style={{ gap: spacing.xs }}>
-          <Text
-            style={{
-              ...typography.sectionTitle,
-              color: colors.text.primary,
-            }}
-          >
-            {progressCalendarCopy.sectionTitle}
-          </Text>
-          <Text style={{ ...typography.body, color: colors.text.secondary }}>
-            {progressCalendarCopy.startedPrefix} {journeyStartedLabel}
+        <View>
+          <Text style={{ ...typography.screenTitle, color: colors.text.primary }}>Progress</Text>
+          <Text style={{ ...typography.bodyMedium, color: colors.goals.muted, marginTop: 2 }}>
+            Week {journey.weekNumber} · the two things you control
           </Text>
         </View>
-        <Calendar
-          current={todayYmd}
-          minDate={startYmd}
-          maxDate={todayYmd}
-          markingType="custom"
-          markedDates={calendarMarkedDates}
-          firstDay={1}
-          hideExtraDays
-          enableSwipeMonths
-          theme={
+
+        <View style={{ flexDirection: "row", gap: 12 }}>
+          {[
+            { label: "Eat smart", dot: colors.goals.eatRing, value: eatCount, valueColor: colors.goals.eat, sub: "days inside budget" },
             {
+              label: "Move daily",
+              dot: colors.goals.moveRing,
+              value: moveCount,
+              valueColor: colors.goals.move,
+              sub: avgSteps ? `days at 5,000 · avg ${formatNumber(avgSteps)}` : "days at 5,000 steps",
+            },
+          ].map((card) => (
+            <View
+              key={card.label}
+              style={{
+                flex: 1,
+                backgroundColor: colors.ui.white,
+                borderRadius: CARD_RADIUS,
+                padding: spacing.md,
+                ...globalStyles.shadow,
+                shadowOpacity: 0.04,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: card.dot }} />
+                <Text style={{ ...typography.bodySemiBold, color: colors.goals.muted }}>{card.label}</Text>
+              </View>
+              <Text style={{ ...typography.displayNumeric, fontSize: 30, lineHeight: 36, color: card.valueColor, marginTop: 6 }}>
+                {card.value}
+              </Text>
+              <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.muted }}>{card.sub}</Text>
+            </View>
+          ))}
+        </View>
+      </MotiView>
+    );
+  };
+
+  const renderCheckIn = () => {
+    return (
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{ type: "timing", duration: 450, delay: 160, reduceMotion: ReduceMotion.Never }}
+        style={{ gap: 12 }}
+      >
+        <View
+          style={{
+            backgroundColor: colors.ui.white,
+            borderRadius: CARD_RADIUS,
+            padding: 20,
+            ...globalStyles.shadow,
+            shadowOpacity: 0.06,
+          }}
+        >
+          <View style={{ flexDirection: "row", gap: 14, alignItems: "center" }}>
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: "#EFEFF2",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialCommunityIcons name="scale-bathroom" size={22} color={colors.text.primary} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ ...typography.captionSemiBold, fontSize: 13, letterSpacing: 0.6, textTransform: "uppercase", color: colors.goals.muted }}>
+                Weekly check-in
+              </Text>
+              <Text style={{ ...typography.titleBold, color: colors.text.primary, marginTop: 2 }}>
+                {checkInDate} · {daysToCheckIn <= 0 ? "today" : `in ${daysToCheckIn} day${daysToCheckIn === 1 ? "" : "s"}`}
+              </Text>
+            </View>
+          </View>
+          <Text style={{ ...typography.body, fontSize: 15, lineHeight: 22, color: colors.goals.muted, marginTop: 12 }}>
+            Step on the scale that morning and log your weight. Once a week shows the real trend.
+          </Text>
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleLogWeightPress}
+            accessibilityRole="button"
+            style={{
+              alignSelf: "flex-start",
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              height: 44,
+              paddingHorizontal: 18,
+              marginTop: spacing.md,
+              borderRadius: 14,
+              borderWidth: 1,
+              borderColor: colors.ui.primary,
               backgroundColor: "transparent",
-              calendarBackground: "transparent",
-              dotStyle: {
-                width: spacing.calendarWeightDotSize,
-                height: spacing.calendarWeightDotSize,
-                borderRadius: spacing.calendarWeightDotSize / 2,
-                borderWidth: 2,
-                borderColor: colors.ui.white,
-                marginTop: 1,
-              },
-              "stylesheet.day.basic": {
-                base: {
-                  width: spacing.calendarTodayCircleSize,
-                  height: spacing.calendarTodayCircleSize,
-                  minHeight: spacing.calendarTodayCircleSize,
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              },
-              monthTextColor: colors.text.primary,
-              textMonthFontWeight: "700",
-              textMonthFontSize: textSizes.lg,
-              arrowColor: colors.ui.primary,
-              dayTextColor: colors.text.primary,
-              textDayFontSize: textSizes.sm,
-              textDayFontWeight: "500",
-              textSectionTitleColor: colors.text.secondary,
-              textDayHeaderFontSize: textSizes.xs,
-              textDayHeaderFontWeight: "600",
-              todayTextColor: colors.ui.primary,
-              todayBackgroundColor: "transparent",
-              disabledArrowColor: colors.text.secondary,
-              textDisabledColor: colors.text.secondary,
-              textInactiveColor: colors.text.secondary,
-              selectedDayBackgroundColor: colors.ui.primarySoft,
-              selectedDayTextColor: colors.text.primary,
-            } as Theme
-          }
-        />
+            }}
+          >
+            <Text style={{ ...typography.buttonSecondary, color: colors.goals.eat }}>
+              {logWeightCopy.screenTitle}
+            </Text>
+            <MaterialCommunityIcons name="arrow-right" size={18} color={colors.goals.eat} />
+          </TouchableOpacity>
+        </View>
+        <View style={{ paddingVertical: spacing.md, paddingHorizontal: 18, borderRadius: CARD_RADIUS, backgroundColor: "#EFEFF2" }}>
+          <Text style={{ ...typography.bodyMedium, lineHeight: 21, color: colors.text.primary }}>
+            <Text style={{ fontFamily: typography.bodySemiBold.fontFamily }}>Why not weigh in every day? </Text>
+            Weight swings a kilo overnight from water, salt and sleep. Your two daily goals are the signal; the scale confirms it weekly.
+          </Text>
+        </View>
       </MotiView>
     );
   };
@@ -357,9 +321,10 @@ const ProgressScreen = () => {
           width: "100%",
           backgroundColor: colors.ui.componentBackground,
           ...globalStyles.shadow,
+          shadowOpacity: 0.06,
           paddingHorizontal: spacing.md,
           paddingVertical: spacing.lg,
-          borderRadius: spacing.borderRadius,
+          borderRadius: CARD_RADIUS,
         }}
       >
         <View style={{ alignItems: "center", width: "100%" }}>
@@ -515,32 +480,6 @@ const ProgressScreen = () => {
             </View>
           </View>
         </View>
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={handleLogWeightPress}
-          style={{
-            width: "60%",
-            alignItems: "center",
-            justifyContent: "center",
-            borderColor: colors.ui.primary,
-            padding: spacing.sm,
-            borderRadius: spacing.borderRadius,
-            marginTop: spacing.md,
-            backgroundColor: colors.ui.listRowIconBackground,
-            flexDirection: "row",
-            gap: spacing.xs,
-          }}
-        >
-          <MaterialCommunityIcons name="plus" size={24} color={colors.ui.primary} />
-          <Text
-            style={{
-              ...typography.buttonSecondary,
-              color: colors.ui.primary,
-            }}
-          >
-            {logWeightCopy.screenTitle}
-          </Text>
-        </TouchableOpacity>
       </MotiView>
     );
   };
@@ -548,13 +487,14 @@ const ProgressScreen = () => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={globalStyles.scrollContainer}
+      contentContainerStyle={{ ...globalStyles.scrollContainer, gap: 12 }}
       style={{
         ...globalStyles.container,
       }}
     >
+      {renderSummary()}
       {renderCircularProgressGauge()}
-      {renderCalendarComponent()}
+      {renderCheckIn()}
     </ScrollView>
   );
 };
