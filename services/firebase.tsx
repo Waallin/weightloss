@@ -247,6 +247,17 @@ export const syncToday = async (
   }
 };
 
+export const getDays = async (email: string) => {
+  try {
+    const daysRef = collection(database, "users", email, "days");
+    const daysSnap = await getDocs(daysRef);
+    return daysSnap.docs.map((doc) => doc.data());
+  } catch (error) {
+    log(`Error getting days in users with email ${email}: ${error}`);
+    return [];
+  }
+};
+
 export const getDaysProgress = async (email: string) => {
   try {
     const daysRef = collection(database, "users", email, "days");

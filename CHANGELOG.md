@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+[1.1.2]
+
+Added
+
+* Added two daily goals: Eat Smart and Move Daily
+* Added a celebration screen when users reach their daily step goal
+* Added daily goal indicators to track food points and step progress
+* Added weekly check-ins to encourage consistent weight tracking
+* Added two subscription options to the paywall: Monthly Premium with a 7-day free trial and Weekly Premium without a trial
+* Added support for multiple monthly subscription prices for RevenueCat experiments
+
+Changed
+
+* Redesigned the home screen to focus on two simple daily goals
+* Improved food scanning results with clearer points and remaining daily budget
+* Updated step progress to display actual steps taken instead of steps remaining
+* Redesigned the Progress screen with clearer goal statistics and weight tracking
+* Improved the weight logging button and moved it to the Weekly Check-in section
+* Updated onboarding to introduce the new two-goal system
+* Updated onboarding illustrations and text to focus on food and movement
+* Updated daily notification content to focus on meal logging and walking
+* Improved overall UI consistency, spacing, and navigation
+
+Removed
+
+* Removed water tracking as a daily goal
+* Removed water-related instructions and references from onboarding
+
 ## [1.1.1]
 
 ### Added

@@ -21,11 +21,17 @@ const DOT_INACTIVE = "#D8D8D6";
 
 type HowItWorkImageKey = (typeof authCopy.howItWorkSections)[number]["imageKey"];
 
+type HabitItem = {
+  title: string;
+  description: string;
+  tone: "eat" | "move";
+};
+
 type HowItWorkSection = {
   id: number;
   title: string;
   subtitle: string;
-  items?: readonly string[];
+  items?: readonly HabitItem[];
   cta: string;
   image: number;
 };
@@ -51,7 +57,7 @@ const sections: HowItWorkSection[] = authCopy.howItWorkSections.map((s) => ({
   image: imageByKey[s.imageKey],
 }));
 
-const HabitListCard = ({ items }: { items: readonly string[] }) => {
+const HabitListCard = ({ items }: { items: readonly HabitItem[] }) => {
   return (
     <View
       style={{
@@ -66,7 +72,7 @@ const HabitListCard = ({ items }: { items: readonly string[] }) => {
       }}
     >
       {items.map((item, index) => (
-        <View key={item}>
+        <View key={item.title}>
           {index > 0 ? (
             <View
               style={{
@@ -76,16 +82,38 @@ const HabitListCard = ({ items }: { items: readonly string[] }) => {
               }}
             />
           ) : null}
-          <Text
+          <View
             style={{
-              ...typography.body,
-              color: colors.text.primary,
-              paddingVertical: spacing.md,
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: spacing.md + 4,
               paddingHorizontal: spacing.md,
             }}
           >
-            {item}
-          </Text>
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: colors.goals[item.tone],
+                marginRight: spacing.md,
+              }}
+            />
+            <View style={{ flex: 1 }}>
+              <Text style={{ ...typography.cardTitle, color: colors.text.primary }}>
+                {item.title}
+              </Text>
+              <Text
+                style={{
+                  ...typography.body,
+                  color: colors.text.secondary,
+                  marginTop: 2,
+                }}
+              >
+                {item.description}
+              </Text>
+            </View>
+          </View>
         </View>
       ))}
     </View>

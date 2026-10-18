@@ -43,7 +43,7 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "reminder") {
     return (
       <ReminderPaywall
-        product={products?.annual.product}
+        products={products}
         onCTAPress={handleCTAPress}
         loading={loading}
         onRestorePurchases={handleRestorePurchases}

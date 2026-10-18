@@ -30,9 +30,16 @@ import {
 } from "react-native-reanimated";
 import useConfigStore from "../../../stores/useConfigStore";
 import TrialSpinWheel, { WHEEL_SEGMENT_ANGLE } from "./TrialSpinWheel";
+import { checkTrialEligibility } from "../../../services/revenuecat";
 import SocialProofItem, {
   SocialProofTestimonial,
 } from "../components/SocialProofItem";
+import {
+  getComparePrice,
+  getFreeTrialDays,
+  PERIOD_WORD,
+  SelectablePlan,
+} from "./paywallPlanUtils";
 
 const FULL_TURNS = 8;
 const WINNING_INDEX = 0;
@@ -50,36 +57,19 @@ const paywallTestimonial: SocialProofTestimonial = {
   avatarImage: require("../../../assets/users/sara.jpg"),
 };
 
-const formatLikeStorePrice = (template: string, amount: number) => {
-  const match = template.match(/^(\D*)([\d\s.,]+)(\D*)$/);
-  if (!match) return null;
-  const [, prefix, numeric, suffix] = match;
-  const lastComma = numeric.lastIndexOf(",");
-  const lastDot = numeric.lastIndexOf(".");
-  const decimalIndex = Math.max(lastComma, lastDot);
-  const fractionDigits =
-    decimalIndex >= 0 ? numeric.length - decimalIndex - 1 : 0;
-  const decimalSep = lastComma > lastDot ? "," : ".";
-  const fixed = amount.toFixed(fractionDigits);
-  const [whole, fraction] = fixed.split(".");
-  const formatted =
-    fractionDigits > 0 ? `${whole}${decimalSep}${fraction}` : whole;
-  return `${prefix}${formatted}${suffix}`;
-};
-
-const formatTrialEndDate = () => {
+const formatTrialEndDate = (days: number) => {
   const date = new Date();
-  date.setDate(date.getDate() + 30);
+  date.setDate(date.getDate() + days);
   return date
     .toLocaleDateString("en-US", { month: "short", day: "numeric" })
     .toUpperCase();
 };
 
 const ReminderPaywall: React.FC<{
-  product: any;
-  onCTAPress: (plan: "annual") => void;
+  products: any;
+  onCTAPress: (plan: SelectablePlan) => void;
   onRestorePurchases: () => void;
-}> = ({ product, onCTAPress, onRestorePurchases }) => {
+}> = ({ products, onCTAPress, onRestorePurchases }) => {
   const { setVisibleConfetti } = useConfettiStore();
   const { config } = useConfigStore();
   const insets = useSafeAreaInsets();
@@ -91,6 +81,28 @@ const ReminderPaywall: React.FC<{
   const spinAnim = useSharedValue(0);
   const ctaPulse = useRef(new Animated.Value(1)).current;
   const navigation = useNavigation();
+  const [selectedPlan, setSelectedPlan] = useState<SelectablePlan>("monthly");
+  const [trialEligible, setTrialEligible] = useState<boolean | null>(null);
+
+  const monthlyProduct = products?.monthly?.product;
+  const weeklyProduct = products?.weekly?.product;
+  const product = selectedPlan === "monthly" ? monthlyProduct : weeklyProduct;
+  const monthlyTrialDays =
+    trialEligible === false ? null : getFreeTrialDays(monthlyProduct?.introPrice);
+  const trialDays = selectedPlan === "monthly" ? monthlyTrialDays : null;
+  const periodLabel = PERIOD_WORD[product?.subscriptionPeriod] ?? "month";
+
+  useEffect(() => {
+    const productId = monthlyProduct?.identifier;
+    if (!productId) return;
+    let mounted = true;
+    checkTrialEligibility(productId).then((eligible) => {
+      if (mounted) setTrialEligible(eligible);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [monthlyProduct?.identifier]);
 
   useEffect(() => {
     let mounted = true;
@@ -152,20 +164,22 @@ const ReminderPaywall: React.FC<{
       }
       hasSpun ? (setActiveScreen(3), setHasSpun(false)) : handleSpin();
     } else {
-      onCTAPress("annual");
+      onCTAPress(selectedPlan);
     }
   };
 
   const renderCTAText = () => {
     switch (activeScreen) {
       case 0:
-        return `Try for ${product?.introPrice?.priceString ?? "0,00 kr"}`;
+        return `Try for ${monthlyProduct?.introPrice?.priceString ?? "0,00 kr"}`;
       case 1:
         return "Continue for FREE";
       case 2:
         return hasSpun ? "Claim My Free Month →" : "Spin the wheel  →";
       case 3:
-        return "Claim My Free Month →";
+        return trialDays != null
+          ? `Claim My ${trialDays}-Day Free Trial`
+          : "Unlock Premium Now";
       default:
         return "";
     }
@@ -247,22 +261,15 @@ const ReminderPaywall: React.FC<{
     );
   };
 
-  const periodLabel = product?.subscriptionPeriod === "P1Y" ? "year" : "month";
-
   const renderBelowButtonText = () => {
     const priceString = product?.priceString ?? "";
-    const amount =
-      typeof product?.price === "number" && product.price > 0
-        ? product.price
-        : null;
-    const comparePrice =
-      amount != null && priceString
-        ? formatLikeStorePrice(priceString, amount * 2)
-        : null;
+    const comparePrice = getComparePrice(product);
 
     return (
       <>
-        {"30-day free trial — then only "}
+        {trialDays != null
+          ? `${trialDays}-day free trial — then only `
+          : "Billed today — then only "}
         {comparePrice ? (
           <Text style={{ textDecorationLine: "line-through" }}>
             {comparePrice}
@@ -270,6 +277,7 @@ const ReminderPaywall: React.FC<{
         ) : null}
         {comparePrice ? " " : ""}
         {`${priceString}/${periodLabel}`}
+        {trialDays != null ? "" : `, renews every ${periodLabel === "week" ? "7 days" : periodLabel}`}
       </>
     );
   };
@@ -574,61 +582,177 @@ const ReminderPaywall: React.FC<{
     );
   };
 
+  const renderAnchoredPrice = (prod: any) => {
+    const comparePrice = getComparePrice(prod);
+    return (
+      <>
+        {comparePrice ? (
+          <Text
+            style={{
+              textDecorationLine: "line-through",
+              color: colors.ui.delete,
+            }}
+          >
+            {comparePrice}
+          </Text>
+        ) : null}
+        {comparePrice ? " " : ""}
+        <Text style={{ color: colors.ui.primary, fontWeight: "700" }}>
+          {prod?.priceString ?? ""}
+        </Text>
+      </>
+    );
+  };
+
+  const renderPlanOption = (plan: SelectablePlan) => {
+    const isSelected = selectedPlan === plan;
+    const optionProduct = plan === "monthly" ? monthlyProduct : weeklyProduct;
+    const optionTrialDays = plan === "monthly" ? monthlyTrialDays : null;
+    const optionPeriod = PERIOD_WORD[optionProduct?.subscriptionPeriod] ?? plan.replace("ly", "");
+    const title = plan === "monthly" ? "Monthly Premium" : "Weekly Premium";
+    return (
+      <TouchableOpacity
+        accessibilityRole="radio"
+        accessibilityState={{ selected: isSelected }}
+        accessibilityLabel={title}
+        activeOpacity={0.8}
+        onPress={() => {
+          if (isSelected) return;
+          void haptics.selectionAsync();
+          setSelectedPlan(plan);
+        }}
+        style={{
+          flex: 1,
+          flexDirection: "row",
+          gap: spacing.sm,
+          backgroundColor: colors.ui.componentBackground,
+          borderRadius: spacing.borderRadius,
+          borderWidth: 2,
+          borderColor: isSelected ? colors.ui.primary : colors.ui.cardBorder,
+          paddingVertical: spacing.sm + 2,
+          paddingHorizontal: spacing.sm + 2,
+        }}
+      >
+        <View
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 10,
+            borderWidth: 2,
+            borderColor: isSelected ? colors.ui.primary : colors.ui.cardBorder,
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: 1,
+          }}
+        >
+          {isSelected ? (
+            <View
+              style={{
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                backgroundColor: colors.ui.primary,
+              }}
+            />
+          ) : null}
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text
+            style={{
+              ...textStyles.onboardingBody,
+              fontWeight: "700",
+              color: colors.text.primary,
+            }}
+          >
+            {title}
+          </Text>
+          <Text
+            style={{
+              ...typography.small,
+              color: optionTrialDays != null ? colors.ui.primary : colors.text.secondary,
+              marginTop: 2,
+            }}
+          >
+            {optionTrialDays != null
+              ? `${optionTrialDays}-day free trial`
+              : "No free trial"}
+          </Text>
+          <Text
+            style={{
+              ...typography.small,
+              color: colors.text.secondary,
+              marginTop: 2,
+            }}
+          >
+            {optionProduct?.priceString
+              ? `${optionProduct.priceString}/${optionPeriod}`
+              : ""}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   const renderFourthScreen = () => {
-    const todayPrice = product?.introPrice?.priceString ?? "$0.00";
-    const weeklyAmount =
-      typeof product?.pricePerWeek === "number" && product.pricePerWeek > 0
-        ? product.pricePerWeek
-        : typeof product?.price === "number" && product.price > 0
-          ? product.price / 52
-          : null;
-    const weeklyPrice = product?.pricePerWeekString ?? "";
-    const compareWeeklyPrice =
-      weeklyAmount != null && weeklyPrice
-        ? formatLikeStorePrice(weeklyPrice, weeklyAmount * 2)
-        : null;
-    const steps = [
-      {
-        title: `TODAY — ${todayPrice}`,
-        subtitle: "Full access unlocked",
-        icon: "lock-open-outline",
-        iconBg: colors.ui.primary,
-        lineColor: colors.ui.primary,
-      },
-      {
-        title: "In 7 Days",
-        subtitle: "97% of users start seeing results.",
-        icon: "trending-up",
-        iconBg: colors.ui.primary,
-        lineColor: "#D1D5DB",
-        highlight: true,
-      },
-      {
-        title: (
-          <>
-            {`${formatTrialEndDate()} — Only `}
-            {compareWeeklyPrice ? (
-              <Text
-                style={{
-                  textDecorationLine: "line-through",
-                  color: colors.ui.delete,
-                }}
-              >
-                {compareWeeklyPrice}
-              </Text>
-            ) : null}
-            {compareWeeklyPrice ? " " : ""}
-            <Text style={{ color: colors.ui.primary, fontWeight: "700" }}>
-              {weeklyPrice}
-            </Text>
-            {" a week"}
-          </>
-        ),
-        subtitle: "Billed annually",
-        icon: "crown-outline",
-        iconBg: "#111827",
-      },
-    ];
+    const steps =
+      trialDays != null
+        ? [
+          {
+            title: `TODAY — ${product?.introPrice?.priceString ?? "$0.00"}`,
+            subtitle: "Full access unlocked",
+            icon: "lock-open-outline",
+            iconBg: colors.ui.primary,
+            lineColor: colors.ui.primary,
+          },
+          {
+            title: `${trialDays}-day free trial`,
+            subtitle: "97% of users start seeing results.",
+            icon: "trending-up",
+            iconBg: colors.ui.primary,
+            lineColor: "#D1D5DB",
+            highlight: true,
+          },
+          {
+            title: (
+              <>
+                {`After ${trialDays} days — Only `}
+                {renderAnchoredPrice(product)}
+                {` a ${periodLabel}`}
+              </>
+            ),
+            subtitle: `Monthly subscription begins ${formatTrialEndDate(trialDays)}`,
+            icon: "crown-outline",
+            iconBg: "#111827",
+          },
+        ]
+        : [
+          {
+            title: (
+              <>
+                {"TODAY — "}
+                {renderAnchoredPrice(product)}
+              </>
+            ),
+            subtitle: `${periodLabel === "week" ? "Weekly" : "Monthly"} subscription payment`,
+            icon: "lock-open-outline",
+            iconBg: colors.ui.primary,
+            lineColor: colors.ui.primary,
+          },
+          {
+            title: "Premium access unlocked immediately",
+            subtitle: "97% of users start seeing results.",
+            icon: "trending-up",
+            iconBg: colors.ui.primary,
+            lineColor: "#D1D5DB",
+            highlight: true,
+          },
+          {
+            title: `Renews every ${periodLabel === "week" ? "7 days" : periodLabel}`,
+            subtitle: `Billed ${periodLabel === "week" ? "weekly" : "monthly"}`,
+            icon: "crown-outline",
+            iconBg: "#111827",
+          },
+        ];
 
     return (
       <View
@@ -674,7 +798,14 @@ const ReminderPaywall: React.FC<{
             paddingHorizontal: spacing.sm,
           }}
         >
-          Your <Text style={{ color: colors.ui.primary }}>free</Text> month is ready
+          {trialDays != null ? (
+            <>
+              Your <Text style={{ color: colors.ui.primary }}>free</Text>{" "}
+              {trialDays === 7 ? "week" : "trial"} is ready
+            </>
+          ) : (
+            "Your Premium is ready"
+          )}
 
         </Text>
         <Text
@@ -686,7 +817,9 @@ const ReminderPaywall: React.FC<{
             paddingHorizontal: spacing.sm,
           }}
         >
-          Try everything in Kudoo free for the next 30 days.
+          {trialDays != null
+            ? `Try everything in Kudoo free for the next ${trialDays} days.`
+            : "Get full access to everything in Kudoo today."}
         </Text>
         <View
           style={{
@@ -703,6 +836,16 @@ const ReminderPaywall: React.FC<{
           ))}
           <View style={{ marginTop: spacing.lg, marginBottom: spacing.md }}>
             <SocialProofItem item={paywallTestimonial} />
+          </View>
+          <View
+            accessibilityRole="radiogroup"
+            style={{
+              flexDirection: "row",
+              gap: spacing.sm,
+            }}
+          >
+            {renderPlanOption("monthly")}
+            {renderPlanOption("weekly")}
           </View>
         </View>
       </View>
@@ -752,6 +895,9 @@ const ReminderPaywall: React.FC<{
   };
 
   const renderFooter = () => {
+    const chargeNoteText =
+      trialDays != null ? "✓ Nothing charged today" : "✓ Instant access. Cancel anytime.";
+
     if (activeScreen === 0 || activeScreen === 1) {
       return (
         <View
@@ -769,7 +915,7 @@ const ReminderPaywall: React.FC<{
               color: colors.ui.primary,
             }}
           >
-            ✓ Nothing charged today
+            {chargeNoteText}
           </Text>
           <Animated.View style={{ transform: [{ scale: ctaPulse }] }}>
             <PrimaryButtonComponent
@@ -784,7 +930,7 @@ const ReminderPaywall: React.FC<{
     }
 
     const aboveButtonText =
-      activeScreen === 3 ? "✓ Nothing charged today" : null;
+      activeScreen === 3 ? chargeNoteText : null;
 
     return (
       <View

@@ -1,263 +1,74 @@
-import { Text, View, ScrollView, Alert } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import { Text, View, ScrollView, TouchableOpacity } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotiView } from "moti";
-import { ReduceMotion, steps } from "react-native-reanimated";
+import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../../constants/globalStyles";
 import { colors } from "../../../constants/colors";
-import {
-  getHomePointsMicroCopy,
-  lineHeights,
-  textStyles,
-  typography,
-} from "../../../constants/texts";
-import ProgressComponents from "../../../components/ProgressComponents";
+import { typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
-import ArticlesComponent from "./components/ArticlesComponent";
 import { Ionicons } from "@expo/vector-icons";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import {
   NavigationProp,
   useFocusEffect,
   useNavigation,
 } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
-import useConfettiStore from "../../../stores/useConfettiStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
+import useTodayDietStore from "../../../stores/useTodayDietStore";
 const currentYear = new Date().getFullYear()
 import { RootStackParamList } from "../../navigation/types";
 import useUserStore from "../../../stores/useUserStore";
-import { updateTodayProgress } from "../../../services/firebase";
-import { increment } from "firebase/firestore";
 import { useTodaySteps } from "../../../services/healthkit";
 import { calculatePoints } from "../../../services/dietPoints";
-const PROGRESS_INSIGHT_ICON_SIZE = 40;
-import { syncToday } from "../../../services/firebase";
+import { getDays, syncToday } from "../../../services/firebase";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { analyticsEvents } from "../../../constants/analytics";
-const articles = [
-  {
-    id: 1,
+import GoalRing from "../../../components/GoalRing";
+import ConnectHealthSheet from "../../../components/ConnectHealthSheet";
+import useHealthConnected from "../../../hooks/useHealthConnected";
+import {
+  DayDoc,
+  STEP_GOAL,
+  buildWeek,
+  formatNumber,
+  getJourneyPosition,
+  ptsWord,
+  slotForNow,
+  stepsStatusFor,
+} from "../../../utils/goals";
 
-    title: "How points work",
-
-    description: "A simple way to stay on track without counting calories.",
-
-    content:
-      `Instead of tracking calories, we use a simple point system.
-
-Each meal has a point value based on how it affects your progress. At the start of the day, you get a set number of points.
-
-Every time you eat, you use points. Stay within your points and you're on track.
-
-Why not calories?
-
-Counting calories works, but it's hard to stick to.
-
-You have to measure everything. It's easy to underestimate. And it quickly becomes stressful.
-
-Most people don’t fail because it doesn’t work. They fail because it’s too complicated.
-
-Why this works better
-
-Points are designed to be simple.
-
-You don’t need to think about numbers all day. Just stay within your points.
-
-Meals are already balanced to keep you full and satisfied. No guessing. No overthinking.`,
-
-    color: "#F4B350",
-  },
-  {
-    id: 2,
-
-    title: "Stay within your points",
-
-    description: "Simple habits that make it easy to stay on track.",
-
-    content: `Staying within your points doesn’t have to be hard.
-  
-  It’s not about being perfect. It’s about making simple choices throughout the day.
-  
-  Start with meals that keep you full.
-  
-  Balanced meals help you avoid cravings and make it easier to stay in control.
-  
-  Don’t wait until you're starving.
-  
-  When you get too hungry, it’s harder to make good decisions. Try to eat regularly.
-  
-  Keep it simple.
-  
-  You don’t need to overthink every meal. Stick to foods and recipes that you know work.
-  
-  If you're unsure, go for the simpler option.
-  
-  Leave some room.
-  
-  You don’t have to use all your points early in the day. Saving a few gives you flexibility later.
-  
-  And remember:
-  
-  One meal doesn’t decide your day.
-  
-  If something goes off plan, just get back on track with your next choice.
-  
-  That’s how progress happens.`,
-
-    color: "#6FCF97",
-  },
-  {
-    id: 3,
-
-    title: "Went over your points?",
-
-    description: "What to do when things don’t go as planned.",
-
-    content: `Went over your points today?
-  
-  It’s okay.
-  
-  This happens to everyone. One day will not ruin your progress.
-  
-  What matters is what you do next.
-  
-  Don’t try to fix everything at once.
-  
-  You don’t need to skip meals or “make up for it”. Just get back to normal.
-  
-  Your next meal is a new chance.
-  
-  Make a simple choice. Stay within your points. Move on.
-  
-  Progress isn’t about being perfect.
-  
-  It’s about being consistent over time.
-  
-  Most people don’t fail because of one bad day. They fail because they give up after it.
-  
-  So don’t.
-  
-  Just continue.
-  
-  You’re still on track.`,
-
-    color: "#56CCF2",
-  },
-  {
-    id: 4,
-
-    title: "Consistency beats perfection",
-
-    description: "Why small wins every day lead to real results.",
-
-    content: `You don’t need to be perfect to see results.
-  
-  You just need to be consistent.
-  
-  Most people think they have to follow the plan perfectly every day.
-  
-  But that’s not how progress works.
-  
-  Some days will be better than others.
-  
-  You might go over your points. You might miss a goal. That’s normal.
-  
-  What matters is that you keep going.
-  
-  Small actions, repeated over time, create real change.
-  
-  One good day won’t transform you.
-  
-  But many consistent days will.
-  
-  So don’t focus on being perfect.
-  
-  Focus on showing up.
-  
-  Stay within your points most days. Move your body when you can. Keep it simple.
-  
-  That’s enough.
-  
-  That’s how it works.
-  
-  And that’s how you win.`,
-
-    color: "#BB6BD9",
-  },
-  {
-
-    id: 5,
-
-    title: "Reach 5k steps easily",
-
-    description: "Simple ways to move more without overthinking it.",
-
-    content: `Reaching 5,000 steps doesn’t have to be hard.
-  
-  You don’t need long workouts or a strict routine. Small movements throughout the day add up quickly.
-  
-  Start by walking more in your daily life.
-  
-  Take the stairs. Walk while on the phone. Park a bit further away. These small changes make a big difference.
-  
-  Break it up.
-  
-  You don’t have to hit 5k in one go. A few short walks during the day are enough.
-  
-  Make it part of your routine.
-  
-  Go for a walk after meals. Add a quick walk in the morning or evening. Keep it simple.
-  
-  And remember:
-  
-  More steps give you more flexibility.
-  
-  Moving more means you burn more, which gives you more room to eat.
-  
-  It’s not about being perfect.
-  
-  It’s about moving a little more than yesterday.
-  
-  That’s enough.`,
-
-
-
-    color: "#27AE60",
-
-  }
-];
+const CARD_RADIUS = 24;
+const cardShadow = {
+  shadowColor: colors.goals.dark,
+  shadowOffset: { width: 0, height: 8 },
+  shadowOpacity: 0.06,
+  shadowRadius: 24,
+  elevation: 4,
+};
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
-
-  const { setVisibleConfetti } = useConfettiStore();
+  const { todayDiet } = useTodayDietStore();
   const todaySteps = useTodaySteps();
-  const [claimStepsReward, setClaimStepsReward] = useState(false);
+  const { user } = useUserStore();
+  const { connected: healthConnected, markRequested } = useHealthConnected(todaySteps);
+  const [connectVisible, setConnectVisible] = useState(false);
+  const [days, setDays] = useState<DayDoc[]>([]);
+  const rewardShownRef = useRef(false);
 
   useEffect(() => {
     trackMixpanelEvent(analyticsEvents.homeViewed);    
   }, []);
 
   useEffect(() => {
-
-    if (todaySteps >= 5000 && todayProgress?.completion.steps === false) {
-      setClaimStepsReward(true);
+    if (rewardShownRef.current) return;
+    if (todaySteps >= STEP_GOAL && todayProgress?.completion?.steps === false) {
+      rewardShownRef.current = true;
+      navigation.navigate("MoveGoalReward", { steps: todaySteps });
     }
-  }, [todaySteps, todayProgress?.completion.steps]);
-
-  const overConsumedPoints = todayProgress?.points?.used > todayProgress?.points?.total;
-  const { user } = useUserStore();
-  const [overallProgress, setOverallProgress] = useState(0);
-
-  useFocusEffect(
-    useCallback(() => {
-      const completed = Object.values(todayProgress?.completion ?? {}).filter(
-        (completion: any) => completion === true,
-      ).length;
-      setOverallProgress(completed);
-    }, [todayProgress]),
-  );
-
+  }, [todaySteps, todayProgress?.completion?.steps, navigation]);
 
   const handleSyncToday = useCallback(async () => {
     if (!user?.email) return;
@@ -290,381 +101,452 @@ const HomeScreen = () => {
     }, [handleSyncToday]),
   );
 
-  const returnStepsMicroCopy = () => {
-    const steps = todayProgress?.progress?.steps ?? 0;
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.email) return;
+      getDays(user.email as string).then((result) => setDays(result as DayDoc[]));
+    }, [user?.email]),
+  );
 
-    if (steps >= 5000) {
-      return "5k steps — great job!";
-    } else if (steps >= 4000) {
-      return "4k steps — well done, keep it up!";
-    } else if (steps >= 3000) {
-      return "3k steps — you’re making progress!";
-    } else if (steps >= 2000) {
-      return "2k steps — solid start!";
-    } else if (steps >= 1000) {
-      return "1k steps — nice going!";
-    } else if (steps > 0) {
-      return "Let’s get started — every step counts!";
-    } else {
-      return "Let’s get started today";
-    }
+  const total = todayProgress?.points?.total ?? 0;
+  const used = todayProgress?.points?.used ?? 0;
+  const left = total - used;
+  const over = left < 0;
+  const mealsCount = todayDiet?.length ?? 0;
+  const steps = todayProgress?.progress?.steps ?? todaySteps ?? 0;
+  const moveDone = healthConnected && steps >= STEP_GOAL;
+  const stepsRem = Math.max(STEP_GOAL - steps, 0);
+  const walkMin = Math.max(Math.ceil(stepsRem / 100), 1);
+
+  const journey = useMemo(() => getJourneyPosition(user?.createdAt), [user?.createdAt]);
+  const week = useMemo(() => buildWeek(user?.createdAt, days), [user?.createdAt, days]);
+  const bothCount = week.filter((d) => d.hasData && d.both).length;
+
+  const openScan = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("ScanFoodScreen");
   };
 
-  const overallProgressMicroCopy = () => {
-    if (overallProgress >= 3) {
-      return "All goals done today 👏";
-    } else if (overallProgress === 2) {
-      return "2 goals done — almost there";
-    } else if (overallProgress === 1) {
-      return "1 goal done — keep going";
-    } else {
-      return "No goals done yet — let's start simple";
-    }
-  };
-
-  const returnPointsMicroCopy = () => {
-    const total = todayProgress?.points?.total ?? 0;
-    const used = todayProgress?.points?.used ?? 0;
-    return getHomePointsMicroCopy(total, used);
-  };
-
-  const returnWaterMicroCopy = () => {
-    const water = todayProgress?.progress?.water ?? 0;
-
-    if (water >= 10) {
-      return "Hydration goal reached";
-    } else if (water >= 8) {
-      return "Almost there. Keep sipping";
-    } else if (water >= 6) {
-      return "Great job. You're doing well";
-    } else if (water >= 4) {
-      return "Nice progress. Keep it up";
-    } else if (water >= 2) {
-      return "Good start. Stay hydrated";
-    } else if (water >= 1) {
-      return "Nice start ";
-    } else {
-      return "Let’s get your first glass in";
-    }
+  const openConnect = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    setConnectVisible(true);
   };
 
   const renderHeader = () => {
+    const dateLabel = new Date().toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    });
+    const weekLabel =
+      journey.weekNumber === 1 ? "of your first week" : `of week ${journey.weekNumber}`;
+
     return (
       <MotiView
         from={{ opacity: 0, translateY: 10, scale: 0.98 }}
         animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={{
-          justifyContent: "center",
-        }}
+        transition={{ type: "timing", duration: 450, reduceMotion: ReduceMotion.Never }}
+        style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between" }}
       >
-        <Text
-          style={{
-            ...textStyles.screenSectionTitle,
+        <View>
+          <Text style={{ ...typography.screenTitle, color: colors.text.primary }}>Today</Text>
+          <Text style={{ ...typography.bodyMedium, color: colors.goals.muted, marginTop: 2 }}>
+            {dateLabel} · Day {journey.dayInWeek} {weekLabel}
+          </Text>
+        </View>
+        <TouchableOpacity
+          activeOpacity={0.75}
+          accessibilityLabel="Profile and settings"
+          onPress={() => {
+            haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("SettingsScreen");
           }}
-        >
-          Your day
-        </Text>
-      </MotiView>
-    );
-  };
-
-
-  const handleStepsReward = () => {
-    setVisibleConfetti(true);
-    setTodayProgress({
-      ...todayProgress,
-      completion: {
-        ...todayProgress.completion,
-        steps: true,
-      },
-    });
-    setClaimStepsReward(false);
-    updateTodayProgress(user?.email as string, {
-      "completion.steps": true,
-    });
-    trackMixpanelEvent(analyticsEvents.stepsGoalCompleted);
-  };
-
-  const handleAddWater = () => {
-    if (!todayProgress?.progress) {
-      return;
-    }
-
-    const currentWater = todayProgress.progress.water ?? 0;
-    const nextWater = currentWater + 1;
-    const reachedGoal = nextWater >= 10;
-
-    setTodayProgress({
-      ...todayProgress,
-      progress: {
-        ...todayProgress.progress,
-        water: nextWater,
-      },
-      ...(reachedGoal
-        ? {
-          completion: {
-            ...todayProgress.completion,
-            water: true,
-          },
-        }
-        : {}),
-    });
-
-    updateTodayProgress(user?.email as string, {
-      "progress.water": increment(1),
-      ...(reachedGoal ? { "completion.water": true } : {}),
-    });
-
-    if (reachedGoal) {
-      setVisibleConfetti(true);
-    }
-    trackMixpanelEvent(analyticsEvents.waterLogged);
-  };
-
-  const handleClaimPointsReward = () => {
-    if (todayProgress?.completion?.points === true) {
-      return;
-    }
-
-    if (overConsumedPoints) {
-      Alert.alert(
-        "Over your points",
-        "You’ve used more points than planned today. That’s okay — it happens. You can go for a walk to earn more points, or just continue and get back on track tomorrow.",
-        [
-
-          { text: "Continue" },
-        ]
-      );
-      return;
-    }
-    Alert.alert(
-      "Are you sure?",
-      "You will not be able to change your points for today",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Complete the day",
-          onPress: () => {
-            setVisibleConfetti(true);
-            setTodayProgress({
-              ...todayProgress,
-              completion: {
-                ...todayProgress.completion,
-                points: true,
-              },
-            });
-            updateTodayProgress(user?.email as string, {
-              "completion.points": true,
-            });
-            trackMixpanelEvent(analyticsEvents.pointsGoalCompleted);
-          },
-        },
-      ],
-    );
-  };
-
-  const renderProgressComponents = () => {
-    return (
-      <MotiView
-        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
-        animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          delay: 160,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={{
-          flexDirection: "row",
-          flexWrap: "wrap",
-          gap: spacing.md,
-        }}
-      >
-        <ProgressComponents
-          title="Water"
-          icon="water"
-          number={todayProgress?.progress?.water ?? 0}
-          goal={10}
-          microcopy={returnWaterMicroCopy()}
-          width="47%"
-          type="water"
-          onPress={() => handleAddWater()}
-          completed={todayProgress?.completion?.water === true}
-        />
-        <ProgressComponents
-          title="Steps"
-          icon="walk"
-          number={todayProgress?.progress?.steps ?? 0}
-          goal={5000}
-          microcopy={returnStepsMicroCopy()}
-          width="47%"
-          type="steps"
-          completed={todayProgress?.completion?.steps === true}
-          claimRewardPress={() => handleStepsReward()}
-          claimReward={claimStepsReward}
-        />
-        <ProgressComponents
-          title="Nutrition points"
-          icon="food-apple"
-          completed={todayProgress?.completion?.points === true}
-          number={todayProgress?.points?.used ?? 0}
-          goal={todayProgress?.points?.total ?? 0}
-          microcopy={returnPointsMicroCopy()}
-          type="points"
-          onPress={() => handleClaimPointsReward()}
-          width="100%"
-          description={"Tap to mark today as done"}
-        />
-      </MotiView>
-    );
-  };
-
-  const handleArticlePress = (article: any) => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    navigation.navigate("ArticleScreen", { article });
-  };
-
-  const renderProgressInsight = () => {
-    const insightCardStyle = {
-      backgroundColor: colors.ui.componentBackground,
-      borderRadius: spacing.borderRadius * 1.5,
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.md,
-      ...globalStyles.shadow,
-      width: "100%" as const,
-    };
-
-    const labelStyle = {
-      ...typography.caption,
-      color: colors.text.secondary,
-      letterSpacing: 0.8,
-      textTransform: "uppercase" as const,
-      opacity: 0.55,
-      lineHeight: lineHeights.caption,
-      marginBottom: spacing.sm,
-    };
-
-    return (
-      <MotiView
-        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
-        animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          delay: 100,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={insightCardStyle}
-      >
-        <Text style={labelStyle}>Today</Text>
-        <View
           style={{
-            flexDirection: "row",
-            gap: spacing.md,
+            width: 40,
+            height: 40,
+            borderRadius: 20,
+            backgroundColor: "#EFEFF2",
             alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <View
-            style={{
-              width: PROGRESS_INSIGHT_ICON_SIZE,
-              height: PROGRESS_INSIGHT_ICON_SIZE,
-              borderRadius: PROGRESS_INSIGHT_ICON_SIZE / 2,
-              backgroundColor: colors.ui.iconContainer,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Ionicons name="sparkles" size={24} color={colors.ui.primary} />
-          </View>
-          <View
-            style={{
-              flex: 1,
-              flexDirection: "column",
-              gap: spacing.sm,
-              minWidth: 0,
-            }}
-          >
-            <Text
-              style={{
-                ...typography.subheadline,
-                color: colors.text.primary,
-              }}
-            >
-              {overallProgressMicroCopy()}
-            </Text>
-            <Text style={{ ...textStyles.listItemEmphasis }}>
-              {3 - overallProgress} more to go
-            </Text>
-            <View
-              style={{
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: colors.ui.dotInactive,
-                overflow: "hidden",
-                marginTop: spacing.xs,
-              }}
-            >
-              <View
-                style={{
-                  width: `${(overallProgress / 3) * 100}%`,
-                  height: "100%",
-                  backgroundColor: colors.ui.primary,
-                  borderRadius: 3,
-                }}
-              />
+          <Ionicons name="person-outline" size={20} color={colors.text.primary} />
+        </TouchableOpacity>
+      </MotiView>
+    );
+  };
+
+  const renderGoals = () => {
+    let winsLine = "Updated live";
+    let winsColor = colors.goals.muted;
+    if (moveDone && mealsCount > 0 && !over) {
+      winsLine = "Move done · Eat on pace";
+      winsColor = colors.goals.eat;
+    } else if (moveDone) {
+      winsLine = "Move goal done";
+      winsColor = colors.goals.move;
+    } else if (mealsCount > 0 && !over) {
+      winsLine = "Eat on pace";
+      winsColor = colors.goals.eat;
+    }
+
+    const eatFill = total > 0 ? (Math.min(used / total, 1) * 100) : 0;
+    const pillText = mealsCount === 0 ? `Fresh ${total} today` : over ? `Over by ${-left}` : "On pace";
+    const pillColor = mealsCount === 0 ? colors.goals.muted : over ? colors.goals.over : colors.goals.eat;
+
+    return (
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{ type: "timing", duration: 450, delay: 100, reduceMotion: ReduceMotion.Never }}
+        style={{
+          backgroundColor: colors.ui.white,
+          borderRadius: CARD_RADIUS,
+          paddingTop: 18,
+          paddingHorizontal: spacing.md,
+          paddingBottom: spacing.md,
+          ...cardShadow,
+        }}
+      >
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingHorizontal: spacing.xs }}>
+          <Text style={{ ...typography.cardTitle, color: colors.text.primary }}>Your two goals</Text>
+          <Text style={{ ...typography.bodySemiBold, color: winsColor }}>{winsLine}</Text>
+        </View>
+        <View style={{ flexDirection: "row", marginTop: 14, gap: spacing.sm }}>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <GoalRing fill={eatFill} color={over ? colors.goals.overRing : colors.goals.eatRing}>
+              <Text style={{ ...typography.displayNumeric, fontSize: 30, lineHeight: 34, color: over ? colors.goals.over : colors.text.primary }}>
+                {over ? -left : left}
+              </Text>
+              <Text style={{ ...typography.small, color: colors.goals.muted }}>
+                {over ? "over budget" : `left of ${total}`}
+              </Text>
+            </GoalRing>
+            <View style={{ marginTop: 10, flexDirection: "row", alignItems: "center", gap: 6 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.goals.eatRing }} />
+              <Text style={{ ...typography.cardTitle, fontSize: 15, color: colors.text.primary }}>Eat smart</Text>
             </View>
+            <Text style={{ ...typography.bodySemiBold, color: pillColor, marginTop: 2 }}>{pillText}</Text>
+          </View>
+
+          <View style={{ flex: 1, alignItems: "center" }}>
+            {healthConnected ? (
+              <>
+                <GoalRing
+                  fill={(Math.min(steps / STEP_GOAL, 1)) * 100}
+                  color={colors.goals.moveRing}
+                  done={moveDone}
+                  doneColor={colors.goals.move}
+                >
+                  <Text style={{ ...typography.displayNumeric, fontSize: 26, lineHeight: 32, color: colors.text.primary }}>
+                    {formatNumber(steps)}
+                  </Text>
+                  <Text style={{ ...typography.small, color: colors.goals.muted }}>
+                    {`of ${formatNumber(STEP_GOAL)} steps`}
+                  </Text>
+                </GoalRing>
+                <View style={{ marginTop: 10, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.goals.moveRing }} />
+                  <Text style={{ ...typography.cardTitle, fontSize: 15, color: colors.text.primary }}>Move daily</Text>
+                </View>
+                <Text style={{ ...typography.bodySemiBold, color: colors.goals.move, marginTop: 2 }}>
+                  {stepsStatusFor(steps)}
+                </Text>
+              </>
+            ) : (
+              <>
+                <View
+                  style={{
+                    width: 116,
+                    height: 116,
+                    borderRadius: 58,
+                    borderWidth: 2,
+                    borderStyle: "dashed",
+                    borderColor: colors.goals.moveSoftBorder,
+                    backgroundColor: "#F7F6FE",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                  }}
+                >
+                  <MaterialCommunityIcons name="shoe-print" size={30} color={colors.goals.move} />
+                  <Text style={{ ...typography.small, fontFamily: typography.bodySemiBold.fontFamily, color: colors.goals.move }}>
+                    Not tracking yet
+                  </Text>
+                </View>
+                <View style={{ marginTop: 10, flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: colors.goals.moveRing }} />
+                  <Text style={{ ...typography.cardTitle, fontSize: 15, color: colors.text.primary }}>Move daily</Text>
+                </View>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={openConnect}
+                  style={{
+                    marginTop: 6,
+                    height: 36,
+                    paddingHorizontal: 12,
+                    borderRadius: 14,
+                    backgroundColor: colors.goals.moveSoft,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text style={{ ...typography.buttonSecondary, color: colors.goals.move }}>
+                    Turn on step tracking
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </MotiView>
     );
   };
 
-  const renderArticlesComponent = () => {
+  const renderNextUp = () => {
+    const slot = slotForNow();
+    const evening = new Date().getHours() >= 20;
+    const nearGoal = healthConnected && !moveDone && stepsRem <= 1000 && mealsCount > 0;
+    let theme: "light" | "move" | "dark" = "light";
+    let kicker = "Next up";
+    let title: string = slot;
+    let body = "";
+
+    if (mealsCount === 0 && journey.weekNumber === 1 && journey.dayInWeek === 1) {
+      kicker = "Start here";
+      title = "Scan your first meal";
+      body =
+        "Tap Scan below and point your camera at your plate. We count the points." +
+        (healthConnected ? " Your steps are already counting." : "");
+    } else if (nearGoal) {
+      theme = "move";
+      kicker = "Almost there";
+      title = `${formatNumber(stepsRem)} steps to go`;
+      body = `About a ${walkMin}-minute walk. Your steps update by themselves, so there is nothing to log.`;
+    } else if (evening && mealsCount > 0) {
+      theme = "dark";
+      if (moveDone && !over) {
+        kicker = "Today";
+        title = "Both goals on track";
+        body = `Meals logged and your steps are done. ${left} points left if you want a snack.`;
+      } else {
+        const moveBit = !healthConnected
+          ? " Turn on step tracking to count your steps too."
+          : moveDone
+            ? " Move goal done."
+            : ` ${formatNumber(stepsRem)} steps to go.`;
+        kicker = "Tonight";
+        title = "Meals logged";
+        body =
+          (over ? `You are ${-left} over. One day does not make a week.` : `${left} points left for a snack.`) +
+          moveBit;
+      }
+    } else if (over) {
+      body = `You are ${-left} over, so keep ${slot.toLowerCase()} light and log it anyway.`;
+    } else if (slot === "Breakfast") {
+      body = `You have ${left} points. A regular breakfast is 2–5.`;
+    } else if (slot === "Lunch") {
+      body =
+        `You have ${left} points left. A regular lunch is 5–8.` +
+        (healthConnected && !moveDone && steps < STEP_GOAL / 2 ? " A walk after lunch gets you halfway to 5,000." : "");
+    } else if (left >= 12) {
+      body = `You have ${left} points left. Enough for a full dinner and a snack.`;
+    } else if (left >= 7) {
+      body = `You have ${left} points left. Room for a regular dinner.`;
+    } else {
+      body = `Only ${left} points left. Go for something lighter.`;
+    }
+
+    const bg = theme === "dark" ? colors.goals.dark : theme === "move" ? colors.goals.moveSoft : colors.ui.white;
+    const fg = theme === "dark" ? colors.ui.white : colors.text.primary;
+    const kickerColor = theme === "dark" ? "#A9A4CC" : theme === "move" ? colors.goals.move : colors.goals.eat;
+    const subColor = theme === "dark" ? "#D9D6EE" : colors.goals.muted;
+
     return (
       <MotiView
         from={{ opacity: 0, translateY: 10, scale: 0.98 }}
         animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          delay: 220,
-          reduceMotion: ReduceMotion.Never,
-        }}
+        transition={{ type: "timing", duration: 450, delay: 160, reduceMotion: ReduceMotion.Never }}
         style={{
-          gap: spacing.md,
+          backgroundColor: bg,
+          borderRadius: CARD_RADIUS,
+          paddingVertical: 18,
+          paddingHorizontal: 20,
+          ...globalStyles.shadow,
+          shadowOpacity: 0.04,
         }}
       >
-        <Text
-          style={{
-            ...textStyles.screenSectionTitle,
-          }}
-        >
-          Tips for success
+        <Text style={{ ...typography.captionSemiBold, fontSize: 13, letterSpacing: 0.6, textTransform: "uppercase", color: kickerColor }}>
+          {kicker}
         </Text>
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{
-            gap: spacing.md,
+        <Text style={{ ...typography.headline, fontSize: 19, color: fg, marginTop: spacing.xs }}>{title}</Text>
+        <Text style={{ ...typography.body, fontSize: 15, lineHeight: 22, color: subColor, marginTop: spacing.xs }}>
+          {body}
+        </Text>
+      </MotiView>
+    );
+  };
+
+  const renderMeals = () => {
+    return (
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{ type: "timing", duration: 450, delay: 220, reduceMotion: ReduceMotion.Never }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: spacing.sm }}>
+          <Text style={{ ...typography.headline, color: colors.text.primary }}>Meals</Text>
+          <Text style={{ ...typography.bodyMedium, color: colors.goals.muted }}>{mealsCount} logged</Text>
+        </View>
+        <View
+          style={{
+            marginTop: 10,
+            backgroundColor: colors.ui.white,
+            borderRadius: CARD_RADIUS,
+            paddingVertical: spacing.xs,
+            paddingHorizontal: spacing.md,
+            ...globalStyles.shadow,
+            shadowOpacity: 0.04,
           }}
         >
-          {articles.map((article, index) => (
-            <ArticlesComponent
-              onPress={() => handleArticlePress(article)}
-              key={index}
-              article={article}
-            />
-          ))}
-        </ScrollView>
+          {mealsCount === 0 ? (
+            <View style={{ minHeight: 58, justifyContent: "center" }}>
+              <Text style={{ ...typography.bodyMedium, fontSize: 15, color: "#9A96AE" }}>
+                Nothing logged yet today
+              </Text>
+            </View>
+          ) : (
+            todayDiet.map((entry: any, index: number) => {
+              const pts = Number(entry?.points ?? 0);
+              return (
+                <View
+                  key={`${entry?.sourceId ?? "row"}-${index}`}
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    minHeight: 58,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#F2F2F4",
+                  }}
+                >
+                  <Text numberOfLines={1} style={{ flex: 1, ...typography.cardTitle, fontSize: 15, color: colors.text.primary }}>
+                    {entry?.title}
+                  </Text>
+                  <Text style={{ ...typography.cardTitle, fontSize: 15, color: colors.goals.eat }}>
+                    {Number.isFinite(pts) ? `${pts} ${ptsWord(pts)}` : entry?.points}
+                  </Text>
+                </View>
+              );
+            })
+          )}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => {
+              haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate("DietListScreen", {});
+            }}
+            style={{ minHeight: 50, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderTopWidth: mealsCount === 0 ? 1 : 0, borderTopColor: "#F2F2F4" }}
+          >
+            <Text style={{ ...typography.bodySemiBold, color: colors.goals.eat }}>
+              Add manually or browse recipes
+            </Text>
+            <Ionicons name="chevron-forward" size={18} color={colors.goals.eat} />
+          </TouchableOpacity>
+        </View>
+      </MotiView>
+    );
+  };
+
+  const renderWeek = () => {
+    return (
+      <MotiView
+        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+        animate={{ opacity: 1, translateY: 0, scale: 1 }}
+        transition={{ type: "timing", duration: 450, delay: 280, reduceMotion: ReduceMotion.Never }}
+      >
+        <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", marginTop: spacing.sm }}>
+          <Text style={{ ...typography.headline, color: colors.text.primary }}>
+            {journey.weekNumber === 1 ? "Your first week" : `Week ${journey.weekNumber}`}
+          </Text>
+          <Text style={{ ...typography.bodyMedium, color: colors.goals.muted }}>{bothCount} of 7 with both</Text>
+        </View>
+        <View
+          style={{
+            marginTop: 10,
+            backgroundColor: colors.ui.white,
+            borderRadius: CARD_RADIUS,
+            padding: spacing.md,
+            ...globalStyles.shadow,
+            shadowOpacity: 0.04,
+          }}
+        >
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            {week.map((d) => {
+              const state = d.hasData ? (d.both ? "done" : "partial") : d.isToday ? "today" : "future";
+              const bg =
+                state === "done" ? colors.goals.dark : state === "partial" ? colors.goals.ringTrack : state === "today" ? colors.ui.white : "#F2F2F4";
+              const fg =
+                state === "done" ? colors.ui.white : state === "today" ? colors.goals.dark : state === "partial" ? colors.goals.muted : "#8E8AA3";
+              return (
+                <View key={d.n} style={{ flex: 1, alignItems: "center", gap: 6 }}>
+                  <Text style={{ ...typography.small, color: colors.goals.muted }}>{d.label}</Text>
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
+                      backgroundColor: bg,
+                      borderWidth: state === "today" || (d.isCheckIn && state === "future") ? 2 : 0,
+                      borderStyle: d.isCheckIn && state === "future" ? "dashed" : "solid",
+                      borderColor: state === "today" ? colors.goals.dark : "#C8C8CF",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {state === "done" ? (
+                      <Ionicons name="checkmark" size={18} color={colors.ui.white} />
+                    ) : (
+                      <Text style={{ ...typography.bodySemiBold, color: fg }}>{d.n}</Text>
+                    )}
+                  </View>
+                  <View style={{ flexDirection: "row", gap: 4 }}>
+                    {[
+                      { on: d.isToday ? mealsCount > 0 && !over : d.hasData && d.eat, color: colors.goals.eatRing },
+                      { on: d.isToday ? moveDone : d.hasData && d.move, color: colors.goals.moveRing },
+                    ].map((dot, i) => (
+                      <View
+                        key={i}
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: 4,
+                          backgroundColor: dot.on ? dot.color : "transparent",
+                          borderWidth: dot.on ? 0 : 1.5,
+                          borderColor: colors.goals.dotEmpty,
+                        }}
+                      />
+                    ))}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+          <View style={{ marginTop: 12, flexDirection: "row", flexWrap: "wrap", gap: 14 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.goals.eatRing }} />
+              <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.muted }}>Eat smart</Text>
+            </View>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+              <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.goals.moveRing }} />
+              <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.muted }}>Move daily</Text>
+            </View>
+            <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.muted }}>Check = both goals</Text>
+          </View>
+          <Text style={{ ...typography.bodyMedium, lineHeight: 20, color: colors.goals.muted, marginTop: spacing.sm }}>
+            Day 7 is your check-in. Step on the scale once and log your weight.
+          </Text>
+        </View>
       </MotiView>
     );
   };
@@ -675,14 +557,20 @@ const HomeScreen = () => {
     }}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={globalStyles.scrollContainer}
+        contentContainerStyle={{ ...globalStyles.scrollContainer, gap: 12 }}
         style={globalStyles.container}
       >
         {renderHeader()}
-        {renderProgressInsight()}
-        {renderProgressComponents()}
-        {renderArticlesComponent()}
+        {renderGoals()}
+        {renderNextUp()}
+        {renderMeals()}
+        {renderWeek()}
       </ScrollView>
+      <ConnectHealthSheet
+        visible={connectVisible}
+        onClose={() => setConnectVisible(false)}
+        onConnected={markRequested}
+      />
     </View>
   );
 };

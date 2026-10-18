@@ -6,6 +6,8 @@ import {
   ActivityIndicator,
   Pressable,
   Linking,
+  ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { MotiView } from "moti";
@@ -14,7 +16,6 @@ import { colors } from "../../../constants/colors";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import {
-  dietLabels,
   recipeDetailCopy,
   textStyles,
   typography,
@@ -38,6 +39,16 @@ import type { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../../navigation/types";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import useToastStore from "../../../stores/useToastStore";
+import { Ionicons } from "@expo/vector-icons";
+import { ptsWord, slotForNow } from "../../../utils/goals";
+
+type Portion = "small" | "regular" | "large";
+
+const PORTIONS: { key: Portion; label: string; multiplier: number }[] = [
+  { key: "small", label: "Small", multiplier: 0.75 },
+  { key: "regular", label: "Regular", multiplier: 1 },
+  { key: "large", label: "Large", multiplier: 1.35 },
+];
 
 type PickedImage = {
   uri: string;
@@ -133,7 +144,9 @@ const ScanFoodScreen = () => {
   const [scanning, setScanning] = useState(false);
   const [takingPhoto, setTakingPhoto] = useState(false);
   const [scanCopyIndex, setScanCopyIndex] = useState(0);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<any>(null);
+  const [portion, setPortion] = useState<Portion>("regular");
+  const [slot] = useState(slotForNow());
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const { todayDiet, setTodayDiet } = useTodayDietStore();
   const { user } = useUserStore();
@@ -162,6 +175,7 @@ const ScanFoodScreen = () => {
   const clearScanState = () => {
     setResult(null);
     setScanning(false);
+    setPortion("regular");
   };
 
   const handleTakePhoto = async () => {
@@ -442,7 +456,7 @@ Return JSON only.
     }
 
     return (
-      <View style={{ flex: 1, backgroundColor: "#000" }}>
+      <View style={{ flex: 1, backgroundColor: "#17151D" }}>
         <CameraView
           ref={cameraRef}
           style={{ flex: 1 }}
@@ -459,25 +473,7 @@ Return JSON only.
             left: 0,
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: SCAN_DIM,
-              alignItems: "center",
-              justifyContent: "flex-end",
-              paddingBottom: spacing.md,
-            }}
-          >
-            <Text
-              style={{
-                ...typography.headline,
-                color: "#fff",
-                textAlign: "center",
-              }}
-            >
-              Scan your meal
-            </Text>
-          </View>
+          <View style={{ flex: 1, backgroundColor: SCAN_DIM }} />
           <View style={{ flexDirection: "row" }}>
             <View style={{ width: "9%", backgroundColor: SCAN_DIM }} />
             <View style={{ width: "82%", aspectRatio: 1 }}>
@@ -488,13 +484,73 @@ Return JSON only.
             </View>
             <View style={{ width: "9%", backgroundColor: SCAN_DIM }} />
           </View>
-          <View style={{ flex: 1, backgroundColor: SCAN_DIM }} />
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: SCAN_DIM,
+              alignItems: "center",
+              paddingTop: spacing.md,
+            }}
+          >
+            <Text
+              style={{
+                ...typography.body,
+                fontSize: 15,
+                color: "rgba(255,255,255,0.78)",
+                textAlign: "center",
+              }}
+            >
+              Fit the whole plate in the frame
+            </Text>
+          </View>
           <View
             style={{
               height: insets.bottom + spacing.lg + 80,
               backgroundColor: SCAN_DIM,
             }}
           />
+        </View>
+        <View
+          style={{
+            position: "absolute",
+            top: spacing.md,
+            left: 20,
+            right: 20,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.goBack();
+            }}
+            accessibilityLabel="Close camera"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: "rgba(255,255,255,0.14)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="close" size={22} color="#fff" />
+          </Pressable>
+          <View
+            style={{
+              paddingVertical: spacing.sm,
+              paddingHorizontal: 14,
+              borderRadius: 24,
+              backgroundColor: "rgba(255,255,255,0.14)",
+            }}
+          >
+            <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: "#fff" }}>
+              {slot}
+            </Text>
+          </View>
+          <View style={{ width: 44 }} />
         </View>
         <View
           pointerEvents="box-none"
@@ -594,6 +650,33 @@ Return JSON only.
           )}
         </View>
 
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 12,
+            paddingVertical: 14,
+            paddingHorizontal: spacing.md,
+            borderRadius: 16,
+            backgroundColor: colors.goals.dark,
+          }}
+        >
+          <MotiView
+            from={{ opacity: 0.4 }}
+            animate={{ opacity: 1 }}
+            transition={{ type: "timing", duration: 700, loop: true, reduceMotion: ReduceMotion.Never }}
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: colors.goals.eatRing,
+            }}
+          />
+          <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: "#fff" }}>
+            Reading your plate…
+          </Text>
+        </View>
+
         <MotiView
           key={scanCopyIndex}
           from={{ opacity: 0, translateY: 6 }}
@@ -688,15 +771,24 @@ Return JSON only.
     );
   };
 
+  const getPortionPoints = () => {
+    const base = Number(result?.points);
+    if (!Number.isFinite(base)) return result?.points;
+    const multiplier = PORTIONS.find((p) => p.key === portion)?.multiplier ?? 1;
+    return Math.max(0, Math.round(base * multiplier));
+  };
+
   const handleAddToDiet = async () => {
     
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    const portionPoints = getPortionPoints();
 
     const payload = {
       id: "5",
       type: "scanned",
       title: result.name,
-      points: result.points,
+      points: portionPoints,
     };
 
 
@@ -705,7 +797,7 @@ Return JSON only.
       ...todayProgress,
       points: {
         ...todayProgress.points,
-        used: todayProgress.points.used + parseInt(result?.points),
+        used: todayProgress.points.used + parseInt(portionPoints),
       },
     });
 
@@ -713,11 +805,11 @@ Return JSON only.
       trackMixpanelEvent(analyticsEvents.dietScanAdded, { food: result?.name });
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
-      showToast("Food added to diet");
+      showToast(`${slot} added · ${portionPoints} ${ptsWord(Number(portionPoints))}`);
       if (route.params?.fromFirstDayGuide) {
         navigation.navigate("FirstDayGuide", { mealLogged: true });
       } else {
-        navigation.pop(2);
+        navigation.popTo("MainNavigator");
       }
     } catch (error) {
       console.error(error);
@@ -727,129 +819,212 @@ Return JSON only.
   };
 
   const renderResult = () => {
-    const points = Number(result?.points);
-    const headline = Number.isFinite(points)
-      ? getResultHeadline(points)
-      : "Looks tasty";
+    const portionPoints = getPortionPoints();
+    const points = Number(portionPoints);
+    const pointsFinite = Number.isFinite(points);
+    const headline = pointsFinite ? getResultHeadline(points) : "Looks tasty";
+    const total = todayProgress?.points?.total ?? 0;
+    const used = todayProgress?.points?.used ?? 0;
+    const leftAfter = total - used - (pointsFinite ? points : 0);
+    const overAfter = leftAfter < 0;
+    const cheer = overAfter
+      ? "Logged. Honest days count too, and tomorrow starts fresh."
+      : `${headline}. ${result?.description ?? ""}`.trim();
 
     return (
-      <View
-        style={{
-          flex: 1,
-          paddingTop: insets.top + spacing.md,
-          paddingBottom: insets.bottom + spacing.md,
-          paddingHorizontal: spacing.md,
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            gap: spacing.lg,
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingTop: spacing.md,
+            paddingHorizontal: 20,
+            paddingBottom: spacing.lg,
           }}
         >
-          <View style={{ alignItems: "center", gap: spacing.md }}>
-            {image?.uri ? (
-              <Image
-                source={{ uri: image.uri }}
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: spacing.borderRadius * 2,
-                  backgroundColor: colors.ui.componentBackground,
-                }}
-                resizeMode="cover"
-              />
-            ) : (
-              <View
-                style={{
-                  width: 200,
-                  height: 200,
-                  borderRadius: spacing.borderRadius * 2,
-                  backgroundColor: colors.ui.secondaryBackground,
-                }}
-              />
-            )}
-            <Text
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                handleRemovePhoto();
+              }}
+              accessibilityLabel="Retake photo"
               style={{
-                ...typography.headline,
-                color: colors.text.primary,
-                textAlign: "center",
+                width: 44,
+                height: 44,
+                borderRadius: 14,
+                backgroundColor: colors.ui.white,
+                alignItems: "center",
+                justifyContent: "center",
+                ...globalStyles.shadow,
+                shadowOpacity: 0.06,
               }}
             >
-              {headline}
-            </Text>
+              <Ionicons name="chevron-back" size={20} color={colors.text.primary} />
+            </Pressable>
+            <Text style={{ ...typography.cardTitle, fontSize: 17, color: colors.text.primary }}>{slot}</Text>
+            <View style={{ width: 44 }} />
           </View>
+
+          <MotiView
+            from={{ opacity: 0, translateY: 12, scale: 0.98 }}
+            animate={{ opacity: 1, translateY: 0, scale: 1 }}
+            transition={{ type: "timing", duration: 420, reduceMotion: ReduceMotion.Never }}
+            style={{
+              marginTop: 18,
+              backgroundColor: colors.ui.white,
+              borderRadius: 24,
+              padding: 20,
+              ...globalStyles.shadow,
+              shadowOpacity: 0.06,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              {image?.uri ? (
+                <Image
+                  source={{ uri: image.uri }}
+                  style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.ui.secondaryBackground }}
+                  resizeMode="cover"
+                />
+              ) : null}
+              <Text style={{ flex: 1, ...typography.cardTitle, fontSize: 17, lineHeight: 22, color: colors.text.primary }}>
+                {result?.name}
+              </Text>
+            </View>
+
+            <View style={{ marginTop: 20, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
+              <View>
+                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                  <Text style={{ ...typography.displayNumeric, fontSize: 56, lineHeight: 62, color: colors.goals.eat }}>
+                    {pointsFinite ? points : portionPoints}
+                  </Text>
+                  <Text style={{ ...typography.cardTitle, fontSize: 17, color: colors.goals.eat }}>
+                    {points === 1 ? "point" : "points"}
+                  </Text>
+                </View>
+                <Text style={{ ...typography.body, fontSize: 15, color: colors.goals.muted }}>this meal</Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={{ ...typography.displayNumeric, fontSize: 34, lineHeight: 40, color: overAfter ? colors.goals.over : colors.text.primary }}>
+                  {overAfter ? -leftAfter : leftAfter}
+                </Text>
+                <Text style={{ ...typography.body, fontSize: 15, color: colors.goals.muted }}>
+                  {overAfter ? "over today" : "left today"}
+                </Text>
+              </View>
+            </View>
+
+            <View
+              style={{
+                marginTop: 18,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingVertical: 10,
+                paddingRight: 12,
+                paddingLeft: 6,
+                borderRadius: 14,
+                backgroundColor: colors.goals.eatSoft,
+              }}
+            >
+              <Image
+                source={require("../../../assets/mascot/logging.png")}
+                resizeMode="contain"
+                style={{ width: 52, height: 52 }}
+              />
+              <Text style={{ flex: 1, ...typography.bodySemiBold, fontSize: 15, lineHeight: 21, color: colors.goals.eatSoftText }}>
+                {cheer}
+              </Text>
+            </View>
+          </MotiView>
 
           <View
             style={{
-              width: "100%",
+              marginTop: 12,
+              backgroundColor: colors.ui.white,
+              borderRadius: 24,
               padding: spacing.md,
-              gap: spacing.sm,
-              borderRadius: spacing.borderRadius,
-              backgroundColor: colors.ui.componentBackground,
-              borderWidth: 1,
-              borderColor: colors.ui.cardBorder,
               ...globalStyles.shadow,
+              shadowOpacity: 0.04,
             }}
           >
-            <Text
-              style={{
-                ...textStyles.listItemTitle,
-                lineHeight: 22,
-              }}
-            >
-              {result?.name}
-            </Text>
-            <Text
-              style={{
-                ...textStyles.listItemMeta,
-                lineHeight: 20,
-              }}
-            >
-              {result?.description}
-            </Text>
             <View
-              style={{
-                flexDirection: "row",
-                alignItems: "baseline",
-                alignSelf: "flex-start",
-                marginTop: spacing.xs,
-                paddingHorizontal: spacing.sm,
-                paddingVertical: spacing.xs,
-                borderRadius: spacing.borderRadius,
-                backgroundColor: colors.ui.foodPointsChipBackground,
-              }}
+              accessibilityRole="radiogroup"
+              accessibilityLabel="Portion size"
+              style={{ flexDirection: "row", gap: 4, padding: 4, borderRadius: 14, backgroundColor: "#F2F2F4" }}
             >
-              <Text style={{ ...textStyles.listItemEmphasis }}>
-                {result?.points}
-              </Text>
-              <Text
-                style={{
-                  ...typography.small,
-                  marginLeft: spacing.xs,
-                  color: colors.ui.primary,
-                }}
-              >
-                {dietLabels.pointsSuffix}
-              </Text>
+              {PORTIONS.map((p) => {
+                const on = portion === p.key;
+                return (
+                  <Pressable
+                    key={p.key}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: on }}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setPortion(p.key);
+                    }}
+                    style={{
+                      flex: 1,
+                      height: 40,
+                      borderRadius: 10,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: on ? colors.ui.white : "transparent",
+                      shadowColor: colors.goals.dark,
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: on ? 0.14 : 0,
+                      shadowRadius: 3,
+                      elevation: on ? 2 : 0,
+                    }}
+                  >
+                    <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: on ? colors.text.primary : colors.goals.muted }}>
+                      {p.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
             </View>
+            <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.muted, marginTop: 10 }}>
+              Not quite right? Change the portion size.
+            </Text>
           </View>
+        </ScrollView>
+        <View style={{ paddingTop: 12, paddingHorizontal: 20, paddingBottom: insets.bottom + spacing.sm }}>
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={handleAddToDiet}
+            style={{
+              height: 58,
+              borderRadius: 14,
+              backgroundColor: colors.goals.eat,
+              alignItems: "center",
+              justifyContent: "center",
+              shadowColor: colors.goals.eat,
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.28,
+              shadowRadius: 10,
+              elevation: 6,
+            }}
+          >
+            <Text style={{ ...typography.button, fontSize: 18, color: colors.ui.white }}>
+              Add to {slot.toLowerCase()}
+            </Text>
+          </TouchableOpacity>
         </View>
-        <PrimaryButtonComponent
-          title={`Add ${Number.isFinite(points) ? points : result?.points} points`}
-          onPress={handleAddToDiet}
-        />
       </View>
     );
   };
 
+  const showDefaultHeader =
+    scanning || (image && !result) || (!image && !permission?.granted);
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
-      <View style={{ paddingHorizontal: spacing.md }}>
-        <GoBackHeaderComponent title="" />
-      </View>
+      {showDefaultHeader ? (
+        <View style={{ paddingHorizontal: spacing.md }}>
+          <GoBackHeaderComponent title="" />
+        </View>
+      ) : null}
       {scanning
         ? renderScanning()
         : image

@@ -1,4 +1,4 @@
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LinearGradient } from "expo-linear-gradient";
@@ -16,12 +16,13 @@ import Animated, {
 import * as haptics from "expo-haptics";
 import { useEffect } from "react";
 import HomeScreen from "../main/home/HomeScreen";
-import SettingsScreen from "../main/settings/SettingsScreen";
 import { textSizes, typography } from "../../constants/texts";
 import ProgressScreen from "../main/progress/ProgressScreen";
-import DietScreen from "../main/diet/DietScreen";
 
 const Tab = createBottomTabNavigator();
+
+const SCAN_BUTTON_SIZE = 68;
+const ScanPlaceholder = () => null;
 
 /** Softer motion — reads more “premium” than stiff defaults */
 const SPRING_PREMIUM = { damping: 22, stiffness: 200, mass: 0.65 };
@@ -146,11 +147,43 @@ const MainNavigator = () => {
         }}
       />
       <Tab.Screen
-        name="Diet"
-        component={DietScreen}
+        name="Scan"
+        component={ScanPlaceholder}
+        listeners={({ navigation }) => ({
+          tabPress: (e) => {
+            e.preventDefault();
+            navigation.navigate("ScanFoodScreen");
+          },
+        })}
         options={{
-          tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon focused={focused} iconName="nutrition" color={color} />
+          tabBarAccessibilityLabel: "Scan a meal",
+          tabBarButton: (props) => (
+            <View style={{ flex: 1, alignItems: "center" }}>
+              <Pressable
+                onPress={props.onPress}
+                accessibilityRole="button"
+                accessibilityLabel="Scan a meal"
+                style={({ pressed }) => ({
+                  marginTop: -26,
+                  width: SCAN_BUTTON_SIZE,
+                  height: SCAN_BUTTON_SIZE,
+                  borderRadius: SCAN_BUTTON_SIZE / 2,
+                  borderWidth: 5,
+                  borderColor: colors.ui.background,
+                  backgroundColor: colors.goals.eat,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  shadowColor: colors.goals.eat,
+                  shadowOffset: { width: 0, height: 8 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 9,
+                  elevation: 10,
+                  transform: [{ scale: pressed ? 0.94 : 1 }],
+                })}
+              >
+                <Ionicons name="camera-outline" size={28} color={colors.ui.white} />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -162,19 +195,6 @@ const MainNavigator = () => {
             <AnimatedTabIcon
               focused={focused}
               iconName="stats-chart"
-              color={color}
-            />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarIcon: ({ color, focused }) => (
-            <AnimatedTabIcon
-              focused={focused}
-              iconName="settings"
               color={color}
             />
           ),

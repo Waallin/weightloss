@@ -23,6 +23,8 @@ export type RootStackParamList = {
   ScanFoodScreen: { fromFirstDayGuide?: boolean } | undefined;
   FirstDayGuide: { mealLogged?: boolean } | undefined;
   AddDietScreen: undefined;
+  SettingsScreen: undefined;
+  MoveGoalReward: { steps: number };
   ProfileScreen: undefined;
   PreferencesScreen: undefined;
   LogWeightScreen: undefined;

@@ -16,6 +16,7 @@ import { RootStackParamList } from "../../navigation/types";
 import useTodayDietStore from "../../../stores/useTodayDietStore";
 import useTodayProgressStore from "../../../stores/useTodayProgressStore";
 import { deleteUser } from "../../../services/firebase";
+import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 
 const SettingsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -139,6 +140,7 @@ const SettingsScreen = () => {
           ...globalStyles.container,
         }}
       >
+        <GoBackHeaderComponent title="Settings" />
         {renderProfileSettings()}
         {renderLogoutSettings()}
       </ScrollView>
