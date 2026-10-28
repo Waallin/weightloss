@@ -23,8 +23,8 @@ import { getDateKey } from "./utils/dateUtils";
 import useTodayDietStore from "./stores/useTodayDietStore";
 import Toast from "./components/Toast";
 const currentYear = new Date().getFullYear()
-import { getRevenueCatCustomerInfo, getProducts, initRevenueCat } from "./services/revenuecat";
-import { initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
+import { getRevenueCatCustomerInfo, getProducts, identifyRevenueCatUser, initRevenueCat } from "./services/revenuecat";
+import { identifyMixpanel, initializeMixpanel, trackMixpanelEvent } from "./services/mixpanel";
 import { analyticsEvents } from "./constants/analytics";
 import useRevCatStore from "./stores/useRevCatStore"; 
 import useUnitsStore from "./stores/useUnitsStore";
@@ -60,6 +60,7 @@ export default function App() {
       const products = await handleRevCatProducts();
       const revenueCatCustomerInfo = await handleRevenueCatCustomerInfo();
       const initializeMixpanelResult = await initializeMixpanel();
+      await identifyUser();
       const trackMixpanelInstall = await handleTrackMixpanelInstall();
       const scheduledNotifications = await scheduleActiveUserNotifications();
       await hydrateUnits();
@@ -143,7 +144,8 @@ export default function App() {
   const handleRevenueCatCustomerInfo = async () => {
     const user = await AsyncStorage.getItem("user");
     if (!user) return;
-    
+
+    await identifyRevenueCatUser(user);
     const revenueCatCustomerInfo = await getRevenueCatCustomerInfo();
     updateDocument("users", user, {
       revenuecat: revenueCatCustomerInfo,
@@ -160,8 +162,18 @@ export default function App() {
   };
 
   const handleRevCatProducts = async () => {
-    const products = await getProducts();
-    setProducts(products);
+    try {
+      const products = await getProducts();
+      setProducts(products);
+    } catch (e) {
+      console.log("Failed to load RevenueCat products:", e);
+    }
+  };
+
+  const identifyUser = async () => {
+    const user = await AsyncStorage.getItem("user");
+    if (!user) return;
+    await identifyMixpanel(user);
   };
   
 

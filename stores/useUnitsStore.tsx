@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { isUsRegion } from "../utils/region";
 
 export const HEIGHT_UNIT_KEY = "height_unit";
 export const WEIGHT_UNIT_KEY = "weight_unit";
@@ -16,8 +17,9 @@ interface UnitsState {
 }
 
 const useUnitsStore = create<UnitsState>((set) => ({
-  heightUnit: "ft",
-  weightUnit: "lb",
+  // US devices default to imperial, everyone else to metric (a saved choice overrides in hydrateUnits)
+  heightUnit: isUsRegion() ? "ft" : "cm",
+  weightUnit: isUsRegion() ? "lb" : "kg",
   hydrateUnits: async () => {
     const [storedHeightUnit, storedWeightUnit] = await Promise.all([
       AsyncStorage.getItem(HEIGHT_UNIT_KEY),

@@ -1,79 +1,102 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import { Image, Linking, Pressable, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { colors } from "../../../constants/colors";
-import { paywallCopy, typography } from "../../../constants/texts";
+import { getPaywallSpecialOfferHeadline, paywallCopy, typography } from "../../../constants/texts";
 import { spacing } from "../../../constants/spacing";
 import { externalLinks } from "../../../constants/links";
-import * as haptics from "expo-haptics";
-import { checkTrialEligibility } from "../../../services/revenuecat";
-import { getFreeTrialDays, PERIOD_WORD, SelectablePlan } from "./paywallPlanUtils";
 
-type Props = {
-    onCTAPress: (plan: SelectablePlan) => void;
-    products?: any;
-    onRestorePurchases?: () => void;
+type RevenueCatPackage = {
+    identifier: string;
+    product: {
+        price?: number;
+        priceString?: string;
+        currencyCode?: string;
+        subscriptionPeriod?: {
+            unit?: "DAY" | "WEEK" | "MONTH" | "YEAR" | string;
+            value?: number;
+        } | null;
+    };
 };
 
-const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurchases }) => {
-    const [selectedPlan, setSelectedPlan] = useState<SelectablePlan>("monthly");
-    const [trialEligible, setTrialEligible] = useState<boolean | null>(null);
+type Props = {
+    onCTAPress: (plan: "annual") => void;
+    products?: {
+        weekly?: RevenueCatPackage | null;
+        annual?: RevenueCatPackage | null;
+        monthly?: RevenueCatPackage | null;
+    } | null;
+    onRestorePurchases?: () => void;
+    loading?: boolean;
+};
 
-    const monthlyProduct = products?.monthly?.product;
-    const weeklyProduct = products?.weekly?.product;
-    const monthlyTrialDays =
-        trialEligible === false ? null : getFreeTrialDays(monthlyProduct?.introPrice);
-    const trialDays = selectedPlan === "monthly" ? monthlyTrialDays : null;
+const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurchases, loading }) => {
+    const getPeriodLabel = (pkg?: RevenueCatPackage | null): string | null => {
+        const unit = pkg?.product?.subscriptionPeriod?.unit;
+        if (!unit) return null;
+        if (unit === "WEEK") return "/ week";
+        if (unit === "MONTH") return "/ month";
+        if (unit === "YEAR") return "/ year";
+        if (unit === "DAY") return "/ day";
+        return null;
+    };
 
-    useEffect(() => {
-        const productId = monthlyProduct?.identifier;
-        if (!productId) return;
-        let mounted = true;
-        checkTrialEligibility(productId).then((eligible) => {
-            if (mounted) setTrialEligible(eligible);
+    const annualPrice = products?.annual?.product?.priceString ?? paywallCopy.yearlyPrice;
+    const annualPeriod = getPeriodLabel(products?.annual) ?? "/ year";
+
+    const perWeekHint = useMemo(() => {
+        const price = products?.annual?.product?.price;
+        const currencyCode = products?.annual?.product?.currencyCode;
+        if (!price || price <= 0 || !currencyCode) return undefined;
+
+        const formatter = new Intl.NumberFormat(undefined, {
+            style: "currency",
+            currency: currencyCode,
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2,
         });
-        return () => {
-            mounted = false;
-        };
-    }, [monthlyProduct?.identifier]);
+        return `${formatter.format(price / 52)} / week`;
+    }, [products?.annual?.product?.price, products?.annual?.product?.currencyCode]);
 
-    const ctaText = trialDays != null ? `Claim My ${trialDays}-Day Free Trial` : "Unlock Premium Now";
+    const specialOfferHeadline = useMemo(() => {
+        return getPaywallSpecialOfferHeadline({
+            weeklyPrice: products?.weekly?.product?.price,
+            weeklyPeriodUnit: products?.weekly?.product?.subscriptionPeriod?.unit,
+            weeklyPeriodValue: products?.weekly?.product?.subscriptionPeriod?.value,
+            yearlyPrice: products?.annual?.product?.price,
+            yearlyPeriodUnit: products?.annual?.product?.subscriptionPeriod?.unit,
+            yearlyPeriodValue: products?.annual?.product?.subscriptionPeriod?.value,
+        });
+    }, [
+        products?.weekly?.product?.price,
+        products?.weekly?.product?.subscriptionPeriod?.unit,
+        products?.weekly?.product?.subscriptionPeriod?.value,
+        products?.annual?.product?.price,
+        products?.annual?.product?.subscriptionPeriod?.unit,
+        products?.annual?.product?.subscriptionPeriod?.value,
+    ]);
 
-    const renderPlanRow = (plan: SelectablePlan) => {
-        const isSelected = selectedPlan === plan;
-        const optionProduct = plan === "monthly" ? monthlyProduct : weeklyProduct;
-        const optionTrialDays = plan === "monthly" ? monthlyTrialDays : null;
-        const optionPeriod = PERIOD_WORD[optionProduct?.subscriptionPeriod] ?? plan.replace("ly", "");
-        const title = plan === "monthly" ? "Monthly Premium" : "Weekly Premium";
-
+    const renderPlanRow = () => {
         return (
-            <TouchableOpacity
-                onPress={() => {
-                    if (isSelected) return;
-                    void haptics.selectionAsync();
-                    setSelectedPlan(plan);
-                }}
-                activeOpacity={0.8}
+            <View
                 style={{
                     height: spacing.paywallPlanRowHeight,
                     borderRadius: 14,
                     paddingHorizontal: spacing.lg,
                     paddingVertical: spacing.md,
-                    backgroundColor: isSelected ? colors.ui.listRowIconBackground : colors.ui.componentBackground,
-                    borderWidth: isSelected ? 2 : 1,
-                    borderColor: isSelected ? colors.ui.primary : colors.ui.cardBorder,
+                    backgroundColor: colors.ui.listRowIconBackground,
+                    borderWidth: 1,
+                    borderColor: colors.ui.primary,
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: spacing.md,
                     shadowColor: colors.ui.shadow,
-                    shadowOpacity: isSelected ? 0.12 : 0,
+                    shadowOpacity: 0.12,
                     shadowRadius: 12,
                     shadowOffset: { width: 0, height: 6 },
-                    elevation: isSelected ? 2 : 0,
+                    elevation: 2,
                 }}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={title}
+                accessibilityRole="text"
             >
                 <View style={{ flex: 1, gap: 2 }}>
                     <Text
@@ -82,29 +105,39 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                             color: colors.text.primary,
                         }}
                     >
-                        {title}
+                        Annual plan
                     </Text>
                     <Text
                         style={{
                             ...typography.bodySemiBold,
-                            color: optionTrialDays != null ? colors.ui.primary : colors.text.secondary,
+                            color: colors.ui.primary,
                         }}
                     >
-                        {optionTrialDays != null ? `${optionTrialDays}-day free trial` : "No free trial"}
+                        Try 30 days free
                     </Text>
                 </View>
 
-                <View style={{ alignItems: "flex-end" }}>
+                <View style={{ alignItems: "flex-end", gap: 2 }}>
                     <Text
                         style={{
                             ...typography.headlineSemi,
                             color: colors.text.primary,
                         }}
                     >
-                        {optionProduct?.priceString ? `${optionProduct.priceString}/${optionPeriod}` : ""}
+                        {annualPrice} {annualPeriod}
                     </Text>
+                    {!!perWeekHint && (
+                        <Text
+                            style={{
+                                ...typography.small,
+                                color: colors.text.secondary,
+                            }}
+                        >
+                            {perWeekHint}
+                        </Text>
+                    )}
                 </View>
-            </TouchableOpacity>
+            </View>
         );
     };
 
@@ -220,19 +253,22 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                     <Text style={{ ...typography.bodySemiBold, color: colors.text.primary }}>
                                     Your Premium plan　
                                     </Text>
+                                    <Text style={{ ...typography.caption, color: colors.text.secondary }}>
+                                    Best value
+                                    </Text>
                                 </View>
 
                                 <View style={{ height: 1, backgroundColor: colors.ui.cardBorder }} />
 
-                                {renderPlanRow("monthly")}
-                                {renderPlanRow("weekly")}
+                                {renderPlanRow()}
                             </View>
                         </View>
                     </View>
 
                     <View style={{ gap: spacing.md }}>
                         <Pressable
-                            onPress={() => onCTAPress(selectedPlan)}
+                            onPress={() => onCTAPress("annual")}
+                            disabled={loading}
                             style={{
                                 backgroundColor: colors.ui.primary,
                                 borderRadius: 999,
@@ -242,9 +278,9 @@ const DefaultPaywall: React.FC<Props> = ({ onCTAPress, products, onRestorePurcha
                                 justifyContent: "center",
                             }}
                             accessibilityRole="button"
-                            accessibilityLabel={ctaText}
+                            accessibilityLabel={paywallCopy.ctaYearlyFreeTrial}
                         >
-                            <Text style={{ ...typography.button, color: colors.ui.white }}>{ctaText}</Text>
+                            <Text style={{ ...typography.button, color: colors.ui.white }}>Start my 30 days free trail</Text>
                         </Pressable>
 
                         <Text

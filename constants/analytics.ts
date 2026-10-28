@@ -24,6 +24,7 @@ export const analyticsEvents = {
   paywallCtaTapped: "paywall_cta_tapped",
   paywallWheelSpun: "paywall_wheel_spun",
   paywallPurchaseSucceeded: "paywall_purchase_succeeded",
+  paywallPurchaseCancelled: "paywall_purchase_cancelled",
   paywallPurchaseFailed: "paywall_purchase_failed",
   paywallRestoreTapped: "paywall_restore_tapped",
 

@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.1.4]
+
+### Added
+- Units follow the device region: US devices default to ft/lb, everyone else to cm/kg (a saved choice still wins)
+- Local StoreKit configuration (`Kudoo.storekit`) for testing purchases in the simulator
+
+### Fixed
+- Cancelling Apple's purchase dialog is no longer logged as a failed purchase and no longer shows a "Purchase failed" alert
+- Double taps on the paywall button can no longer start several purchase attempts; the button is disabled while a purchase is in progress
+- The paywall reloads products if they failed to load at app start and shows a clear error if the subscription is unavailable
+- `paywall_purchase_succeeded` is now only logged when the premium entitlement is active, and includes `is_trial`; TikTok `START_TRIAL` is only sent for real trials
+- Startup no longer skips Mixpanel initialisation if RevenueCat offerings fail to load
+
+### Changed
+- Restored the annual paywall design from 1.1.3 (the monthly/weekly paywall from 1.1.2 is removed)
+- Purchase analytics: new `paywall_purchase_cancelled` event; failed events now include `error_code`, `error_message`, `product_id`, `offering_id` and `cancelled`
+- Users are now identified with the same ID (email) in Mixpanel and RevenueCat (`identify` / `logIn`) after registration and on app start
+- New app icon
+- Redesigned the social proof screen: "Real results" badge, highlighted key phrases in testimonials and staggered card animations; testimonial weights are shown in kg outside the US
+- Profile details: the Continue button is enabled only after the user has interacted with the step (gender and goal weight excepted), start weight defaults to 100 and goal weight follows it at 10 kg less until changed
+
+### Removed
+- Debug logging of paywall products
+
 [1.1.2]
 
 Added

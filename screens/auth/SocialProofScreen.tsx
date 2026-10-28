@@ -2,9 +2,11 @@ import React, { useEffect } from "react";
 import { Text, View, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MotiView } from "moti";
+import { MaterialIcons } from "@expo/vector-icons";
 import { spacing } from "../../constants/spacing";
 import { ReduceMotion } from "react-native-reanimated";
 import SocialProofItem from "./components/SocialProofItem";
+import { testimonialWeight } from "../../utils/region";
 import { globalStyles } from "../../constants/globalStyles";
 import { planBuildingCopy, textStyles } from "../../constants/texts";
 import { colors } from "../../constants/colors";
@@ -30,6 +32,7 @@ const dummySocialProof = [
     headline: "Finally seeing progress",
     quote:
       "“Not having to count calories changed everything. The points system just makes sense.”",
+    highlights: ["progress"],
     avatarColor: colors.ui.primarySoft,
     avatarImage: require("../../assets/users/marcus.jpg"),
   },
@@ -38,9 +41,10 @@ const dummySocialProof = [
     role: "Kudoo user",
     rating: 5,
     ratingMax: 5,
-    headline: "Lost 13 lb without overthinking",
+    headline: `Lost ${testimonialWeight(13)} without overthinking`,
     quote:
       "“I don’t think about food all day anymore. I just follow the points and it works.”",
+    highlights: [`Lost ${testimonialWeight(13)}`],
     avatarColor: colors.ui.warning,
     avatarImage: require("../../assets/users/amina.jpg"),
   },
@@ -52,6 +56,7 @@ const dummySocialProof = [
     headline: "Actually started moving more",
     quote:
       "“Seeing my steps affect my points made it fun to move more. I’ve never been this consistent.”",
+    highlights: ["moving more"],
     avatarColor: colors.ui.accentSoft,
     avatarImage: require("../../assets/users/jonas.jpg"),
   },
@@ -63,6 +68,7 @@ const dummySocialProof = [
     headline: "So simple compared to calories",
     quote:
       "“Counting calories always stressed me out. Points are way easier and less overwhelming.”",
+    highlights: ["So simple"],
     avatarColor: colors.ui.iconContainer,
     avatarImage: require("../../assets/users/emily.jpg"),
   },
@@ -97,19 +103,52 @@ const SocialProofScreen = () => {
   };
 
   const renderHeader = () => (
-    <View
+    <MotiView
+      from={{ opacity: 0, translateY: 8 }}
+      animate={{ opacity: 1, translateY: 0 }}
+      transition={{ type: "timing", duration: 450, reduceMotion: ReduceMotion.Never }}
       style={{
-        marginBottom: spacing.lg,
+        marginBottom: spacing.xl,
         width: "100%",
       }}
     >
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          alignSelf: "flex-start",
+          gap: spacing.xs + 2,
+          paddingVertical: spacing.xs + 1,
+          paddingHorizontal: spacing.sm + 2,
+          marginBottom: spacing.md,
+          borderRadius: 999,
+          backgroundColor: colors.ui.listRowIconBackground,
+          borderWidth: 1,
+          borderColor: colors.ui.primary + "33",
+        }}
+      >
+        <MaterialIcons name="star" size={13} color={colors.ui.primary} />
+        <Text
+          style={{
+            ...textStyles.onboardingBody,
+            fontSize: 12,
+            fontWeight: "700",
+            letterSpacing: 1.4,
+            color: colors.ui.primary,
+          }}
+        >
+          REAL RESULTS
+        </Text>
+      </View>
       <Text
         style={{
           ...textStyles.onboardingTitle,
-          marginBottom: spacing.xs,
+          letterSpacing: -0.6,
+          marginBottom: spacing.sm,
         }}
       >
-        People are seeing real results
+        People are seeing{" "}
+        <Text style={{ color: colors.ui.primary }}>real results</Text>
       </Text>
       <Text
         style={{
@@ -119,25 +158,27 @@ const SocialProofScreen = () => {
       >
         You're not alone in this.
       </Text>
-    </View>
+    </MotiView>
   );
 
   const renderSocialProof = () => (
-    <MotiView
-      from={{ opacity: 0, translateY: 10, scale: 0.98 }}
-      animate={{ opacity: 1, translateY: 0, scale: 1 }}
-      transition={{
-        type: "timing",
-        duration: 450,
-        delay: 100,
-        reduceMotion: ReduceMotion.Never,
-      }}
-      style={{ gap: spacing.listItemGap, width: "100%" }}
-    >
+    <View style={{ gap: spacing.md + 4, width: "100%" }}>
       {dummySocialProof.map((item, index) => (
-        <SocialProofItem key={index} item={item} />
+        <MotiView
+          key={index}
+          from={{ opacity: 0, translateY: 14, scale: 0.985 }}
+          animate={{ opacity: 1, translateY: 0, scale: 1 }}
+          transition={{
+            type: "timing",
+            duration: 500,
+            delay: 150 + index * 120,
+            reduceMotion: ReduceMotion.Never,
+          }}
+        >
+          <SocialProofItem item={item} variant="premium" />
+        </MotiView>
       ))}
-    </MotiView>
+    </View>
   );
 
   const renderButton = () => (

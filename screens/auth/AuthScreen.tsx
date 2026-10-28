@@ -18,6 +18,7 @@ const IMAGE_SIZE = 350;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useConfigStore from "../../stores/useConfigStore";
 import { scheduleActiveUserNotifications } from "../../services/notifications";
+import { identifyRevenueCatUser } from "../../services/revenuecat";
 import { identifyMixpanel, setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
 import { analyticsEvents } from "../../constants/analytics";
 import { isCustomerPremium } from "../../services/revenuecat";
@@ -97,6 +98,8 @@ const AuthScreen = () => {
         setUser(userObj);
         scheduleActiveUserNotifications();
 
+        await identifyMixpanel(email);
+        await identifyRevenueCatUser(email);
         await setMixpanelPeopleProperty("email", email);
         await trackMixpanelEvent(analyticsEvents.userRegistered);
         await logTikTokEvent(TikTokEventName.REGISTRATION);

@@ -97,14 +97,17 @@ const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
 
 PaginationDot.displayName = "PaginationDot";
 
+const GOAL_WEIGHT_MIN_KG = 40;
+const GOAL_WEIGHT_DEFAULT_LOSS_KG = 10;
+
 const ProfileDetailsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { user, setUser } = useUserStore();
   const { heightUnit, weightUnit, setHeightUnit, setWeightUnit } =
     useUnitsStore();
   const [birthYear, setBirthYear] = useState<number>(currentYear - 25);
-  const [startWeight, setStartWeight] = useState<number>(70);
-  const [goalWeight, setGoalWeight] = useState<number>(70);
+  const [startWeight, setStartWeight] = useState<number>(100);
+  const [goalWeight, setGoalWeight] = useState<number>(90);
   const [height, setHeight] = useState<number>(175);
   const [genderChoice, setGenderChoice] = useState<GenderChoice>("Male");
   const gender: "Male" | "Female" =
@@ -112,6 +115,17 @@ const ProfileDetailsScreen = () => {
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
   const [createdPlan, setCreatedPlan] = useState<boolean>(false);
   const [ageBlocked, setAgeBlocked] = useState<boolean>(false);
+  // A step can only be continued after the user has interacted with it (scrolling back to the default counts)
+  const [touchedSteps, setTouchedSteps] = useState<Record<number, boolean>>({});
+  // Until the user picks a goal weight themselves, it follows the start weight at 10 kg less
+  useEffect(() => {
+    if (touchedSteps[5]) return;
+    setGoalWeight(Math.max(GOAL_WEIGHT_MIN_KG, startWeight - GOAL_WEIGHT_DEFAULT_LOSS_KG));
+  }, [startWeight, touchedSteps]);
+  // Gender and goal weight have sensible defaults and can be continued without interaction
+  const canContinue = step === 2 || step === 5 || touchedSteps[step];
+  const markTouched = (forStep: number) =>
+    setTouchedSteps((prev) => (prev[forStep] ? prev : { ...prev, [forStep]: true }));
 
   const totalSteps = 5;
   const activeIndex = step - 1;
@@ -221,7 +235,10 @@ const ProfileDetailsScreen = () => {
         <WheelPicker<number>
           data={BIRTH_YEARS}
           value={birthYear}
-          onChange={setBirthYear}
+          onChange={(y) => {
+            markTouched(1);
+            setBirthYear(y);
+          }}
           getLabel={(y) => String(y)}
         />
       </ProfileStepSection>
@@ -383,7 +400,10 @@ const ProfileDetailsScreen = () => {
                 <WheelPicker<number>
                   data={FEET_OPTIONS}
                   value={feet}
-                  onChange={(ft) => setHeight(feetInchesToCm(ft, inches))}
+                  onChange={(ft) => {
+                    markTouched(3);
+                    setHeight(feetInchesToCm(ft, inches));
+                  }}
                   getLabel={(ft) => `${ft} ft`}
                 />
               </View>
@@ -391,7 +411,10 @@ const ProfileDetailsScreen = () => {
                 <WheelPicker<number>
                   data={INCHES_OPTIONS}
                   value={inches}
-                  onChange={(inch) => setHeight(feetInchesToCm(feet, inch))}
+                  onChange={(inch) => {
+                    markTouched(3);
+                    setHeight(feetInchesToCm(feet, inch));
+                  }}
                   getLabel={(inch) => `${inch} in`}
                 />
               </View>
@@ -400,7 +423,10 @@ const ProfileDetailsScreen = () => {
             <WheelPicker<number>
               data={HEIGHT_CM_OPTIONS}
               value={heightCm}
-              onChange={setHeight}
+              onChange={(cm) => {
+                markTouched(3);
+                setHeight(cm);
+              }}
               getLabel={(cm) => `${cm} cm`}
             />
           )}
@@ -434,14 +460,20 @@ const ProfileDetailsScreen = () => {
             <WheelPicker<number>
               data={WEIGHT_IN_LB}
               value={kgToLb(startWeight)}
-              onChange={(lb) => setStartWeight(lbToKg(lb))}
+              onChange={(lb) => {
+                markTouched(4);
+                setStartWeight(lbToKg(lb));
+              }}
               getLabel={(lb) => formatLb(lb)}
             />
           ) : (
             <WheelPicker<number>
               data={WEIGHT_IN_KG}
               value={weightKg}
-              onChange={setStartWeight}
+              onChange={(kg) => {
+                markTouched(4);
+                setStartWeight(kg);
+              }}
               getLabel={(kg) => String(kg)}
             />
           )}
@@ -475,14 +507,20 @@ const ProfileDetailsScreen = () => {
             <WheelPicker<number>
               data={WEIGHT_IN_LB}
               value={kgToLb(goalWeight)}
-              onChange={(lb) => setGoalWeight(lbToKg(lb))}
+              onChange={(lb) => {
+                markTouched(5);
+                setGoalWeight(lbToKg(lb));
+              }}
               getLabel={(lb) => formatLb(lb)}
             />
           ) : (
             <WheelPicker<number>
               data={WEIGHT_IN_KG}
               value={weightKg}
-              onChange={setGoalWeight}
+              onChange={(kg) => {
+                markTouched(5);
+                setGoalWeight(kg);
+              }}
               getLabel={(kg) => String(kg)}
             />
           )}
@@ -815,8 +853,14 @@ const ProfileDetailsScreen = () => {
           </View>
         </View>
       </View>
-      <View style={{ paddingBottom: spacing.sm }}>
-        <PrimaryButtonComponent title="Continue" onPress={handleNext} />
+      <View
+        style={{ paddingBottom: spacing.sm, opacity: canContinue ? 1 : 0.4 }}
+      >
+        <PrimaryButtonComponent
+          title="Continue"
+          onPress={handleNext}
+          disabled={!canContinue}
+        />
       </View>
     </SafeAreaView>
   );
