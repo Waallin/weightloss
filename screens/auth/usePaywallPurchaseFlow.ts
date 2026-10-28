@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   type NavigationProp,
   type ParamListBase,
@@ -7,7 +7,8 @@ import { analyticsEvents } from "../../constants/analytics";
 import { updateDocument } from "../../services/firebase";
 import { logMetaEvent } from "../../services/metasdk";
 import { trackMixpanelEvent } from "../../services/mixpanel";
-import { purchasePlan, restorePurchases } from "../../services/revenuecat";
+import { getProducts, purchasePlan, restorePurchases } from "../../services/revenuecat";
+import useRevCatStore from "../../stores/useRevCatStore";
 import {
   getPaywallProductAnalytics,
   type PaywallOfferProducts,
@@ -56,49 +57,103 @@ export function usePaywallPurchaseFlow({
   showPaywallRaw,
 }: UsePaywallPurchaseFlowParams) {
   const [loading, setLoading] = useState(false);
+  const inFlight = useRef(false);
+  const { setProducts } = useRevCatStore();
 
   const handleCTAPress = useCallback(
     async (plan: PaywallPlan) => {
-      const productProps = getPaywallProductAnalytics(products, plan);
-
-      void trackMixpanelEvent(analyticsEvents.paywallCtaTapped, {
-        variant,
-        plan,
-      });
-
+      if (inFlight.current) return;
+      inFlight.current = true;
       setLoading(true);
-      try {
-        const purchase = await purchasePlan(plan);
-        if (purchase) {
-          const baseProps = { variant, plan, ...productProps };
-       
-            await trackMixpanelEvent(
-              analyticsEvents.paywallPurchaseSucceeded,
-              baseProps,
-            );
 
-            await logMetaEvent("Subscribe", baseProps);
-            await logTikTokEvent(TikTokEventName.START_TRIAL, undefined, baseProps);
+      try {
+        let currentProducts: any = products;
+        if (!currentProducts?.[plan]) {
+          try {
+            currentProducts = await getProducts();
+            setProducts(currentProducts);
+          } catch (e) {
+            console.log("Reloading products failed:", e);
+          }
+        }
+        const productProps = getPaywallProductAnalytics(currentProducts, plan);
+
+        void trackMixpanelEvent(analyticsEvents.paywallCtaTapped, {
+          variant,
+          plan,
+          product_id: productProps.productIdentifier,
+        });
+
+        if (!currentProducts?.[plan]) {
+          await trackMixpanelEvent(analyticsEvents.paywallPurchaseFailed, {
+            variant,
+            plan,
+            cancelled: false,
+            error_code: "PRODUCTS_NOT_LOADED",
+            error_message: "Offerings missing or package not found",
+            product_id: productProps.productIdentifier,
+            package_id: productProps.packageIdentifier,
+            ...productProps,
+          });
+          alert("We couldn't load the subscription options. Check your connection and try again.");
+          return;
+        }
+
+        const result = await purchasePlan(plan);
+
+        if (result.status === "success") {
+          const baseProps = {
+            variant,
+            plan,
+            ...productProps,
+            product_id: result.productId ?? productProps.productIdentifier,
+            offering_id: result.offeringId,
+            is_trial: result.isTrial,
+          };
+
+          await trackMixpanelEvent(analyticsEvents.paywallPurchaseSucceeded, baseProps);
+          const definedProps = Object.fromEntries(
+            Object.entries(baseProps).filter(([, v]) => v !== undefined),
+          ) as Record<string, string | number | boolean>;
+          await logMetaEvent("Subscribe", definedProps);
+          if (result.isTrial) {
+            await logTikTokEvent(TikTokEventName.START_TRIAL, undefined, definedProps);
+          }
 
           if (userEmail) {
             updateDocument("users", userEmail, {
-              revenuecat: purchase,
+              revenuecat: result.customerInfo,
             });
           }
           resetToApp(navigation);
+        } else if (result.status === "cancelled") {
+          await trackMixpanelEvent(analyticsEvents.paywallPurchaseCancelled, {
+            variant,
+            plan,
+            cancelled: true,
+            ...productProps,
+            product_id: result.productId ?? productProps.productIdentifier,
+            offering_id: result.offeringId,
+          });
         } else {
           await trackMixpanelEvent(analyticsEvents.paywallPurchaseFailed, {
             variant,
             plan,
-
+            cancelled: false,
+            ...productProps,
+            product_id: result.productId ?? productProps.productIdentifier,
+            offering_id: result.offeringId,
+            error_code: result.errorCode,
+            error_message: result.errorMessage,
           });
           alert("Purchase failed");
         }
       } finally {
+        inFlight.current = false;
         setLoading(false);
       }
     },
-    [navigation, products, userEmail, variant],
+    [navigation, products, userEmail, variant, setProducts],
   );
 
   const handleRestorePurchases = useCallback(async () => {

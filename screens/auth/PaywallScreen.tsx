@@ -19,7 +19,6 @@ const PaywallScreen: React.FC = () => {
   const { config } = useConfigStore();
   const { user } = useUserStore();
   const { products } = useRevCatStore();
-  console.log("🚀 ~ PaywallScreen ~ products:", products)
 
   const variant = config?.showPaywall === "reminder" ? "reminder" : "default";
 
@@ -43,7 +42,7 @@ const PaywallScreen: React.FC = () => {
   if (config?.showPaywall === "reminder") {
     return (
       <ReminderPaywall
-        products={products}
+        product={products?.annual?.product}
         onCTAPress={handleCTAPress}
         loading={loading}
         onRestorePurchases={handleRestorePurchases}
@@ -56,6 +55,7 @@ const PaywallScreen: React.FC = () => {
       products={products}
       onCTAPress={handleCTAPress}
       onRestorePurchases={handleRestorePurchases}
+      loading={loading}
     />
   );
 };

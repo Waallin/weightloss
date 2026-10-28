@@ -1,5 +1,5 @@
 import { Platform } from "react-native";
-import Purchases, { LOG_LEVEL } from "react-native-purchases";
+import Purchases, { LOG_LEVEL, type CustomerInfo } from "react-native-purchases";
 
 export async function initRevenueCat() {
 
@@ -16,6 +16,15 @@ export async function initRevenueCat() {
 export async function isCustomerPremium() {
   const customerInfo = await Purchases.getCustomerInfo();
   return customerInfo?.entitlements.active["Kudoo Premium"] !== undefined;
+}
+
+
+export async function identifyRevenueCatUser(userId: string) {
+  try {
+    await Purchases.logIn(userId);
+  } catch (e: any) {
+    console.log("RevenueCat logIn error:", e);
+  }
 }
 
 
@@ -43,31 +52,55 @@ export async function checkTrialEligibility(productIdentifier: string) {
 }
 
 
-export async function purchasePlan(plan: "weekly" | "annual" | "monthly") {
+export type PurchaseResult =
+  | { status: "success"; customerInfo: CustomerInfo; isTrial: boolean; productId?: string; offeringId?: string; packageId?: string }
+  | { status: "cancelled"; productId?: string; offeringId?: string; packageId?: string }
+  | { status: "error"; errorCode: string; errorMessage: string; productId?: string; offeringId?: string; packageId?: string };
+
+export async function purchasePlan(plan: "weekly" | "annual" | "monthly"): Promise<PurchaseResult> {
+  const packageIdentifier =
+    plan === "weekly" ? "$rc_weekly" : plan === "annual" ? "$rc_annual" : "$rc_monthly";
+  let ids: { productId?: string; offeringId?: string; packageId?: string } = { packageId: packageIdentifier };
+
   try {
     const offerings = await Purchases.getOfferings();
     const packages = offerings.current?.availablePackages ?? [];
-    const packageIdentifier =
-      plan === "weekly" ? "$rc_weekly" : plan === "annual" ? "$rc_annual" : "$rc_monthly";
-
-    const selectedPackage = packages.find(
-      (pkg) => pkg.identifier === packageIdentifier
-    );
+    const selectedPackage = packages.find((pkg) => pkg.identifier === packageIdentifier);
+    ids = { ...ids, offeringId: offerings.current?.identifier };
 
     if (!selectedPackage) {
       console.log("Package not found:", packageIdentifier);
-      return false;
+      return {
+        status: "error",
+        errorCode: "PACKAGE_NOT_FOUND",
+        errorMessage: `Package ${packageIdentifier} not found in offering ${offerings.current?.identifier ?? "none"}`,
+        ...ids,
+      };
     }
+    ids = { ...ids, productId: selectedPackage.product.identifier };
 
-    const { customerInfo } = await Purchases.purchasePackage(selectedPackage);
-
-    return customerInfo;
+    const { customerInfo, productIdentifier } = await Purchases.purchasePackage(selectedPackage);
+    if (customerInfo.entitlements.active["Kudoo Premium"] === undefined) {
+      return {
+        status: "error",
+        errorCode: "ENTITLEMENT_NOT_ACTIVE",
+        errorMessage: "Purchase completed but entitlement is not active",
+        ...ids,
+      };
+    }
+    const isTrial = customerInfo.entitlements.active["Kudoo Premium"].periodType === "TRIAL";
+    return { status: "success", customerInfo, isTrial, ...ids, productId: productIdentifier ?? ids.productId };
   } catch (e: any) {
-    if (!e.userCancelled) {
-      console.log("Purchase error:", e);
+    if (e?.userCancelled) {
+      return { status: "cancelled", ...ids };
     }
-
-    return false;
+    console.log("Purchase error:", e);
+    return {
+      status: "error",
+      errorCode: String(e?.code ?? e?.readableErrorCode ?? "UNKNOWN"),
+      errorMessage: String(e?.message ?? e),
+      ...ids,
+    };
   }
 }
 
