@@ -3,6 +3,7 @@ import {
   useHealthKitStatistics,
   usePermissions,
 } from "apple-health/hooks";
+import { getDebugStepsOverride } from "../utils/debugScanImage";
 
 export { PermissionStatus };
 
@@ -20,6 +21,9 @@ export const useTodaySteps = () => {
     startDate: new Date(new Date().setHours(0, 0, 0, 0)),
     endDate: new Date()
   });
+
+  const debugSteps = getDebugStepsOverride();
+  if (debugSteps != null) return debugSteps;
 
   if (data == null || Array.isArray(data)) {
     return 0;

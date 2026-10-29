@@ -1,3 +1,4 @@
+import { trackMealLogged } from "../../../services/tracking";
 import {
   Text,
   TextInput,
@@ -110,6 +111,7 @@ const DietListScreen = () => {
       },
     });
     trackMixpanelEvent(analyticsEvents.dietFoodAdded, { foodItem: foodItem.title });
+    trackMealLogged({ method: "food", points: parseInt(foodItem.points) });
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
   };

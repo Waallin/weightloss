@@ -4,10 +4,8 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import * as Haptics from "expo-haptics";
 import { colors } from "../../../../constants/colors";
 import { spacing } from "../../../../constants/spacing";
-import { globalStyles } from "../../../../constants/globalStyles";
-import { textStyles } from "../../../../constants/texts";
-
-const ICON_CONTAINER_SIZE = 48;
+import { typography } from "../../../../constants/texts";
+import { SETTINGS_ICON_SIZE, settingsRowStyle } from "./SettingsSection";
 
 interface SwitchItemProps {
   title: string;
@@ -15,8 +13,9 @@ interface SwitchItemProps {
   icon: string;
   value: boolean;
   onValueChange: (value: boolean) => void;
-  backgroundColor?: string;
   iconColor?: string;
+  /** Hides the divider under the row (last row in a card) */
+  last?: boolean;
 }
 
 const SwitchItem: React.FC<SwitchItemProps> = ({
@@ -25,8 +24,8 @@ const SwitchItem: React.FC<SwitchItemProps> = ({
   icon,
   value,
   onValueChange,
-  backgroundColor,
   iconColor,
+  last,
 }) => {
   const iconName = (icon ?? "help-circle-outline") as React.ComponentProps<
     typeof MaterialCommunityIcons
@@ -43,23 +42,9 @@ const SwitchItem: React.FC<SwitchItemProps> = ({
   };
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        paddingLeft: spacing.md,
-        paddingRight: spacing.sm,
-        paddingVertical: spacing.md,
-        gap: spacing.md,
-        backgroundColor: backgroundColor ?? colors.ui.componentBackground,
-        borderRadius: spacing.borderRadius,
-        borderWidth: 1,
-        borderColor: colors.ui.cardBorder,
-        ...globalStyles.shadow,
-      }}
-    >
+    <View style={{ ...settingsRowStyle(last), paddingRight: spacing.sm }}>
       <TouchableOpacity
-        activeOpacity={0.8}
+        activeOpacity={0.7}
         onPress={handleRowPress}
         style={{
           flex: 1,
@@ -71,29 +56,33 @@ const SwitchItem: React.FC<SwitchItemProps> = ({
       >
         <View
           style={{
-            width: ICON_CONTAINER_SIZE,
-            height: ICON_CONTAINER_SIZE,
-            borderRadius: ICON_CONTAINER_SIZE / 2,
-            backgroundColor: "#ECFDF5",
+            width: SETTINGS_ICON_SIZE,
+            height: SETTINGS_ICON_SIZE,
+            borderRadius: 14,
+            backgroundColor: colors.goals.eatSoft,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
           <MaterialCommunityIcons
             name={iconName}
-            size={24}
-            color={iconColor ?? "#22C55E"}
+            size={22}
+            color={iconColor ?? colors.goals.eat}
           />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text numberOfLines={2} style={{ ...textStyles.listItemTitle }}>
+          <Text
+            numberOfLines={1}
+            style={{ ...typography.cardTitle, color: colors.text.primary }}
+          >
             {title}
           </Text>
           <Text
-            numberOfLines={3}
+            numberOfLines={2}
             style={{
-              ...textStyles.listItemMeta,
-              marginTop: spacing.xs,
+              ...typography.small,
+              color: colors.goals.muted,
+              marginTop: 2,
             }}
           >
             {description}

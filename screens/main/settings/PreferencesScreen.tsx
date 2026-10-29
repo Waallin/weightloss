@@ -1,16 +1,18 @@
 import { ScrollView, Text, View } from "react-native";
 import React, { useState } from "react";
 import SwitchItem from "./components/SwitchItem";
+import SettingsSection, {
+  SETTINGS_ICON_SIZE,
+  settingsRowStyle,
+} from "./components/SettingsSection";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import UnitToggle from "../../../components/UnitToggle";
 import useUnitsStore from "../../../stores/useUnitsStore";
 import { colors } from "../../../constants/colors";
-import { textStyles } from "../../../constants/texts";
+import { typography } from "../../../constants/texts";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-
-const ICON_CONTAINER_SIZE = 48;
 
 const PreferencesScreen = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
@@ -21,50 +23,46 @@ const PreferencesScreen = () => {
     title,
     description,
     icon,
+    last,
     children,
   }: {
     title: string;
     description: string;
     icon: React.ComponentProps<typeof MaterialCommunityIcons>["name"];
+    last?: boolean;
     children: React.ReactNode;
   }) => {
     return (
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingLeft: spacing.md,
-          paddingRight: spacing.sm,
-          paddingVertical: spacing.md,
-          gap: spacing.md,
-          backgroundColor: colors.ui.componentBackground,
-          borderRadius: spacing.borderRadius,
-          borderWidth: 1,
-          borderColor: colors.ui.cardBorder,
-          ...globalStyles.shadow,
-        }}
-      >
+      <View style={{ ...settingsRowStyle(last), paddingRight: spacing.sm }}>
         <View
           style={{
-            width: ICON_CONTAINER_SIZE,
-            height: ICON_CONTAINER_SIZE,
-            borderRadius: ICON_CONTAINER_SIZE / 2,
-            backgroundColor: "#ECFDF5",
+            width: SETTINGS_ICON_SIZE,
+            height: SETTINGS_ICON_SIZE,
+            borderRadius: 14,
+            backgroundColor: colors.goals.eatSoft,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <MaterialCommunityIcons name={icon} size={24} color="#22C55E" />
+          <MaterialCommunityIcons
+            name={icon}
+            size={22}
+            color={colors.goals.eat}
+          />
         </View>
         <View style={{ flex: 1, minWidth: 0 }}>
-          <Text numberOfLines={2} style={{ ...textStyles.listItemTitle }}>
+          <Text
+            numberOfLines={1}
+            style={{ ...typography.cardTitle, color: colors.text.primary }}
+          >
             {title}
           </Text>
           <Text
-            numberOfLines={3}
+            numberOfLines={2}
             style={{
-              ...textStyles.listItemMeta,
-              marginTop: spacing.xs,
+              ...typography.small,
+              color: colors.goals.muted,
+              marginTop: 2,
             }}
           >
             {description}
@@ -77,7 +75,7 @@ const PreferencesScreen = () => {
 
   const renderPreferencesSection = () => {
     return (
-      <View style={{ gap: spacing.sm }}>
+      <SettingsSection delay={100}>
         <SwitchItem
           title="Notifications"
           description="Receive notifications for new updates and important information"
@@ -101,6 +99,7 @@ const PreferencesScreen = () => {
           title: "Weight",
           description: "Show weight in pounds or kilograms",
           icon: "weight",
+          last: true,
           children: (
             <UnitToggle
               options={["lb", "kg"] as const}
@@ -109,12 +108,15 @@ const PreferencesScreen = () => {
             />
           ),
         })}
-      </View>
+      </SettingsSection>
     );
   };
   return (
     <ScrollView
-      contentContainerStyle={globalStyles.scrollContainer}
+      contentContainerStyle={{
+        ...globalStyles.scrollContainer,
+        gap: spacing.homescreenGap,
+      }}
       showsVerticalScrollIndicator={false}
       style={{
         ...globalStyles.container,

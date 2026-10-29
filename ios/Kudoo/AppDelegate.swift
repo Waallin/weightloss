@@ -21,11 +21,30 @@ public class AppDelegate: ExpoAppDelegate {
     reactNativeFactory = factory
     bindReactNativeFactory(factory)
 
+    var initialProperties: [AnyHashable: Any]? = nil
+#if DEBUG
+    // Debug-only: `-scanImage <path>` skips onboarding/login/paywall and scans that image;
+    // `-scanHold` keeps the scanning view up without calling the AI; `-debugSteps <n>` opens the dashboard with a mocked profile and n steps.
+    let args = ProcessInfo.processInfo.arguments
+    var debugProps: [AnyHashable: Any] = [:]
+    if let i = args.firstIndex(of: "-scanImage"), i + 1 < args.count {
+      debugProps["scanImage"] = args[i + 1]
+    }
+    if let i = args.firstIndex(of: "-debugSteps"), i + 1 < args.count {
+      debugProps["debugSteps"] = args[i + 1]
+    }
+    if args.contains("-scanHold") {
+      debugProps["scanHold"] = "1"
+    }
+    if !debugProps.isEmpty { initialProperties = debugProps }
+#endif
+
 #if os(iOS) || os(tvOS)
     window = UIWindow(frame: UIScreen.main.bounds)
     factory.startReactNative(
       withModuleName: "main",
       in: window,
+      initialProperties: initialProperties,
       launchOptions: launchOptions)
 #endif
 

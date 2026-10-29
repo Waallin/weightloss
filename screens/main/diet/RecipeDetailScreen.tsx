@@ -1,3 +1,4 @@
+import { trackMealLogged } from "../../../services/tracking";
 import {
   Image,
   ImageSourcePropType,
@@ -93,6 +94,7 @@ const RecipeDetailScreen: React.FC<RecipeDetailScreenProps> = ({ route }) => {
       },
     });
     trackMixpanelEvent(analyticsEvents.dietRecipeAdded, { recipe: recipe.title });
+    trackMealLogged({ method: "recipe", points: parseInt(recipe.points), slot: recipe.mealType });
     setTodayDiet([...todayDiet, payload]);
     addToDiet(user?.email, payload);
     navigation.goBack();

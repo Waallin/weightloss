@@ -115,7 +115,7 @@ function WheelPickerInner<T>({
         outputRange: [
           colors.text.secondary,
           colors.text.secondary,
-          colors.ui.primary,
+          colors.ui.white,
           colors.text.secondary,
           colors.text.secondary,
         ],
@@ -162,8 +162,10 @@ function WheelPickerInner<T>({
       style={{
         height,
         width: "100%",
-        borderRadius: spacing.borderRadius,
-        backgroundColor: colors.ui.background,
+        borderRadius: 18,
+        backgroundColor: colors.ui.white,
+        borderWidth: 1,
+        borderColor: colors.ui.cardBorder,
         overflow: "hidden",
       }}
     >
@@ -175,8 +177,8 @@ function WheelPickerInner<T>({
           left: spacing.md,
           right: spacing.md,
           height: itemHeight,
-          borderRadius: spacing.borderRadius,
-          backgroundColor: colors.ui.secondaryBackground,
+          borderRadius: 14,
+          backgroundColor: colors.ui.primary,
         }}
       />
 

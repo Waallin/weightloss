@@ -1,27 +1,26 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import React, { type ComponentProps } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { colors } from "../../../../constants/colors";
+import { spacing } from "../../../../constants/spacing";
+import { typography } from "../../../../constants/texts";
+import * as Haptics from "expo-haptics";
 
 type MaterialIconName = NonNullable<
   ComponentProps<typeof MaterialCommunityIcons>["name"]
 >;
-import { colors } from "../../../../constants/colors";
-import { spacing } from "../../../../constants/spacing";
-import { globalStyles } from "../../../../constants/globalStyles";
-import { textStyles } from "../../../../constants/texts";
-import * as Haptics from "expo-haptics";
 
-const ICON_CONTAINER_SIZE = 48;
-
-
+const ICON_CONTAINER_SIZE = 44;
 
 interface SettingsItemProps {
   title: string;
   description: string;
   icon: MaterialIconName;
   onPress: () => void;
-  backgroundColor?: string;
-  iconColor?: string;
+  /** Destructive rows get a red tint instead of the green default */
+  destructive?: boolean;
+  /** Hides the divider under the row (last row in a card) */
+  last?: boolean;
 }
 
 const SettingsItem: React.FC<SettingsItemProps> = ({
@@ -29,57 +28,59 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
   description,
   icon,
   onPress,
-  backgroundColor,
-  iconColor,
+  destructive,
+  last,
 }) => {
-  const iconName: MaterialIconName = icon ?? "help-circle-outline";
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
 
-    const handlePress = () => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      onPress();
-    }
+  const tint = destructive ? colors.ui.delete : colors.goals.eat;
+  const tintBackground = destructive ? "#FEECEC" : colors.goals.eatSoft;
 
   return (
-    <TouchableOpacity activeOpacity={0.8} onPress={handlePress}
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={handlePress}
       style={{
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: spacing.md,
-        paddingVertical: spacing.md,
         gap: spacing.md,
-        backgroundColor: backgroundColor ?? colors.ui.componentBackground,
-        borderRadius: spacing.borderRadius,
-        borderWidth: 1,
-        borderColor: colors.ui.cardBorder,
-        ...globalStyles.shadow,
+        paddingVertical: 14,
+        paddingHorizontal: spacing.md,
+        borderBottomWidth: last ? 0 : 1,
+        borderBottomColor: colors.ui.cardBorder,
       }}
     >
-      <View style={{
-        width: ICON_CONTAINER_SIZE,
-        height: ICON_CONTAINER_SIZE,
-        borderRadius: ICON_CONTAINER_SIZE / 2,
-        backgroundColor: colors.ui.listRowIconBackground,
-        alignItems: "center",
-        justifyContent: "center",
-      }}>
-        <MaterialCommunityIcons
-          name={iconName}
-          size={24}
-          color={iconColor ?? colors.ui.listRowIconTint}
-        />
+      <View
+        style={{
+          width: ICON_CONTAINER_SIZE,
+          height: ICON_CONTAINER_SIZE,
+          borderRadius: 14,
+          backgroundColor: tintBackground,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <MaterialCommunityIcons name={icon} size={22} color={tint} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text
-          numberOfLines={2}
-          style={{ ...textStyles.listItemTitle }}
+          numberOfLines={1}
+          style={{
+            ...typography.cardTitle,
+            color: destructive ? colors.ui.delete : colors.text.primary,
+          }}
         >
           {title}
         </Text>
         <Text
-          numberOfLines={3}
+          numberOfLines={2}
           style={{
-            ...textStyles.listItemMeta,
-            marginTop: spacing.xs,
+            ...typography.small,
+            color: colors.goals.muted,
+            marginTop: 2,
           }}
         >
           {description}
@@ -88,7 +89,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
       <MaterialCommunityIcons
         name="chevron-right"
         size={22}
-        color={colors.text.secondary}
+        color={colors.goals.dotEmpty}
       />
     </TouchableOpacity>
   );

@@ -10,9 +10,10 @@ import { textStyles, typography } from '../../../constants/texts';
 interface ProfileStepSectionProps {
   title: string;
   description: string;
-  summaryIconName: React.ComponentProps<typeof MaterialIcons>['name'];
-  summaryLabel: string;
-  summaryValue: string;
+  /** Summary row under the content; omitted when summaryValue is not set */
+  summaryIconName?: React.ComponentProps<typeof MaterialIcons>['name'];
+  summaryLabel?: string;
+  summaryValue?: string;
   children: React.ReactNode;
 }
 
@@ -97,45 +98,47 @@ const ProfileStepSection: React.FC<ProfileStepSectionProps> = ({
         {children}
       </MotiView>
 
-      <MotiView
-        from={{ opacity: 0, translateY: 14 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 450, delay: 250, reduceMotion: ReduceMotion.Never }}
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: spacing.sm,
-          marginBottom: spacing.xl,
-        }}
-      >
+      {summaryValue != null && summaryIconName && (
         <MotiView
-          from={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'timing', duration: 360, delay: 320, reduceMotion: ReduceMotion.Never }}
-        >
-          <MaterialIcons name={summaryIconName} size={18} color={colors.text.secondary} />
-        </MotiView>
-        <MotiText
-          from={{ opacity: 0, translateY: 10 }}
+          from={{ opacity: 0, translateY: 14 }}
           animate={{ opacity: 1, translateY: 0 }}
-          transition={{ type: 'timing', duration: 420, delay: 350, reduceMotion: ReduceMotion.Never }}
+          transition={{ type: 'timing', duration: 450, delay: 250, reduceMotion: ReduceMotion.Never }}
           style={{
-            ...typography.body,
-            color: colors.text.secondary,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: spacing.sm,
+            marginBottom: spacing.xl,
           }}
         >
-          {summaryLabel}{' '}
-          <Text
+          <MotiView
+            from={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'timing', duration: 360, delay: 320, reduceMotion: ReduceMotion.Never }}
+          >
+            <MaterialIcons name={summaryIconName} size={18} color={colors.text.secondary} />
+          </MotiView>
+          <MotiText
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: 'timing', duration: 420, delay: 350, reduceMotion: ReduceMotion.Never }}
             style={{
-              ...typography.bodySemiBold,
-              color: colors.text.primary,
+              ...typography.body,
+              color: colors.text.secondary,
             }}
           >
-            {summaryValue}
-          </Text>
-        </MotiText>
-      </MotiView>
+            {summaryLabel}{' '}
+            <Text
+              style={{
+                ...typography.bodySemiBold,
+                color: colors.text.primary,
+              }}
+            >
+              {summaryValue}
+            </Text>
+          </MotiText>
+        </MotiView>
+      )}
     </MotiView>
   );
 };

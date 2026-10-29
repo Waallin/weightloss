@@ -1,3 +1,5 @@
+import { trackMixpanelEvent, setMixpanelPeopleProperties } from "./mixpanel";
+import { analyticsEvents } from "../constants/analytics";
 import * as Notifications from "expo-notifications";
 const ACTIVE_NOTIFICATION_DAYS = 3;
 
@@ -24,8 +26,13 @@ const dailyNotifications = [
 
 export const requestNotificationPermission = async () => {
   const { status } = await Notifications.requestPermissionsAsync();
+  const granted = status === "granted";
+  trackMixpanelEvent(analyticsEvents.notificationPermissionResult, {
+    result: granted ? "granted" : "denied",
+  });
+  setMixpanelPeopleProperties({ notifications_enabled: granted });
 
-  return status === "granted";
+  return granted;
 };
 
 export const getNotificationToken = async () => {

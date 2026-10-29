@@ -23,6 +23,7 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import OpenAI from "openai";
+import { trackMealLogged } from "../../../services/tracking";
 import { calculateFoodPoints } from "../../../services/dietPoints";
 import { useEffect } from "react";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
@@ -159,6 +160,32 @@ const ScanFoodScreen = () => {
     }
   }, [image]);
 
+  // Debug-only (-scanImage launch arg): load the image from disk instead of
+  // the camera and run the normal scan. With -scanHold the image is instead
+  // shown as a mocked camera feed and nothing is scanned.
+  useEffect(() => {
+    const debugPath = __DEV__ ? route.params?.debugImagePath : undefined;
+    if (!debugPath || route.params?.debugHold) return;
+    (async () => {
+      try {
+        const uri = debugPath.startsWith("file://")
+          ? debugPath
+          : `file://${debugPath}`;
+        const base64 = await uriToBase64(uri);
+        const mimeType = mimeFromBase64(base64);
+        if (!mimeType) {
+          Alert.alert("Invalid photo", "Debug image is not JPEG/PNG/GIF/WebP.");
+          return;
+        }
+        clearScanState();
+        setScanning(true);
+        setImage({ uri, base64, mimeType });
+      } catch (error) {
+        console.error("debug scanImage failed", error);
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     if (!scanning) {
       setScanCopyIndex(0);
@@ -231,6 +258,8 @@ const ScanFoodScreen = () => {
 
     setScanning(true);
     setResult(null);
+    const scanStartedAt = Date.now();
+    trackMixpanelEvent(analyticsEvents.scanStarted);
 
     try {
       const client = new OpenAI({
@@ -361,6 +390,10 @@ Return JSON only.
       if (!food?.isFood) {
         setImage(null);
         setResult(null);
+        trackMixpanelEvent(analyticsEvents.scanFailed, {
+          reason: "not_food",
+          duration_ms: Date.now() - scanStartedAt,
+        });
         Alert.alert("No meal found", "Take a new photo and try again.");
         return;
       }
@@ -379,8 +412,16 @@ Return JSON only.
       };
 
       setResult(obj);
+      trackMixpanelEvent(analyticsEvents.scanSucceeded, {
+        points,
+        duration_ms: Date.now() - scanStartedAt,
+      });
     } catch (error) {
       console.error(error);
+      trackMixpanelEvent(analyticsEvents.scanFailed, {
+        reason: "error",
+        duration_ms: Date.now() - scanStartedAt,
+      });
       setResult(null);
     } finally {
       setScanning(false);
@@ -392,13 +433,42 @@ Return JSON only.
     clearScanState();
   };
 
+  const mockCameraFeed =
+    __DEV__ && route.params?.debugHold ? route.params?.debugImagePath : undefined;
+
+  const handleRequestCamera = async () => {
+    const response = await requestPermission();
+    trackMixpanelEvent(analyticsEvents.cameraPermissionResult, {
+      result: response?.granted ? "granted" : "denied",
+    });
+  };
+
+  const openManualEntry = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("ManualFoodScreen", {
+      fromFirstDayGuide: route.params?.fromFirstDayGuide,
+    });
+  };
+
+  const renderManualLink = () => (
+    <TouchableOpacity
+      activeOpacity={0.7}
+      onPress={openManualEntry}
+      style={{ alignItems: "center", paddingVertical: spacing.md }}
+    >
+      <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: colors.goals.muted }}>
+        Add it manually instead
+      </Text>
+    </TouchableOpacity>
+  );
+
   const renderCamera = () => {
-    if (!permission) {
+    if (!mockCameraFeed && !permission) {
       return <View style={{ flex: 1, backgroundColor: "#000" }} />;
     }
 
-    if (!permission.granted) {
-      const canAskAgain = permission.canAskAgain !== false;
+    if (!mockCameraFeed && !permission?.granted) {
+      const canAskAgain = permission?.canAskAgain !== false;
 
       return (
         <View
@@ -448,7 +518,7 @@ Return JSON only.
           <PrimaryButtonComponent
             title={canAskAgain ? "Alright, take a look" : "Fine, open Settings"}
             onPress={
-              canAskAgain ? requestPermission : () => Linking.openSettings()
+              canAskAgain ? handleRequestCamera : () => Linking.openSettings()
             }
           />
         </View>
@@ -457,12 +527,20 @@ Return JSON only.
 
     return (
       <View style={{ flex: 1, backgroundColor: "#17151D" }}>
-        <CameraView
-          ref={cameraRef}
-          style={{ flex: 1 }}
-          facing="back"
-          mode="picture"
-        />
+        {mockCameraFeed ? (
+          <Image
+            source={{ uri: `file://${mockCameraFeed.replace(/^file:\/\//, "")}` }}
+            style={{ flex: 1 }}
+            resizeMode="cover"
+          />
+        ) : (
+          <CameraView
+            ref={cameraRef}
+            style={{ flex: 1 }}
+            facing="back"
+            mode="picture"
+          />
+        )}
         <View
           pointerEvents="none"
           style={{
@@ -562,6 +640,25 @@ Return JSON only.
             alignItems: "center",
           }}
         >
+          <Pressable
+            onPress={openManualEntry}
+            accessibilityLabel="Add food manually"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: spacing.lg,
+              paddingVertical: spacing.sm,
+              paddingHorizontal: 16,
+              borderRadius: 24,
+              backgroundColor: "rgba(255,255,255,0.14)",
+            }}
+          >
+            <Ionicons name="create-outline" size={18} color="#fff" />
+            <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: "#fff" }}>
+              Add manually
+            </Text>
+          </Pressable>
           <Pressable onPress={handleTakePhoto} disabled={takingPhoto}>
             <View
               style={{
@@ -767,6 +864,7 @@ Return JSON only.
           title="Scan again"
           onPress={handleRemovePhoto}
         />
+        {renderManualLink()}
       </View>
     );
   };
@@ -803,6 +901,7 @@ Return JSON only.
 
     try {
       trackMixpanelEvent(analyticsEvents.dietScanAdded, { food: result?.name });
+      trackMealLogged({ method: "scan", points: Number(portionPoints), slot });
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast(`${slot} added · ${portionPoints} ${ptsWord(Number(portionPoints))}`);
@@ -878,15 +977,15 @@ Return JSON only.
               shadowOpacity: 0.06,
             }}
           >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+            <View style={{ gap: 14 }}>
               {image?.uri ? (
                 <Image
                   source={{ uri: image.uri }}
-                  style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: colors.ui.secondaryBackground }}
+                  style={{ width: "100%", aspectRatio: 1, borderRadius: 16, backgroundColor: colors.ui.secondaryBackground }}
                   resizeMode="cover"
                 />
               ) : null}
-              <Text style={{ flex: 1, ...typography.cardTitle, fontSize: 17, lineHeight: 22, color: colors.text.primary }}>
+              <Text style={{ ...typography.cardTitle, fontSize: 17, lineHeight: 22, color: colors.text.primary }}>
                 {result?.name}
               </Text>
             </View>
@@ -1016,7 +1115,7 @@ Return JSON only.
   };
 
   const showDefaultHeader =
-    scanning || (image && !result) || (!image && !permission?.granted);
+    scanning || (image && !result) || (!image && !permission?.granted && !mockCameraFeed);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.ui.background }}>

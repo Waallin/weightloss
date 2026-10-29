@@ -41,6 +41,12 @@ export const getDocument = async (collection: string, email: string) => {
   }
 };
 
+/** Som getDocument, men kastar vid fel så att "saknas" och "kunde inte läsa" går att skilja åt. */
+export const fetchDocument = async (collection: string, id: string) => {
+  const docSnap = await getDoc(doc(database, collection, id));
+  return docSnap.exists() ? docSnap.data() : null;
+};
+
 export const getDocuments = async (alias: string) => {
   try {
     const docsRef = collection(database, alias);
@@ -96,19 +102,18 @@ const deleteUserFirestoreTree = async (email: string) => {
 
 export const deleteUser = async (email: string) => {
   try {
-    const current = auth.currentUser;
-    if (
-      !current?.email ||
-      current.email.toLowerCase() !== email.toLowerCase()
-    ) {
-      log(
-        "deleteUser: no signed-in user or email does not match current session",
-      );
-      return false;
-    }
-
     await deleteUserFirestoreTree(email);
-    await deleteFirebaseAuthUser(current);
+
+    // Firebase-kontot tas bara bort om sessionen tillhör detta dokument. Äldre konton har ingen
+    // sparad session efter omstart, då räcker det att datan raderas.
+    const current = auth.currentUser;
+    const owns =
+      current &&
+      (current.uid === email ||
+        current.email?.toLowerCase() === email.toLowerCase());
+    if (current && owns) {
+      await deleteFirebaseAuthUser(current);
+    }
     log(`🔥🧯 User and Firestore data deleted for ${email}`);
     return true;
   } catch (error) {

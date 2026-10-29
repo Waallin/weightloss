@@ -24,6 +24,8 @@ import { calculatePoints } from "../../../services/dietPoints";
 import { getDays, syncToday } from "../../../services/firebase";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { analyticsEvents } from "../../../constants/analytics";
+import { trackStepsFirstDetected } from "../../../services/tracking";
+import SaveProgressCard from "./components/SaveProgressCard";
 import GoalRing from "../../../components/GoalRing";
 import ConnectHealthSheet from "../../../components/ConnectHealthSheet";
 import useHealthConnected from "../../../hooks/useHealthConnected";
@@ -61,6 +63,10 @@ const HomeScreen = () => {
   useEffect(() => {
     trackMixpanelEvent(analyticsEvents.homeViewed);    
   }, []);
+
+  useEffect(() => {
+    if (todaySteps > 0) trackStepsFirstDetected();
+  }, [todaySteps > 0]);
 
   useEffect(() => {
     if (rewardShownRef.current) return;
@@ -562,6 +568,7 @@ const HomeScreen = () => {
       >
         {renderHeader()}
         {renderGoals()}
+        <SaveProgressCard eligible={mealsCount > 0 || days.length > 1} />
         {renderNextUp()}
         {renderMeals()}
         {renderWeek()}

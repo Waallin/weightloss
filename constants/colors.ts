@@ -74,8 +74,8 @@ export const colors = {
   },
   /** Daily goals — Eat smart (green) and Move daily (violet) */
   goals: {
-    eat: "#0B8655",
-    eatRing: "#1CB57A",
+    eat: "#16B97B",
+    eatRing: "#16B97B",
     eatSoft: "#E6F6EE",
     eatSoftText: "#0A5E3C",
     move: "#4B3FC4",
