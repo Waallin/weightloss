@@ -1,4 +1,5 @@
 import { trackMealLogged } from "../../../services/tracking";
+import { maybeAskForStoreReview } from "../../../services/storeReview";
 import {
   Image,
   KeyboardAvoidingView,
@@ -172,6 +173,7 @@ const ManualFoodScreen = () => {
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast(`${slot} added · ${points} ${ptsWord(points)}`);
+      void maybeAskForStoreReview("meal_logged");
       if (route.params?.fromFirstDayGuide) {
         navigation.navigate("FirstDayGuide", { mealLogged: true });
       } else {

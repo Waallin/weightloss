@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accounts start anonymously: "Start" creates an anonymous Firebase account, so the app no longer requires Apple sign-in to get going. Sessions persist in AsyncStorage
 - "Save your progress" card on Home (after the first meal or on day 2) links Apple to the anonymous account without moving any data; "Later" hides it for three days. "Already have an account? Sign in" restores an existing account after a reinstall
 - New day 1 guide after sign-up: turn on step counting (Apple Health), then try logging a meal. "Not now" and "Skip for now" are always available
-- Manual food entry screen (name, calories, optional protein/fiber/weight, portion size), reachable from the camera view
+- Manual food entry screen (name, calories, optional protein/fiber/weight, portion size), reachable from the scan result screen
 - Scan demo on the first onboarding slide
 - Progress bar with endowed progress (starts at 25 %) on the profile steps
 - Plan summary and account creation on one screen, with a larger mascot
@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Super properties on every event: `platform`, `app_version`, `flow_version`, `account_type`, `device_region`, `is_internal`, `signup_date`, `days_since_signup`
 - `trackMilestone` sends first meal, day 2 return and Apple link to Mixpanel, TikTok and Meta from one place; TikTok users are identified with their uid
 - `docs/tracking-plan.md` documents definitions, events, properties and the TikTok/Meta mapping
+- App Store review prompt from day 1, after the second logged meal or the first time the steps goal is reached (`services/storeReview.ts`). At most 3 asks, at least 60 days apart; logged as `store_review_requested` with `trigger` and `ask_count`
 
 ### Changed
 - The app is free: the paywall and RevenueCat initialisation are gone
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mixpanel people properties and `profile_details_completed` use `goal_type` and `weight_goal_band` instead of exact weight and height
 - `profile_details_step_viewed` includes `step_index`, `total_steps` and `ms_since_previous_step`
 - Camera, step and notification prompts now log their results
+- The camera view no longer has an "Add manually" button; manual entry is still offered after a failed scan
 
 ### Fixed
 - The primary button keeps its size while loading

@@ -29,6 +29,7 @@ export const analyticsEvents = {
   firstDayGuideCompleted: "first_day_guide_completed",
   waterLogged: "water_logged",
   stepsGoalCompleted: "steps_goal_completed",
+  storeReviewRequested: "store_review_requested",
   pointsGoalCompleted: "points_goal_completed",
 
   dietViewed: "diet_viewed",

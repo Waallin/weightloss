@@ -24,6 +24,7 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import OpenAI from "openai";
 import { trackMealLogged } from "../../../services/tracking";
+import { maybeAskForStoreReview } from "../../../services/storeReview";
 import { calculateFoodPoints } from "../../../services/dietPoints";
 import { useEffect } from "react";
 import PrimaryButtonComponent from "../../../components/PrimaryButtonComponent";
@@ -640,25 +641,6 @@ Return JSON only.
             alignItems: "center",
           }}
         >
-          <Pressable
-            onPress={openManualEntry}
-            accessibilityLabel="Add food manually"
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: spacing.lg,
-              paddingVertical: spacing.sm,
-              paddingHorizontal: 16,
-              borderRadius: 24,
-              backgroundColor: "rgba(255,255,255,0.14)",
-            }}
-          >
-            <Ionicons name="create-outline" size={18} color="#fff" />
-            <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: "#fff" }}>
-              Add manually
-            </Text>
-          </Pressable>
           <Pressable onPress={handleTakePhoto} disabled={takingPhoto}>
             <View
               style={{
@@ -905,6 +887,7 @@ Return JSON only.
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast(`${slot} added · ${portionPoints} ${ptsWord(Number(portionPoints))}`);
+      void maybeAskForStoreReview("meal_logged");
       if (route.params?.fromFirstDayGuide) {
         navigation.navigate("FirstDayGuide", { mealLogged: true });
       } else {
