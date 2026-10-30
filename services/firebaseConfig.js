@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth"; // Importera Auth-modulen
+import { getAuth, initializeAuth, getReactNativePersistence } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getStorage } from "firebase/storage";
@@ -31,6 +32,18 @@ export const database = getFirestore(firebaseApp);
 export const storage = getStorage(firebaseApp);
 
 // Hämta Auth-instansen
-export const auth = getAuth(firebaseApp);
+// Sessionen sparas i AsyncStorage så att anonyma konton överlever omstart av appen
+const createAuth = () => {
+  try {
+    return initializeAuth(firebaseApp, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } catch (error) {
+    // Redan initierad (t.ex. vid hot reload)
+    if (error?.code === "auth/already-initialized") return getAuth(firebaseApp);
+    throw error;
+  }
+};
+export const auth = createAuth();
 
 

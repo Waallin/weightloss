@@ -58,6 +58,17 @@ export const logTikTokEvent = async (
   }
 };
 
+export const logTikTokCustomEvent = async (
+  eventName: string,
+  properties?: Record<string, string | number | boolean>
+) => {
+  try {
+    await TikTokBusiness.trackCustomEvent(eventName, properties ?? {});
+  } catch (error) {
+    console.log("Error tracking TikTok custom event:", error);
+  }
+};
+
 export const logoutTikTokUser = async () => {
   try {
     await TikTokBusiness.logout();

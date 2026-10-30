@@ -1,34 +1,31 @@
-import { Dimensions, Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialIcons } from "@expo/vector-icons";
 import React, { useEffect, useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { colors } from "../../constants/colors";
-import { textStyles, typography } from "../../constants/texts";
+import { typography } from "../../constants/texts";
 import { spacing } from "../../constants/spacing";
 import WheelPicker from "../../components/WheelPicker";
 import UnitToggle from "../../components/UnitToggle";
 import ProfileStepSection from "./components/ProfileStepSection";
+import OptionCard from "./components/OptionCard";
+import EndowedProgressBar from "./components/EndowedProgressBar";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../navigation/types";
 import * as haptics from "expo-haptics";
-import { MotiView } from "moti";
-import { ReduceMotion } from "react-native-reanimated";
 import useUserStore from "../../stores/useUserStore";
 import useUnitsStore from "../../stores/useUnitsStore";
-import { setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import { setMixpanelPeopleProperties, trackMixpanelEvent } from "../../services/mixpanel";
+import { goalFromWeights } from "../../services/tracking";
 import { analyticsEvents } from "../../constants/analytics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { calculatePoints } from "../../services/dietPoints";
-import { STEP_GOAL, formatNumber } from "../../utils/goals";
 import UnderageBlockedScreen, {
   UNDERAGE_BLOCKED_KEY,
 } from "./UnderageBlockedScreen";
 import {
   cmToFeetInches,
   feetInchesToCm,
-  formatFeetInches,
   formatLb,
   HEIGHT_MAX_CM,
   HEIGHT_MIN_CM,
@@ -36,17 +33,24 @@ import {
   lbToKg,
 } from "../../utils/units";
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const SPOTLIGHT_OUTER = Math.min(SCREEN_WIDTH * 0.78, 320);
-const SPOTLIGHT_IMAGE_SIZE = SPOTLIGHT_OUTER * 0.84;
-
 const currentYear = new Date().getFullYear();
-const BIRTH_YEARS = (() => {
-  const list: number[] = [];
-  for (let y = currentYear; y >= currentYear - 110; y -= 1) list.push(y);
-  return list;
-})();
+// Age is asked as a group; the stored birth year is the group's midpoint (used for the points calculation)
+// Endowed progress: the onboarding slides already count, so the first step starts at 25%
+const STEP_PROGRESS: Record<1 | 2 | 3 | 4 | 5, { progress: number; label: string }> = {
+  1: { progress: 0.25, label: "Great start, you’re already on your way" },
+  2: { progress: 0.4, label: "Nice, keep going" },
+  3: { progress: 0.55, label: "More than halfway" },
+  4: { progress: 0.7, label: "Almost there" },
+  5: { progress: 0.85, label: "Last question" },
+};
+
+const AGE_GROUPS = [
+  { id: "18-29", label: "18–29", birthYear: currentYear - 24 },
+  { id: "30-44", label: "30–44", birthYear: currentYear - 37 },
+  { id: "45-59", label: "45–59", birthYear: currentYear - 52 },
+  { id: "60+", label: "60+", birthYear: currentYear - 67 },
+] as const;
+type AgeGroupId = (typeof AGE_GROUPS)[number]["id"];
 
 const WEIGHT_IN_LB = (() => {
   const list: number[] = [];
@@ -74,38 +78,18 @@ const INCHES_OPTIONS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const snapToRange = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, Math.round(value)));
 
-const PaginationDot = React.memo(({ isActive }: { isActive: boolean }) => {
-  return (
-    <MotiView
-      animate={{
-        width: isActive ? 20 : 8,
-        opacity: isActive ? 1 : 0.6,
-        backgroundColor: isActive ? colors.ui.primary : colors.ui.dotInactive,
-      }}
-      transition={{
-        type: "timing",
-        duration: 220,
-        reduceMotion: ReduceMotion.Never,
-      }}
-      style={{
-        height: 8,
-        borderRadius: spacing.rounded,
-      }}
-    />
-  );
-});
-
-PaginationDot.displayName = "PaginationDot";
-
 const GOAL_WEIGHT_MIN_KG = 40;
 const GOAL_WEIGHT_DEFAULT_LOSS_KG = 10;
 
 const ProfileDetailsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { user, setUser } = useUserStore();
+  const { setUser } = useUserStore();
   const { heightUnit, weightUnit, setHeightUnit, setWeightUnit } =
     useUnitsStore();
   const [birthYear, setBirthYear] = useState<number>(currentYear - 25);
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId | null>(null);
+  const advancingRef = React.useRef(false);
+  const lastStepAtRef = React.useRef<number | null>(null);
   const [startWeight, setStartWeight] = useState<number>(100);
   const [goalWeight, setGoalWeight] = useState<number>(90);
   const [height, setHeight] = useState<number>(175);
@@ -113,7 +97,6 @@ const ProfileDetailsScreen = () => {
   const gender: "Male" | "Female" =
     genderChoice === "Female" ? "Female" : "Male";
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [createdPlan, setCreatedPlan] = useState<boolean>(false);
   const [ageBlocked, setAgeBlocked] = useState<boolean>(false);
   // A step can only be continued after the user has interacted with it (scrolling back to the default counts)
   const [touchedSteps, setTouchedSteps] = useState<Record<number, boolean>>({});
@@ -127,8 +110,6 @@ const ProfileDetailsScreen = () => {
   const markTouched = (forStep: number) =>
     setTouchedSteps((prev) => (prev[forStep] ? prev : { ...prev, [forStep]: true }));
 
-  const totalSteps = 5;
-  const activeIndex = step - 1;
   const age = useMemo(() => {
     const computed = currentYear - birthYear;
     return computed > 0 ? computed : 0;
@@ -141,7 +122,7 @@ const ProfileDetailsScreen = () => {
   }, [ageBlocked, navigation]);
 
   useEffect(() => {
-    if (ageBlocked || createdPlan) return;
+    if (ageBlocked) return;
     const stepName =
       step === 1
         ? "birthday"
@@ -152,75 +133,75 @@ const ProfileDetailsScreen = () => {
             : step === 4
               ? "weight"
               : "goal";
+    const now = Date.now();
     trackMixpanelEvent(analyticsEvents.profileDetailsStepViewed, {
       step: stepName,
+      step_index: step,
+      total_steps: 5,
+      ms_since_previous_step: lastStepAtRef.current ? now - lastStepAtRef.current : undefined,
     });
-  }, [step, ageBlocked, createdPlan]);
-
-  useEffect(() => {
-    if (!createdPlan) return;
-    trackMixpanelEvent(analyticsEvents.planReadyViewed);
-  }, [createdPlan]);
-
-  const goalDeltaKg = useMemo(
-    () => Math.abs(startWeight - goalWeight),
-    [goalWeight, startWeight],
-  );
-
-  const goalDirection = useMemo<"lose" | "gain" | "maintain">(() => {
-    if (goalWeight < startWeight) return "lose";
-    if (goalWeight > startWeight) return "gain";
-    return "maintain";
-  }, [goalWeight, startWeight]);
+    lastStepAtRef.current = now;
+  }, [step, ageBlocked]);
 
   const renderHeader = () => {
     return (
-      <View
-        style={{
-          marginBottom: spacing.xl,
-          width: "100%",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {step > 1 && (
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={handleBack}
-            style={{
-              position: "absolute",
-              left: 0,
-              paddingVertical: spacing.sm,
-              paddingHorizontal: spacing.sm,
-              borderRadius: spacing.borderRadius,
-              backgroundColor: colors.ui.secondaryBackground,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                ...typography.headline,
-                fontWeight: "400",
-                color: colors.ui.primary,
-                
-              }}
-            >
-              Back
-            </Text>
-          </TouchableOpacity>
-        )}
-        <Text
+      <View style={{ marginBottom: spacing.xl, width: "100%" }}>
+        <View
           style={{
-            ...typography.socialProofStat,
-            color: colors.text.primary,
-            textAlign: "center",
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          Profile Details
-        </Text>
+          {step > 1 && (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={handleBack}
+              style={{
+                position: "absolute",
+                left: 0,
+                paddingVertical: spacing.sm,
+                paddingHorizontal: spacing.sm,
+                borderRadius: spacing.borderRadius,
+                backgroundColor: colors.ui.secondaryBackground,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text
+                style={{
+                  ...typography.headline,
+                  fontWeight: "400",
+                  color: colors.ui.primary,
+                
+                }}
+              >
+                Back
+              </Text>
+            </TouchableOpacity>
+          )}
+          <Text
+            style={{
+              ...typography.socialProofStat,
+              color: colors.text.primary,
+              textAlign: "center",
+            }}
+          >
+            Profile Details
+          </Text>
+        </View>
+        <EndowedProgressBar
+          progress={STEP_PROGRESS[step].progress}
+          label={STEP_PROGRESS[step].label}
+        />
       </View>
     );
+  };
+
+  const handleUnderage = async () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    await AsyncStorage.setItem(UNDERAGE_BLOCKED_KEY, "true");
+    setAgeBlocked(true);
   };
 
   const renderBirthdayStep = () => {
@@ -228,137 +209,87 @@ const ProfileDetailsScreen = () => {
       <ProfileStepSection
         title="How old are you?"
         description="We’ll use this so the plan actually fits you."
-        summaryIconName="person"
-        summaryLabel="Selected age:"
-        summaryValue={`${age}`}
       >
-        <WheelPicker<number>
-          data={BIRTH_YEARS}
-          value={birthYear}
-          onChange={(y) => {
-            markTouched(1);
-            setBirthYear(y);
-          }}
-          getLabel={(y) => String(y)}
-        />
+        <View style={{ width: "100%", gap: spacing.sm }}>
+          {AGE_GROUPS.map((group, index) => (
+            <OptionCard
+              key={group.id}
+              index={index}
+              label={group.label}
+              active={ageGroup === group.id}
+              onPress={() => {
+                if (advancingRef.current) return;
+                advancingRef.current = true;
+                markTouched(1);
+                setAgeGroup(group.id);
+                setBirthYear(group.birthYear);
+                haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+                // Kort paus så valet hinner synas innan vi går vidare
+                setTimeout(() => {
+                  setUser({
+                    birthYear: group.birthYear,
+                    gender,
+                    height,
+                    startWeight,
+                    goalWeight,
+                    currentWeight: startWeight,
+                  });
+                  setStep(2);
+                  advancingRef.current = false;
+                }, 250);
+              }}
+            />
+          ))}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleUnderage}
+            style={{ alignItems: "center", paddingVertical: spacing.sm }}
+          >
+            <Text style={{ ...typography.body, color: colors.text.secondary }}>
+              I’m under 18
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ProfileStepSection>
     );
   };
 
   const renderGenderStep = () => {
-    const options: Array<"Male" | "Female"> = ["Male", "Female"];
-    const renderOption = (option: GenderChoice) => {
-      const active = genderChoice === option;
-      return (
-        <TouchableOpacity
-          key={option}
-          activeOpacity={0.85}
-          onPress={() => {
-            if (genderChoice === option) return;
-            haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-            setGenderChoice(option);
-          }}
-          style={{
-            flex: 1,
-            paddingVertical: spacing.md,
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: spacing.borderRadius,
-            backgroundColor: active ? colors.ui.white : "#E3E3E9",
-            borderWidth: active ? 1 : 0,
-            borderColor: colors.ui.cardBorder,
-            ...(active ? globalStyles.shadow : {}),
-          }}
-        >
-          <Text
-            style={{
-              ...(active ? typography.bodySemiBold : typography.body),
-              color: active ? colors.text.primary : colors.text.secondary,
-            }}
-          >
-            {option}
-          </Text>
-        </TouchableOpacity>
-      );
-    };
+    const options: GenderChoice[] = ["Male", "Female", "Prefer not to say"];
 
     return (
       <ProfileStepSection
         title="What is your gender?"
         description="Just so we can tailor your targets."
-        summaryIconName="person"
-        summaryLabel="Selected gender:"
-        summaryValue={genderChoice}
       >
         <View style={{ width: "100%", gap: spacing.sm }}>
-          <View
-            style={{
-              flexDirection: "row",
-              padding: spacing.xs,
-              backgroundColor: colors.ui.secondaryBackground,
-              borderRadius: spacing.borderRadius,
-            }}
-          >
-            {options.map((option) => renderOption(option))}
-          </View>
-
-          <View
-            style={{
-              padding: spacing.xs,
-              backgroundColor: colors.ui.secondaryBackground,
-              borderRadius: spacing.borderRadius,
-            }}
-          >
-            <TouchableOpacity
-              activeOpacity={0.85}
+          {options.map((option, index) => (
+            <OptionCard
+              key={option}
+              index={index}
+              label={option}
+              active={genderChoice === option}
               onPress={() => {
-                if (genderChoice === "Prefer not to say") return;
+                if (advancingRef.current) return;
+                advancingRef.current = true;
+                setGenderChoice(option);
                 haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-                setGenderChoice("Prefer not to say");
+                // Kort paus så valet hinner synas innan vi går vidare
+                setTimeout(() => {
+                  setUser({
+                    birthYear,
+                    gender: option === "Female" ? "Female" : "Male",
+                    height,
+                    startWeight,
+                    goalWeight,
+                    currentWeight: startWeight,
+                  });
+                  setStep(3);
+                  advancingRef.current = false;
+                }, 250);
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: spacing.sm,
-                paddingVertical: spacing.md,
-                paddingHorizontal: spacing.md,
-                borderRadius: spacing.borderRadius,
-                backgroundColor:
-                  genderChoice === "Prefer not to say"
-                    ? colors.ui.white
-                    : "#E3E3E9",
-                borderWidth: genderChoice === "Prefer not to say" ? 1 : 0,
-                borderColor: colors.ui.cardBorder,
-                ...(genderChoice === "Prefer not to say"
-                  ? globalStyles.shadow
-                  : {}),
-              }}
-            >
-              <Text
-                style={{
-                  ...(genderChoice === "Prefer not to say"
-                    ? typography.bodySemiBold
-                    : typography.body),
-                  color:
-                    genderChoice === "Prefer not to say"
-                      ? colors.text.primary
-                      : colors.text.secondary,
-                }}
-              >
-                Prefer not to say
-              </Text>
-              <MaterialIcons
-                name="chevron-right"
-                size={20}
-                color={
-                  genderChoice === "Prefer not to say"
-                    ? colors.text.primary
-                    : colors.text.secondary
-                }
-              />
-            </TouchableOpacity>
-          </View>
+            />
+          ))}
         </View>
       </ProfileStepSection>
     );
@@ -371,13 +302,6 @@ const ProfileDetailsScreen = () => {
       <ProfileStepSection
         title="What is your height?"
         description="Helps us set your daily points."
-        summaryIconName="person"
-        summaryLabel="Selected height:"
-        summaryValue={
-          heightUnit === "ft"
-            ? formatFeetInches(feet, inches)
-            : `${heightCm} cm`
-        }
       >
         <View style={{ width: "100%", alignItems: "center" }}>
           <View style={{ marginBottom: spacing.md }}>
@@ -489,11 +413,6 @@ const ProfileDetailsScreen = () => {
       <ProfileStepSection
         title="What is your goal weight?"
         description="You can always change this later."
-        summaryIconName="person"
-        summaryLabel="Selected goal weight:"
-        summaryValue={
-          isLb ? `${formatLb(kgToLb(goalWeight))} lb` : `${weightKg} kg`
-        }
       >
         <View style={{ width: "100%", alignItems: "center" }}>
           <View style={{ marginBottom: spacing.md }}>
@@ -529,252 +448,19 @@ const ProfileDetailsScreen = () => {
     );
   };
 
-  const handleCreatePlan = () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    trackMixpanelEvent(analyticsEvents.profileDetailsCompleted, { age, gender, height, startWeight, goalWeight })
-    setMixpanelPeopleProperty("age", age);
-    setMixpanelPeopleProperty("gender", gender);
-    setMixpanelPeopleProperty("height", height);
-    setMixpanelPeopleProperty("weight", startWeight);
-    setMixpanelPeopleProperty("weight_goal", goalWeight);
+  const finishProfile = () => {
+    // Grupper i stället för exakta värden: vikt och längd är hälsodata
+    const { goal_type, weight_goal_band } = goalFromWeights(startWeight, goalWeight);
+    trackMixpanelEvent(analyticsEvents.profileDetailsCompleted, {
+      age_group: ageGroup,
+      gender,
+      goal_type,
+      weight_goal_band,
+    });
+    setMixpanelPeopleProperties({ age_group: ageGroup, gender, goal_type, weight_goal_band });
 
-
-    navigation.navigate("SocialProofScreen");
+    navigation.navigate("Auth");
   };
-  const renderPlanCreated = () => {
-    const goalDeltaKg = Math.abs((user?.goalWeight ?? 0) - (user?.startWeight ?? 0));
-    const goalDeltaLabel =
-      weightUnit === "lb"
-        ? `${formatLb(kgToLb(goalDeltaKg))} lbs`
-        : `${Math.round(goalDeltaKg)} kg`;
-    const targetValue =
-      goalDirection === "maintain"
-        ? "Maintain weight"
-        : `${goalDirection === "lose" ? "Lose" : "Gain"} ${goalDeltaLabel}`;
-
-    const dailyPoints = calculatePoints(
-      user?.currentWeight ?? user?.startWeight ?? 0,
-      user?.height ?? 0,
-      currentYear - (user?.birthYear ?? currentYear),
-      user?.gender ?? "Male",
-      0,
-    ).total;
-
-    const planRows = [
-      { label: "Eat Smart", detail: `Daily points budget: ${formatNumber(dailyPoints)}`, highlight: false },
-      { label: "Move Daily", detail: `Daily step goal: ${formatNumber(STEP_GOAL)} steps`, highlight: false },
-      { label: "Weight goal", detail: targetValue, highlight: true },
-    ];
-
-    return (
-      <SafeAreaView style={globalStyles.container} edges={["bottom"]}>
-
-        <MotiView
-          from={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{
-            type: "timing",
-            duration: 350,
-            reduceMotion: ReduceMotion.Never,
-          }}
-          style={{
-            flex: 1,
-          }}
-        >
-          <MotiView
-            from={{ opacity: 0, translateY: 30 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{
-              type: "timing",
-              duration: 600,
-              delay: 160,
-              reduceMotion: ReduceMotion.Never,
-            }}
-            style={{ width: "100%", alignItems: "center" }}
-          >
-            <MotiView
-              from={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                type: "timing",
-                duration: 480,
-                delay: 60,
-                reduceMotion: ReduceMotion.Never,
-              }}
-              style={{
-                width: SPOTLIGHT_OUTER,
-                height: SPOTLIGHT_OUTER,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: spacing.md,
-              }}
-            >
-              <View
-                style={{
-                  position: "absolute",
-                  width: SPOTLIGHT_OUTER,
-                  height: SPOTLIGHT_OUTER,
-  
-                }}
-              />
-              <Image
-                source={require("../../assets/mascot/allSet.png")}
-                resizeMode="contain"
-                style={{
-                  width: SPOTLIGHT_IMAGE_SIZE,
-                  height: SPOTLIGHT_IMAGE_SIZE,
-                }}
-              />
-            </MotiView>
-
-            <MotiView
-              from={{ opacity: 0, translateY: 24 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{
-                type: "timing",
-                duration: 380,
-                delay: 100,
-                reduceMotion: ReduceMotion.Never,
-              }}
-              style={{ width: "100%" }}
-            >
-              <Text
-                style={{
-                  ...textStyles.onboardingTitle,
-                  textAlign: "center",
-                  marginBottom: spacing.sm,
-                }}
-              >
-                You’re all set
-              </Text>
-            </MotiView>
-
-            <MotiView
-              from={{ opacity: 0, translateY: 20 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{
-                type: "timing",
-                duration: 340,
-                delay: 160,
-                reduceMotion: ReduceMotion.Never,
-              }}
-              style={{ width: "100%" }}
-            >
-              <Text
-                style={{
-                  ...textStyles.onboardingBody,
-                  textAlign: "center",
-                  paddingHorizontal: spacing.sm,
-                  lineHeight: 22,
-                  marginBottom: spacing.lg,
-                }}
-              >
-                Two simple daily goals. Your plan is ready.
-              </Text>
-            </MotiView>
-
-            <MotiView
-              from={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{
-                type: "timing",
-                duration: 420,
-                delay: 210,
-                reduceMotion: ReduceMotion.Never,
-              }}
-              style={{ width: "100%" }}
-            >
-              <Text
-                style={{
-                  ...typography.captionSemiBold,
-                  color: colors.text.secondary,
-                  letterSpacing: 0.6,
-                  marginBottom: spacing.sm,
-                }}
-              >
-                YOUR PERSONALIZED PLAN
-              </Text>
-
-              <View
-                style={{
-                  width: "100%",
-                  backgroundColor: colors.ui.componentBackground,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: colors.ui.cardBorder,
-                  ...globalStyles.shadow,
-                  overflow: "hidden",
-                }}
-              >
-                {planRows.map((row, index) => (
-                  <View key={row.label}>
-                    {index > 0 ? (
-                      <View
-                        style={{
-                          height: 1,
-                          backgroundColor: colors.ui.cardBorder,
-                          marginHorizontal: spacing.md,
-                        }}
-                      />
-                    ) : null}
-                    <View
-                      style={{
-                        gap: 2,
-                        paddingVertical: spacing.md,
-                        paddingHorizontal: spacing.md,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          ...typography.bodySemiBold,
-                          color: colors.text.primary,
-                        }}
-                      >
-                        {row.label}
-                      </Text>
-                      <Text
-                        style={{
-                          ...(row.highlight
-                            ? typography.bodySemiBold
-                            : typography.body),
-                          color: row.highlight
-                            ? colors.ui.primary
-                            : colors.text.secondary,
-                        }}
-                      >
-                        {row.detail}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </MotiView>
-          </MotiView>
-          <MotiView
-            from={{ opacity: 0, translateY: 30 }}
-            animate={{ opacity: 1, translateY: 0 }}
-            transition={{
-              type: "timing",
-              duration: 420,
-              delay: 380,
-              reduceMotion: ReduceMotion.Never,
-            }}
-            style={{
-              width: "100%",
-              paddingBottom: spacing.scrollViewBottomPadding,
-            }}
-          ></MotiView>
-        </MotiView>
-        <View style={{ paddingBottom: spacing.sm }}>
-          <PrimaryButtonComponent
-            title="Unlock my plan"
-            onPress={handleCreatePlan}
-          />
-        </View>
-      </SafeAreaView>
-    );
-  };
-
   const handleNext = async () => {
     if (step === 1 && age < 18) {
       await AsyncStorage.setItem(UNDERAGE_BLOCKED_KEY, "true");
@@ -794,7 +480,7 @@ const ProfileDetailsScreen = () => {
     if (step < 5) {
       setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4 | 5);
     } else {
-      setCreatedPlan(true);
+      finishProfile();
     }
   };
 
@@ -808,10 +494,6 @@ const ProfileDetailsScreen = () => {
 
   if (ageBlocked) {
     return <UnderageBlockedScreen />;
-  }
-
-  if (createdPlan) {
-    return renderPlanCreated();
   }
 
   return (
@@ -830,38 +512,19 @@ const ProfileDetailsScreen = () => {
           {step === 4 && renderWeightStep()}
           {step === 5 && renderGoalWeightStep()}
         </View>
+        <View style={{ paddingBottom: spacing.scrollViewBottomPadding }} />
+      </View>
+      {step > 2 && (
         <View
-          style={{
-            paddingBottom: spacing.scrollViewBottomPadding,
-          }}
+          style={{ paddingBottom: spacing.sm, opacity: canContinue ? 1 : 0.4 }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: spacing.lg,
-              gap: spacing.xs,
-            }}
-          >
-            {Array.from({ length: totalSteps }).map((_, index) => (
-              <PaginationDot
-                key={String(index)}
-                isActive={index === activeIndex}
-              />
-            ))}
-          </View>
+          <PrimaryButtonComponent
+            title={step === 5 ? "See my plan" : "Continue"}
+            onPress={handleNext}
+            disabled={!canContinue}
+          />
         </View>
-      </View>
-      <View
-        style={{ paddingBottom: spacing.sm, opacity: canContinue ? 1 : 0.4 }}
-      >
-        <PrimaryButtonComponent
-          title="Continue"
-          onPress={handleNext}
-          disabled={!canContinue}
-        />
-      </View>
+      )}
     </SafeAreaView>
   );
 };

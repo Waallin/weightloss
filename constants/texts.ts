@@ -335,33 +335,6 @@ export const authCopy = {
     "No calorie counting",
     "No gym required",
   ],
-  howItWorkSections: [
-    {
-      id: 1,
-      title: "Your day, simplified",
-      subtitle: "Two simple habits. That's the whole plan.",
-      items: [
-        { title: "Eat Smart", description: "Stay within your daily points", tone: "eat" },
-        { title: "Move Daily", description: "Walk 5,000 steps. Earn extra points.", tone: "move" },
-      ],
-      cta: "Make it simple",
-      imageKey: "waving",
-    },
-    {
-      id: 2,
-      title: "No calories. Just points",
-      subtitle: "No complicated tracking. Just follow your points.",
-      cta: "Yes, please",
-      imageKey: "standing",
-    },
-    {
-      id: 3,
-      title: "You're all set",
-      subtitle: "Start simple, results will follow",
-      cta: "Let’s do this",
-      imageKey: "thumbsUp",
-    },
-  ],
 } as const;
 
 /** Paywall: fallback display until Store prices are wired */

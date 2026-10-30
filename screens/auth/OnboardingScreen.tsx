@@ -10,6 +10,7 @@ import * as haptics from "expo-haptics";
 import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
 import { trackMixpanelEvent } from "../../services/mixpanel";
 import { analyticsEvents } from "../../constants/analytics";
+import ScanDemo from "./components/ScanDemo";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -23,14 +24,14 @@ type OnboardingSection = {
   title: string;
   description: string;
   cta: string;
-  image: number;
+  image?: number;
+  /** Replaces the mascot image, e.g. a live demo */
+  visual?: React.ReactNode;
 };
 
 type AuthStackParamList = {
   Onboarding: undefined;
-  SocialProof: undefined;
   Paywall: undefined;
-  HowItWork: undefined;
   ProfileDetails: undefined;
   Auth: undefined;
   MainStack: undefined;
@@ -41,26 +42,12 @@ const sections: OnboardingSection[] = [
     id: 1,
     title: "Tired of counting calories?",
     description:
-      "It’s hard to keep up. What if you didn’t have to think about it at all?",
+      "Just snap a photo and we’ll do the rest. No counting, no gym needed.",
     cta: "I’m in",
-    image: require("../../assets/mascot/tiredOfCounting.png"),
+    visual: <ScanDemo width={SPOTLIGHT_OUTER} />,
   },
   {
     id: 2,
-    title: "Tired of logging everything you eat?",
-    description: "Just snap a photo. We’ll do the rest.",
-    cta: "Show me how",
-    image: require("../../assets/mascot/logging.png"),
-  },
-  {
-    id: 3,
-    title: "Don’t feel like going to the gym?",
-    description: "You’re not alone. You don’t need it to make real progress.",
-    cta: "Let’s do this",
-    image: require("../../assets/mascot/gym.png"),
-  },
-  {
-    id: 4,
     title: "Struggle to stay consistent?",
     description:
       "You start strong… then life happens. That’s why this is built to be simple.",
@@ -68,14 +55,14 @@ const sections: OnboardingSection[] = [
     image: require("../../assets/mascot/consistent.png"),
   },
   {
-    id: 5,
+    id: 3,
     title: "Wish it was just… easier?",
     description: "Just two simple goals: eat smart and move daily. That’s it.",
     cta: "Keep going",
     image: require("../../assets/mascot/easier.png"),
   },
   {
-    id: 6,
+    id: 4,
     title: "Ready to try something different?",
     description: "No pressure. Just a simple reset—focus on one day at a time.",
     cta: "That’s more like it",
@@ -92,7 +79,6 @@ const OnboardingSlide = React.memo(({ item }: { item: OnboardingSection }) => {
         alignItems: "center",
         paddingHorizontal: spacing.lg,
         alignSelf: "center",
-        
       }}
     >
       <View
@@ -104,18 +90,13 @@ const OnboardingSlide = React.memo(({ item }: { item: OnboardingSection }) => {
           marginBottom: spacing.lg,
         }}
       >
-        <View
-          style={{
-            position: "absolute",
-          }}
-        />
-
-
-        <Image
-          source={item.image}
-          resizeMode="contain"
-          style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
-        />
+        {item.visual ?? (
+          <Image
+            source={item.image}
+            resizeMode="contain"
+            style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
+          />
+        )}
       </View>
 
       <Text
@@ -182,7 +163,7 @@ const OnboardingScreen: React.FC = () => {
       return;
     }
     trackMixpanelEvent(analyticsEvents.onboardingCompleted);
-    navigation.replace("HowItWork");
+    navigation.replace("ProfileDetails");
   };
 
   const handleMomentumScrollEnd = React.useCallback(

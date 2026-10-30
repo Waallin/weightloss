@@ -6,6 +6,45 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+### Added
+- Accounts start anonymously: "Start" creates an anonymous Firebase account, so the app no longer requires Apple sign-in to get going. Sessions persist in AsyncStorage
+- "Save your progress" card on Home (after the first meal or on day 2) links Apple to the anonymous account without moving any data; "Later" hides it for three days. "Already have an account? Sign in" restores an existing account after a reinstall
+- New day 1 guide after sign-up: turn on step counting (Apple Health), then try logging a meal. "Not now" and "Skip for now" are always available
+- Manual food entry screen (name, calories, optional protein/fiber/weight, portion size), reachable from the scan result screen
+- Scan demo on the first onboarding slide
+- Progress bar with endowed progress (starts at 25 %) on the profile steps
+- Plan summary and account creation on one screen, with a larger mascot
+- Offline screen with "Try again" when the user document can't be read at startup
+- Tracking: `meal_logged` (with `method`, `points`, `meal_slot`, `is_first_meal`), `first_meal_logged`, `scan_started`/`scan_succeeded`/`scan_failed`, `camera_permission_result`, `notification_permission_result`, `health_permission_prompted`, `steps_first_detected`, `returned_after_signup`, `start_tapped`, `save_progress_viewed`/`save_progress_dismissed`, `account_linked` and `account_deleted`
+- Super properties on every event: `platform`, `app_version`, `flow_version`, `account_type`, `device_region`, `is_internal`, `signup_date`, `days_since_signup`
+- `trackMilestone` sends first meal, day 2 return and Apple link to Mixpanel, TikTok and Meta from one place; TikTok users are identified with their uid
+- `docs/tracking-plan.md` documents definitions, events, properties and the TikTok/Meta mapping
+- App Store review prompt from day 1, after the second logged meal or the first time the steps goal is reached (`services/storeReview.ts`). At most 3 asks, at least 60 days apart; logged as `store_review_requested` with `trigger` and `ask_count`
+
+### Changed
+- The app is free: the paywall and RevenueCat initialisation are gone
+- Onboarding shortened: removed "How it works", the social proof screen and the separate plan screen
+- Profile details: age is chosen from four groups (18-29, 30-44, 45-59, 60+) and `age_group` is stored in Mixpanel; age, gender and height use the same card design; the age and gender steps move on with one tap, without Continue
+- Wheel pickers use the green selection band from the app
+- Settings: the Profile row is removed and the section is called "Preferences"
+- One green everywhere (`#16B97B`)
+- Mixpanel is initialised before the first events are sent, and dev builds no longer send to the production project (set `EXPO_PUBLIC_MIXPANEL_DEV_TOKEN` to test)
+- Mixpanel people properties and `profile_details_completed` use `goal_type` and `weight_goal_band` instead of exact weight and height
+- `profile_details_step_viewed` includes `step_index`, `total_steps` and `ms_since_previous_step`
+- Camera, step and notification prompts now log their results
+- The camera view no longer has an "Add manually" button; manual entry is still offered after a failed scan
+
+### Fixed
+- The primary button keeps its size while loading
+- "Delete account" now removes the Firestore data for older accounts without a saved session and only reports success if it worked
+- A network error at startup no longer logs the user out and sends them back to onboarding
+- Signing in after a failed restore no longer reuses the Apple session for a new anonymous account
+
+### Removed
+- Paywall, "How it works" and social proof routes and their analytics events from the active flow (paywall screens remain in the code but are unused)
+
 ## [1.1.4]
 
 ### Added

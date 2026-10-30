@@ -1,8 +1,11 @@
+import { trackMixpanelEvent, resetMixpanel } from "../../../services/mixpanel";
+import { analyticsEvents } from "../../../constants/analytics";
 import { ScrollView, View, Text, Alert } from "react-native";
 import React from "react";
 import { globalStyles } from "../../../constants/globalStyles";
 import { spacing } from "../../../constants/spacing";
 import SettingsItem from "./components/SettingsItem";
+import SettingsSection from "./components/SettingsSection";
 import Constants from "expo-constants";
 import { colors } from "../../../constants/colors";
 import { typography } from "../../../constants/texts";
@@ -34,8 +37,14 @@ const SettingsScreen = () => {
       {
         text: "Delete", style: "destructive", onPress: async () => {
 
+          const deleted = await deleteUser(user?.email as string);
+          if (!deleted) {
+            Alert.alert("Couldn't delete account", "Check your connection and try again.");
+            return;
+          }
+          trackMixpanelEvent(analyticsEvents.accountDeleted);
+          resetMixpanel();
           await AsyncStorage.clear();
-          await deleteUser(user?.email as string);
 
           navigation.navigate("AuthNavigator");
           showToast("Account deleted successfully");
@@ -44,108 +53,67 @@ const SettingsScreen = () => {
     ]);
   };
 
-  const handleProfile = () => {
-    navigation.navigate("ProfileScreen");
-  };
-
   const handlePreferences = () => {
     navigation.navigate("PreferencesScreen");
     console.log("Preferences");
   };
 
-  const handleLogout = () => {
-    console.log("Logout");
-  };
+  const renderProfileSettings = () => (
+    <SettingsSection label="Preferences" delay={100}>
+        <SettingsItem
+          title="Preferences"
+          description="Manage your preferences"
+          icon="account-cog-outline"
+          onPress={handlePreferences}
+          last
+        />
+    </SettingsSection>
+  );
 
-  const renderConstants = () => {
+  const renderAccountSettings = () => (
+    <SettingsSection label="Account" delay={160}>
+      <SettingsItem
+        title="Delete Account"
+        description="Delete your account and all your data"
+        icon="delete-outline"
+        destructive
+        onPress={handleDeleteAccount}
+        last
+      />
+    </SettingsSection>
+  );
+
+  const renderVersion = () => {
     return (
-      <View
+      <Text
         style={{
-          position: "absolute",
-          bottom: 120,
-          right: 20,
+          ...typography.small,
+          color: colors.text.secondary,
+          textAlign: "center",
+          marginTop: spacing.sm,
         }}
       >
-        <Text
-          style={{
-            ...typography.body,
-            color: colors.text.secondary,
-          }}
-        >
-          Version {Constants.expoConfig?.version}
-        </Text>
-      </View>
+        Version {Constants.expoConfig?.version}
+      </Text>
     );
   };
 
-  const renderProfileSettings = () => {
-    return (
-      <View style={{ gap: spacing.sm }}>
-        <Text style={{
-          ...typography.titleBold,
-          color: colors.text.primary,
-          marginBottom: spacing.sm,
-        }}>Profile</Text>
-        <View style={{ gap: spacing.sm }}>
-          <SettingsItem
-            title="Profile"
-            description="Manage your profile settings"
-            icon="account-outline"
-            onPress={handleProfile}
-          />
-          <SettingsItem
-            title="Preferences"
-            description="Manage your preferences"
-            icon="account-cog-outline"
-            onPress={handlePreferences}
-          />
-        </View>
-      </View>
-    );
-  };
-
-  const renderLogoutSettings = () => {
-    return (
-      <View>
-        <Text style={{
-          ...typography.titleBold,
-          color: colors.text.primary,
-          marginBottom: spacing.sm,
-        }}>Account</Text>
-        <View style={{ gap: spacing.sm }}>
-          {/* <SettingsItem
-            title="Logout"
-            description="Logout of your account"
-            icon="logout"
-            iconColor={colors.ui.delete}
-            onPress={handleLogout}
-          /> */}
-          <SettingsItem
-            title="Delete Account"
-            description="Delete your account and all your data"
-            icon="delete-outline"
-            iconColor={colors.ui.delete}
-            onPress={handleDeleteAccount}
-          />
-        </View>
-      </View>
-    );
-  };
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={globalStyles.scrollContainer}
-        style={{
-          ...globalStyles.container,
-        }}
-      >
-        <GoBackHeaderComponent title="Settings" />
-        {renderProfileSettings()}
-        {renderLogoutSettings()}
-      </ScrollView>
-      {renderConstants()}
-    </View>
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{
+        ...globalStyles.scrollContainer,
+        gap: spacing.homescreenGap,
+      }}
+      style={{
+        ...globalStyles.container,
+      }}
+    >
+      <GoBackHeaderComponent title="Settings" />
+      {renderProfileSettings()}
+      {renderAccountSettings()}
+      {renderVersion()}
+    </ScrollView>
   );
 };
 

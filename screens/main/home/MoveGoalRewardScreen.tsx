@@ -18,6 +18,7 @@ import useUserStore from "../../../stores/useUserStore";
 import useConfettiStore from "../../../stores/useConfettiStore";
 import { getDays, updateTodayProgress } from "../../../services/firebase";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
+import { maybeAskForStoreReview } from "../../../services/storeReview";
 import { analyticsEvents } from "../../../constants/analytics";
 import { DayDoc, buildWeek, formatNumber, moveWin } from "../../../utils/goals";
 import { getDateKey } from "../../../utils/dateUtils";
@@ -53,6 +54,7 @@ const MoveGoalRewardScreen = () => {
       "completion.steps": true,
     });
     trackMixpanelEvent(analyticsEvents.stepsGoalCompleted);
+    void maybeAskForStoreReview("steps_goal", 3500);
   }, [todayProgress, user?.email]);
 
   useEffect(() => {

@@ -20,15 +20,18 @@ export type RootStackParamList = {
   Paywall: undefined;
   AuthNavigator: undefined;
   DietListScreen: { initialTab?: "food" | "recipes" };
-  ScanFoodScreen: { fromFirstDayGuide?: boolean } | undefined;
+  ScanFoodScreen:
+    | { fromFirstDayGuide?: boolean; debugImagePath?: string; debugHold?: boolean }
+    | undefined;
   FirstDayGuide: { mealLogged?: boolean } | undefined;
   AddDietScreen: undefined;
+  ManualFoodScreen: { fromFirstDayGuide?: boolean } | undefined;
   SettingsScreen: undefined;
   MoveGoalReward: { steps: number };
   ProfileScreen: undefined;
   PreferencesScreen: undefined;
   LogWeightScreen: undefined;
-  SocialProofScreen: undefined;
+  Auth: undefined;
   ArticleScreen: {
     article?: {
       id: number;
@@ -42,10 +45,8 @@ export type RootStackParamList = {
 
 export type AuthStackParamList = {
   Onboarding: undefined;
-  SocialProofScreen: undefined;
   Paywall: undefined;
   AuthScreen: undefined;
-  HowItWork: undefined;
   ProfileDetails: undefined;
   Auth: undefined;
   PermissionScreen: undefined;

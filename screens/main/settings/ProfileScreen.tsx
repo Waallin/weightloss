@@ -1,16 +1,11 @@
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { spacing } from "../../../constants/spacing";
 import ProfileItem from "./components/ProfileItem";
+import SettingsSection from "./components/SettingsSection";
 import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import { globalStyles } from "../../../constants/globalStyles";
-import { textStyles } from "../../../constants/texts";
+import { typography } from "../../../constants/texts";
 import { colors } from "../../../constants/colors";
 import useUserStore from "../../../stores/useUserStore";
 import useUnitsStore from "../../../stores/useUnitsStore";
@@ -30,7 +25,7 @@ const ProfileScreen = () => {
         ? kgToLb(user?.goalWeight ?? 70)
         : Math.round(user?.goalWeight ?? 70);
     return (
-      <View style={{ gap: spacing.sm }}>
+      <SettingsSection delay={100}>
         <ProfileItem
           title="Height"
           value={formatHeightFromCm(user?.height ?? 175, heightUnit)}
@@ -60,30 +55,27 @@ const ProfileScreen = () => {
           value={user?.gender ?? "male"}
           icon="gender-male-female"
           disabled={true}
+          last
         />
-      </View>
+      </SettingsSection>
     );
   };
 
-  const handleResetProfile = () => {
-    console.log("Reset profile");
-  };
   const renderResetSection = () => {
     return (
       <TouchableOpacity
         style={{
           alignItems: "center",
           justifyContent: "center",
-          marginTop: spacing.xl,
           paddingHorizontal: spacing.md,
         }}
       >
         <Text
           style={{
-            ...textStyles.primary,
+            ...typography.bodyMedium,
             textAlign: "center",
             textDecorationLine: "underline",
-            color: colors.text.secondary,
+            color: colors.goals.muted,
           }}
         >
           Need to change something? Delete your account and start over.
@@ -93,7 +85,10 @@ const ProfileScreen = () => {
   };
   return (
     <ScrollView
-      contentContainerStyle={globalStyles.scrollContainer}
+      contentContainerStyle={{
+        ...globalStyles.scrollContainer,
+        gap: spacing.homescreenGap,
+      }}
       showsVerticalScrollIndicator={false}
       style={{
         ...globalStyles.container,
@@ -107,4 +102,3 @@ const ProfileScreen = () => {
 };
 
 export default ProfileScreen;
-const styles = StyleSheet.create({});

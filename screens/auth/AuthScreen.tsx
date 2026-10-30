@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Alert, Image, ScrollView, Text, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { MotiText, MotiView } from "moti";
 import { ReduceMotion } from "react-native-reanimated";
 import { globalStyles } from "../../constants/globalStyles";
@@ -9,237 +9,180 @@ import { typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import * as haptics from "expo-haptics";
 import * as AppleAuthentication from "expo-apple-authentication";
-import { signInWithCredential, OAuthProvider } from "firebase/auth";
-import { auth } from "../../services/firebaseConfig";
 import useUserStore from "../../stores/useUserStore";
 import Constants from "expo-constants";
-import { setDocument } from "../../services/firebase";
-const IMAGE_SIZE = 350;
+import { getDocuments, setDocument, updateDocument } from "../../services/firebase";
+import { signOut } from "firebase/auth";
+import { auth } from "../../services/firebaseConfig";
+import { identifyAdPlatforms, refreshSuperProperties } from "../../services/tracking";
+import PlanSummary from "./components/PlanSummary";
+import PrimaryButtonComponent from "../../components/PrimaryButtonComponent";
+import { restoreFromApple, startAnonymousSession } from "../../services/accounts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import useConfigStore from "../../stores/useConfigStore";
-import { scheduleActiveUserNotifications } from "../../services/notifications";
-import { identifyRevenueCatUser } from "../../services/revenuecat";
-import { identifyMixpanel, setMixpanelPeopleProperty, trackMixpanelEvent } from "../../services/mixpanel";
+import {
+  getNotificationToken,
+  scheduleActiveUserNotifications,
+} from "../../services/notifications";
+import { identifyMixpanel, trackMixpanelEvent } from "../../services/mixpanel";
 import { analyticsEvents } from "../../constants/analytics";
-import { isCustomerPremium } from "../../services/revenuecat";
+import { FIRST_DAY_GUIDE_STEP_KEY } from "../main/home/FirstDayGuideScreen";
+import { getDateKey } from "../../utils/dateUtils";
+import useTodayDietStore from "../../stores/useTodayDietStore";
 import { logTikTokEvent } from "../../services/tiktoksdk";
 import { TikTokEventName } from "react-native-tiktok-business-sdk";
 
 const AuthScreen = () => {
-  const [appleToken, setAppleToken] = useState<string | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
   const navigation = useNavigation<any>();
   const { user, setUser } = useUserStore();
-  const { config } = useConfigStore();
+  const { setTodayDiet } = useTodayDietStore();
 
   useEffect(() => {
     trackMixpanelEvent(analyticsEvents.authViewed);
+    trackMixpanelEvent(analyticsEvents.planReadyViewed);
   }, []);
 
-  useEffect(() => {
-    if (appleToken) {
-      const provider = new OAuthProvider("apple.com");
-      const credential = provider.credential({ idToken: appleToken as string });
-
-      signInWithCredential(auth, credential)
-        .then((result) => {
-          console.log("Signed in with Apple:", result.user);
-          handleCreateAccount(result.user.email as string);
-        })
-        .catch((error) => {
-          console.log("Error signing in with Apple:", error);
-          trackMixpanelEvent(analyticsEvents.appleLoginFailed);
-          Alert.alert("Fel", "Kunde inte verifiera Apple-inloggningen");
-        });
-    }
-  }, [appleToken]);
-
-  const handleAppleLogin = async () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    trackMixpanelEvent(analyticsEvents.appleLoginTapped);
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-      if (credential.identityToken) {
-        setAppleToken(credential.identityToken);
-      } else {
-        setAppleToken(undefined);
-        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
-      }
-    } catch (e: any) {
-      if (e.code === "ERR_REQUEST_CANCELED") {
-        trackMixpanelEvent(analyticsEvents.appleLoginCanceled);
-      } else {
-        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
-        Alert.alert("Error", "Failed to verify Apple login");
-      }
-    }
+  const goToGuide = () => {
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "MainStack",
+          state: { routes: [{ name: "FirstDayGuide" }] },
+        },
+      ],
+    });
   };
 
-  const handleCreateAccount = async (email: string) => {
+  /** Skapar ett anonymt konto med profilen från onboardingen. Apple kopplas på senare. */
+  const handleStart = async () => {
+    if (busy) return;
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    setBusy(true);
+    trackMixpanelEvent(analyticsEvents.startTapped);
     try {
+      const firebaseUser = await startAnonymousSession();
+      const docId = firebaseUser.uid;
       const userObj = {
         ...user,
-        email: email,
+        email: docId,
+        isAnonymous: true,
         createdAt: new Date(),
         lastActiveAt: new Date(),
         platform: Constants.platform?.ios ? "ios" : "android",
         version: Constants.expoConfig?.version || "",
         totalAppsOpen: 1,
       };
-      const result = await setDocument("users", email, userObj);
+      const result = await setDocument("users", docId, userObj);
+      if (!result) throw new Error("setDocument failed");
 
-      if (result) {
-        await AsyncStorage.setItem("user", email);
-
-        setUser(userObj);
-        scheduleActiveUserNotifications();
-
-        await identifyMixpanel(email);
-        await identifyRevenueCatUser(email);
-        await setMixpanelPeopleProperty("email", email);
-        await trackMixpanelEvent(analyticsEvents.userRegistered);
-        await logTikTokEvent(TikTokEventName.REGISTRATION);
-
-        if (!config?.showPaywall) {
-          navigation.replace("MainStack");
-        } else {
-          navigation.replace("Paywall");
-        }
+      await AsyncStorage.setItem("user", docId);
+      setUser(userObj);
+      try {
+        const notificationToken = await getNotificationToken();
+        await updateDocument("users", docId, { notificationToken });
+        setUser({ ...userObj, notificationToken });
+      } catch {
+        // Notiser nekade eller otillgängliga – fortsätt utan token
       }
+      scheduleActiveUserNotifications();
+
+      await identifyMixpanel(docId);
+      await refreshSuperProperties(userObj);
+      await identifyAdPlatforms(docId);
+      await trackMixpanelEvent(analyticsEvents.userRegistered, { anonymous: true });
+      await logTikTokEvent(TikTokEventName.REGISTRATION);
+
+      // Nya konton börjar i FirstDayGuide; "pending" gör att guiden även återupptas vid appstart
+      await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "pending");
+      goToGuide();
     } catch (e: any) {
-      console.log("Error creating account:", e);
+      console.log("Error starting anonymous session:", e);
+      Alert.alert("Couldn't start", "Check your connection and try again.");
+    } finally {
+      setBusy(false);
     }
   };
 
-  const renderImage = () => {
-    return (
-      <MotiView
-        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
-        animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={{ alignItems: "center", justifyContent: "center" }}
-      >
-        <MotiView
-          from={{ opacity: 0, translateY: 14, scale: 0.96 }}
-          animate={{ opacity: 1, translateY: 0, scale: 1 }}
-          transition={{
-            type: "timing",
-            duration: 520,
-            delay: 60,
-            reduceMotion: ReduceMotion.Never,
-          }}
-          style={[
-            {
-              width: IMAGE_SIZE,
-              height: IMAGE_SIZE,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: spacing.xl,
-              ...globalStyles.shadow,
-              overflow: "hidden",
-              alignSelf: "center",
-            },
-          ]}
-        >
-          <Image
-            source={require("../../assets/mascot/almostReady.png")}
-            resizeMode="cover"
-            style={{ width: "100%", height: "100%" }}
-          />
-        </MotiView>
-      </MotiView>
-    );
+  /** Återställer ett befintligt konto efter ominstallation eller ny telefon. */
+  const handleRestore = async () => {
+    if (busy) return;
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    trackMixpanelEvent(analyticsEvents.appleLoginTapped);
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL],
+      });
+      if (!credential.identityToken) {
+        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
+        return;
+      }
+      setBusy(true);
+      const restored = await restoreFromApple(credential.identityToken);
+      if (!restored) {
+        await signOut(auth); // Annars återanvänds Apple-sessionen när användaren trycker Start
+        Alert.alert("No account found", "We couldn't find an account for this Apple ID. Tap Start to create one.");
+        return;
+      }
+      await AsyncStorage.setItem("user", restored.docId);
+      await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "done");
+      setUser(restored.user);
+      setTodayDiet(
+        await getDocuments(`users/${restored.docId}/days/${getDateKey()}/foodEntries`),
+      );
+      await identifyMixpanel(restored.docId);
+      await refreshSuperProperties(restored.user);
+      navigation.reset({ index: 0, routes: [{ name: "MainStack" }] });
+    } catch (e: any) {
+      if (e?.code === "ERR_REQUEST_CANCELED") {
+        trackMixpanelEvent(analyticsEvents.appleLoginCanceled);
+      } else {
+        trackMixpanelEvent(analyticsEvents.appleLoginFailed);
+        Alert.alert("Sign in failed", "Couldn't verify your Apple ID. Try again.");
+      }
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const renderText = () => {
-    return (
-      <View
-        style={{
-          justifyContent: "center",
-          alignItems: "center",
-        }}
+  const renderCTA = () => (
+    <MotiView
+      from={{ opacity: 0, translateY: 10, scale: 0.98 }}
+      animate={{ opacity: 1, translateY: 0, scale: 1 }}
+      transition={{
+        type: "timing",
+        duration: 450,
+        delay: 220,
+        reduceMotion: ReduceMotion.Never,
+      }}
+      style={{ width: "100%" }}
+    >
+      <PrimaryButtonComponent title="Start" onPress={handleStart} loading={busy} />
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={handleRestore}
+        style={{ height: 44, alignItems: "center", justifyContent: "center", marginTop: spacing.xs }}
       >
-        <MotiText
-          from={{ opacity: 0, translateY: 10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{
-            type: "timing",
-            duration: 380,
-            delay: 120,
-            reduceMotion: ReduceMotion.Never,
-          }}
-          style={{
-            ...typography.screenTitle,
-            color: colors.text.primary,
-            textAlign: "center",
-            marginBottom: spacing.sm,
-          }}
-        >
-          You're almost ready
-        </MotiText>
-        <MotiText
-          from={{ opacity: 0, translateY: 10 }}
-          animate={{ opacity: 1, translateY: 0 }}
-          transition={{
-            type: "timing",
-            duration: 380,
-            delay: 170,
-            reduceMotion: ReduceMotion.Never,
-          }}
-          style={{
-            ...typography.body,
-            color: colors.text.secondary,
-            textAlign: "center",
-            marginBottom: spacing.sm,
-          }}
-        >
-          Create your account in seconds
-        </MotiText>
-      </View>
-    );
-  };
-
-  const renderCTA = () => {
-    return (
-      <MotiView
-        from={{ opacity: 0, translateY: 10, scale: 0.98 }}
-        animate={{ opacity: 1, translateY: 0, scale: 1 }}
-        transition={{
-          type: "timing",
-          duration: 450,
-          delay: 220,
-          reduceMotion: ReduceMotion.Never,
-        }}
-        style={{ width: "100%" }}
-      >
-        <AppleAuthentication.AppleAuthenticationButton
-          buttonType={
-            AppleAuthentication.AppleAuthenticationButtonType.CONTINUE
-          }
-          buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
-          cornerRadius={10}
-          style={{ width: "100%", height: 50 }}
-          onPress={handleAppleLogin}
-        />
-      </MotiView>
-    );
-  };
+        <Text style={{ ...typography.cardTitle, color: colors.text.secondary }}>
+          Already have an account? Sign in
+        </Text>
+      </TouchableOpacity>
+    </MotiView>
+  );
 
   return (
     <View style={globalStyles.container}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        {renderImage()}
-        {renderText()}
-      </View>
-      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          justifyContent: "center",
+          paddingVertical: spacing.md,
+        }}
+      >
+        <PlanSummary />
+      </ScrollView>
+      <View style={{ paddingBottom: spacing.ctaButtonBottomPadding, gap: spacing.sm }}>
         {renderCTA()}
       </View>
     </View>

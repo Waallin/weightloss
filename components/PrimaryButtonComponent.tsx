@@ -33,18 +33,23 @@ const PrimaryButtonComponent = ({
         width: "100%",
       }}
     >
+      {/* Texten ligger kvar (osynlig) under laddning så att knappen behåller sin storlek */}
+      <Text
+        style={{
+          ...typography.button,
+          color: "#F4F4F4",
+          opacity: loading ? 0 : 1,
+        }}
+      >
+        {title}
+      </Text>
       {loading ? (
-        <ActivityIndicator size="small" color={colors.ui.white} />
-      ) : (
-        <Text
-          style={{
-            ...typography.button,
-            color: "#F4F4F4",
-          }}
-        >
-          {title}
-        </Text>
-      )}
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+            <ActivityIndicator size="small" color={colors.ui.white} />
+          </View>
+        </View>
+      ) : null}
     </TouchableOpacity>
   );
 };

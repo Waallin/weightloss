@@ -12,20 +12,29 @@ import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
 import ScanFoodScreen from "../main/diet/ScanFoodScreen";
+import ManualFoodScreen from "../main/diet/ManualFoodScreen";
 import FirstDayGuideScreen from "../main/home/FirstDayGuideScreen";
 import SettingsScreen from "../main/settings/SettingsScreen";
 import MoveGoalRewardScreen from "../main/home/MoveGoalRewardScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
-export type MainStackInitialRoute = "MainNavigator" | "Paywall" | "FirstDayGuide";
+export type MainStackInitialRoute =
+  | "MainNavigator"
+  | "Paywall"
+  | "FirstDayGuide"
+  | "ScanFoodScreen";
 
 interface MainStackProps {
   initialRouteName?: MainStackInitialRoute;
+  debugScanImage?: string;
+  debugScanHold?: boolean;
 }
 
 export const MainStack: React.FC<MainStackProps> = ({
   initialRouteName = "MainNavigator",
+  debugScanImage,
+  debugScanHold,
 }) => {
   return (
     <Stack.Navigator initialRouteName={initialRouteName}>
@@ -52,6 +61,16 @@ export const MainStack: React.FC<MainStackProps> = ({
       <Stack.Screen
         name="ScanFoodScreen"
         component={ScanFoodScreen}
+        initialParams={
+          debugScanImage
+            ? { debugImagePath: debugScanImage, debugHold: debugScanHold }
+            : undefined
+        }
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="ManualFoodScreen"
+        component={ManualFoodScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
