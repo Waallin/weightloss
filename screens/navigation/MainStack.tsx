@@ -116,7 +116,7 @@ export const MainStack: React.FC<MainStackProps> = ({
       <Stack.Screen
         name="Paywall"
         component={PaywallScreen}
-        options={{ headerShown: false }}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
     </Stack.Navigator>
   );

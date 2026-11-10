@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [1.2.0]
+
+### Added
+- Hard paywall built in RevenueCat ("Kudoo Premium v1"), shown after the first scanned meal or when "Skip for now" is tapped on the day 1 guide, and when a non-premium user opens the app
+- Remote switch in Firestore `config/app`: `hardPaywall: true` turns the paywall on, `hardPaywallGrandfatherBefore` (a date) lets accounts created before it keep free access. Without them the app stays free
+- Premium status from the RevenueCat entitlement `Kudoo Premium` (`usePremiumStore`, `services/premiumSync.ts`); RevenueCat is linked to the Firebase account at sign-up and when an account is restored
+- Paywall gate logic in `services/paywallGate.ts` with unit tests (`npm test`)
+- Tracking: `paywall_viewed`, `paywall_cta_tapped`, `paywall_purchase_succeeded`/`paywall_purchase_cancelled`/`paywall_purchase_failed` and `paywall_restore_tapped` now carry `placement` (`after_first_scan`, `after_skip`, `app_open`, `expired`) and `variant`
+
+### Changed
+- `PaywallScreen` shows the RevenueCat paywall (`RevenueCatUI.Paywall`) instead of the hand-built one, and has no way to dismiss it without a subscription
+- RevenueCat is initialised at startup on iOS
+- `flow_version` is `onb_v4_hard_paywall`
+- `docs/tracking-plan.md` describes the paywall switch, placements and events
+
 ## [1.1.5]
 
 ### Added

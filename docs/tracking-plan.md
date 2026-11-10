@@ -9,13 +9,13 @@ Läses av Claude när data hämtas från Mixpanel. Håll den i synk med `constan
 - Mixpanel-projekt: Kudoo (US-servern). Dev-byggen skickar inget om inte `EXPO_PUBLIC_MIXPANEL_DEV_TOKEN` är satt.
 
 ## Flödesversion
-`flow_version` finns på varje event (se `FLOW_VERSION` i `services/tracking.ts`). Ändra den vid varje stor omgörning av onboarding/guide. Nuvarande: `onb_v3_free_anon`.
+`flow_version` finns på varje event (se `FLOW_VERSION` i `services/tracking.ts`). Ändra den vid varje stor omgörning av onboarding/guide. Nuvarande: `onb_v4_hard_paywall`.
 
 ## Super properties (på varje event)
 `platform`, `app_version`, `flow_version`, `account_type` (`anonymous`|`apple`), `device_region`, `is_internal`, `signup_date`, `days_since_signup`.
 
 ## Tratten
-`app_installed` -> `onboarding_viewed` -> `onboarding_slide_viewed` (slide 1-4) -> `onboarding_completed` -> `profile_details_step_viewed` (step_index 1-5) -> `profile_details_completed` -> `plan_ready_viewed` + `auth_viewed` (samma skärm) -> `start_tapped` -> `user_registered` -> `first_day_guide_viewed` -> `health_permission_prompted` -> `first_meal_logged` -> `home_viewed`.
+`app_installed` -> `onboarding_viewed` -> `onboarding_slide_viewed` (slide 1-4) -> `onboarding_completed` -> `profile_details_step_viewed` (step_index 1-5) -> `profile_details_completed` -> `plan_ready_viewed` + `auth_viewed` (samma skärm) -> `start_tapped` -> `user_registered` -> `first_day_guide_viewed` -> `health_permission_prompted` -> `first_meal_logged` -> `paywall_viewed` (om hård paywall är på) -> `paywall_purchase_succeeded` -> `home_viewed`.
 
 ## Events
 | Event | När | Egenskaper |
@@ -50,3 +50,12 @@ Alla milstolpar går genom `trackMilestone` i `services/tracking.ts`.
 | `account_linked` | custom `AccountLinked` | - |
 
 Kontrollera i TikTok Events Manager vilka händelser som går att optimera annonser mot och byt mappningen i `milestoneToAds`.
+
+## Hård paywall (RevenueCat)
+Styrs av Firestore `config/app`. Utan fälten är appen gratis.
+- `hardPaywall: true` slår på paywallen (`"true"`/`"on"` fungerar också).
+- `hardPaywallGrandfatherBefore: "YYYY-MM-DD"`: konton skapade före datumet slipper paywallen. Saknas datumet grandfatheras ingen.
+- Paywallen visas efter första scannade måltiden (`placement=after_first_scan`), vid "Skip for now" (`after_skip`) och vid appstart för icke-premium (`expired`/`app_open`).
+- Premium = entitlement `Kudoo Premium`. Ej Apple-/iOS-klienter räknas som premium så grinden aldrig gäller.
+- Events: `paywall_viewed`, `paywall_cta_tapped`, `paywall_purchase_succeeded`/`_cancelled`/`_failed`, `paywall_restore_tapped`. Egenskaper: `placement`, `variant` (`rc_v1`).
+- Grindlogik: `services/paywallGate.ts`, test: `npm test`.

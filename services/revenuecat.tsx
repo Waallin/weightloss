@@ -1,7 +1,12 @@
 import { Platform } from "react-native";
 import Purchases, { LOG_LEVEL, type CustomerInfo } from "react-native-purchases";
 
+export const PREMIUM_ENTITLEMENT = "Kudoo Premium";
+
+let revenueCatConfigured = false;
+
 export async function initRevenueCat() {
+  if (revenueCatConfigured) return;
 
   // Sätt önskad loggnivå för RevenueCat här
   await Purchases.setLogLevel(LOG_LEVEL.ERROR);
@@ -10,7 +15,34 @@ export async function initRevenueCat() {
     Purchases.configure({
       apiKey: process.env.EXPO_PUBLIC_RC_API_KEY,
     });
+    revenueCatConfigured = true;
   }
+}
+
+export function customerHasPremium(customerInfo: CustomerInfo | null | undefined) {
+  return customerInfo?.entitlements.active[PREMIUM_ENTITLEMENT] !== undefined;
+}
+
+// true/false när RevenueCat svarar, null om vi inte kunde läsa statusen (t.ex. offline utan cache)
+export async function fetchPremiumStatus(): Promise<boolean | null> {
+  if (!revenueCatConfigured) return null;
+  try {
+    const customerInfo = await Purchases.getCustomerInfo();
+    return customerHasPremium(customerInfo);
+  } catch (e: any) {
+    console.log("RevenueCat getCustomerInfo error:", e);
+    return null;
+  }
+}
+
+// Anropar onChange varje gång RevenueCat rapporterar ny kundinfo (köp, förnyelse, utgång, restore)
+export function subscribeToPremium(onChange: (isPremium: boolean) => void) {
+  if (!revenueCatConfigured) return () => {};
+  const listener = (customerInfo: CustomerInfo) => onChange(customerHasPremium(customerInfo));
+  Purchases.addCustomerInfoUpdateListener(listener);
+  return () => {
+    Purchases.removeCustomerInfoUpdateListener(listener);
+  };
 }
 
 export async function isCustomerPremium() {
