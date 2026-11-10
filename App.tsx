@@ -1,11 +1,11 @@
-import { SafeAreaView, View, Text, TouchableOpacity, AppState } from "react-native";
+import { SafeAreaView, View, Text, TouchableOpacity, AppState, Platform } from "react-native";
 import { AuthNavigator } from "./screens/navigation/AuthNavigator";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useToastStore from "./stores/useToastStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import useUserStore from "./stores/useUserStore";
 import { MainStack } from "./screens/navigation/MainStack";
-import { NavigationContainer } from "@react-navigation/native";
+import { NavigationContainer, createNavigationContainerRef } from "@react-navigation/native";
 import CustomSplashScreen from "./CustomSplashScreen";
 import "react-native-reanimated";
 import "react-native-gesture-handler";
@@ -32,10 +32,16 @@ import useUnitsStore from "./stores/useUnitsStore";
 import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
 import { initializeTikTokTracking } from "./services/tiktoksdk";
+import { initRevenueCat, subscribeToPremium } from "./services/revenuecat";
+import { linkRevenueCatToAccount, syncPremium } from "./services/premiumSync";
+import { getPaywallGate } from "./services/paywallGate";
+import usePremiumStore from "./stores/usePremiumStore";
 import { FIRST_DAY_GUIDE_STEP_KEY } from "./screens/main/home/FirstDayGuideScreen";
 import UnderageBlockedScreen, {
   UNDERAGE_BLOCKED_KEY,
 } from "./screens/auth/UnderageBlockedScreen";
+
+const navigationRef = createNavigationContainerRef<any>();
 
 export default function App(props: { scanImage?: string; debugSteps?: string; scanHold?: string }) {
   const debugScanImage = getDebugScanImage(props);
@@ -93,10 +99,34 @@ function AppContent() {
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [resumeFirstDayGuide, setResumeFirstDayGuide] = useState(false);
+  const [startOnPaywall, setStartOnPaywall] = useState(false);
+  const unsubscribePremium = useRef<(() => void) | null>(null);
+  const isPremium = usePremiumStore((s) => s.isPremium);
+  const premiumLoaded = usePremiumStore((s) => s.loaded);
+  const config = useConfigStore((s) => s.config);
   const hydrateUnits = useUnitsStore((s) => s.hydrateUnits);
+  const startRevenueCat = async () => {
+    if (Platform.OS !== "ios") {
+      // Kudoo säljs bara på iOS. Andra plattformar får aldrig paywallen.
+      usePremiumStore.getState().setPremium(true);
+      return;
+    }
+    try {
+      await initRevenueCat();
+      unsubscribePremium.current?.();
+      unsubscribePremium.current = subscribeToPremium((premium) =>
+        usePremiumStore.getState().setPremium(premium),
+      );
+      await syncPremium();
+    } catch (error) {
+      console.log("RevenueCat start failed:", error);
+    }
+  };
+
   const initializeApp = async () => {
     // Mixpanel måste vara initierat innan checkInUser skickar app_opened och super properties
     await initializeMixpanel();
+    await startRevenueCat();
     const authStatus = await checkInUser();
     if (authStatus === "blocked" || authStatus === "offline") return;
     const config = await handleConfig();
@@ -111,6 +141,7 @@ function AppContent() {
     setTimeout(() => {
       setShowSplash(false);
     }, 3000);
+    return () => unsubscribePremium.current?.();
   }, []);
 
   useEffect(() => {
@@ -128,6 +159,28 @@ function AppContent() {
 
 
 
+
+  // Hård paywall: när spärren är på och användaren inte är premium visas bara paywallen.
+  // Täcker appstart, förfallen prenumeration och försök att nå scanningen. Nya användare
+  // får gå igenom första dagens guide först; guiden skickar själv vidare till paywallen.
+  useEffect(() => {
+    if (authState !== "loggedIn" || !navigationRef.isReady()) return;
+    const gate = getPaywallGate({ config, user, isPremium, premiumLoaded });
+    if (gate === "allow") return;
+    let cancelled = false;
+    (async () => {
+      const guideStep = await AsyncStorage.getItem(FIRST_DAY_GUIDE_STEP_KEY);
+      if (cancelled || guideStep === "pending") return;
+      if (navigationRef.getCurrentRoute()?.name === "Paywall") return;
+      navigationRef.reset({
+        index: 0,
+        routes: [{ name: "Paywall", params: { placement: "expired" } }],
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authState, config, user, isPremium, premiumLoaded]);
 
   const handleSyncToday = useCallback(async () => {
     if (!user?.email) return;
@@ -237,9 +290,21 @@ function AppContent() {
       trackMixpanelEvent(analyticsEvents.appOpened);
       trackReturnIfNeeded(userData);
       // Bara konton som skapats efter att guiden infördes har "pending"; äldre konton hoppar över den
-      setResumeFirstDayGuide(
-        (await AsyncStorage.getItem(FIRST_DAY_GUIDE_STEP_KEY)) === "pending",
-      );
+      const guidePending =
+        (await AsyncStorage.getItem(FIRST_DAY_GUIDE_STEP_KEY)) === "pending";
+      setResumeFirstDayGuide(guidePending);
+
+      // Prenumeration och config måste vara kända innan vi bestämmer startskärm,
+      // annars blinkar appen upp innan paywallen
+      await linkRevenueCatToAccount(user);
+      await handleConfig();
+      const gate = getPaywallGate({
+        config: useConfigStore.getState().config,
+        user: userData,
+        isPremium: usePremiumStore.getState().isPremium,
+        premiumLoaded: usePremiumStore.getState().loaded,
+      });
+      setStartOnPaywall(gate !== "allow" && !guidePending);
       setAuthState("loggedIn");
       return true;
     } else {
@@ -271,11 +336,15 @@ function AppContent() {
         {authState === "underageBlocked" ? (
           <UnderageBlockedScreen />
         ) : (
-          <NavigationContainer>
+          <NavigationContainer ref={navigationRef}>
             {authState === "loggedIn" && (
               <MainStack
                 initialRouteName={
-                  resumeFirstDayGuide ? "FirstDayGuide" : "MainNavigator"
+                  startOnPaywall
+                    ? "Paywall"
+                    : resumeFirstDayGuide
+                      ? "FirstDayGuide"
+                      : "MainNavigator"
                 }
               />
             )}

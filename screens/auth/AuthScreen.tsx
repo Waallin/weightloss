@@ -24,6 +24,7 @@ import {
   scheduleActiveUserNotifications,
 } from "../../services/notifications";
 import { identifyMixpanel, trackMixpanelEvent } from "../../services/mixpanel";
+import { linkRevenueCatToAccount } from "../../services/premiumSync";
 import { analyticsEvents } from "../../constants/analytics";
 import { FIRST_DAY_GUIDE_STEP_KEY } from "../main/home/FirstDayGuideScreen";
 import { getDateKey } from "../../utils/dateUtils";
@@ -88,6 +89,7 @@ const AuthScreen = () => {
       scheduleActiveUserNotifications();
 
       await identifyMixpanel(docId);
+      await linkRevenueCatToAccount(docId);
       await refreshSuperProperties(userObj);
       await identifyAdPlatforms(docId);
       await trackMixpanelEvent(analyticsEvents.userRegistered, { anonymous: true });
@@ -131,6 +133,7 @@ const AuthScreen = () => {
         await getDocuments(`users/${restored.docId}/days/${getDateKey()}/foodEntries`),
       );
       await identifyMixpanel(restored.docId);
+      await linkRevenueCatToAccount(restored.docId);
       await refreshSuperProperties(restored.user);
       navigation.reset({ index: 0, routes: [{ name: "MainStack" }] });
     } catch (e: any) {

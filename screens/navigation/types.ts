@@ -1,3 +1,4 @@
+import type { PaywallPlacement } from "../../services/paywallGate";
 export type RecipeDetailLine = {
   id?: string;
   text: string;
@@ -17,7 +18,7 @@ export type RecipeDetail = {
 
 export type RootStackParamList = {
   MainNavigator: undefined;
-  Paywall: undefined;
+  Paywall: { placement?: PaywallPlacement } | undefined;
   AuthNavigator: undefined;
   DietListScreen: { initialTab?: "food" | "recipes" };
   ScanFoodScreen:

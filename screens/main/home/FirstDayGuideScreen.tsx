@@ -18,6 +18,10 @@ import useUserStore from "../../../stores/useUserStore";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { analyticsEvents } from "../../../constants/analytics";
 import useHealthConnected from "../../../hooks/useHealthConnected";
+import useConfigStore from "../../../stores/useConfigStore";
+import usePremiumStore from "../../../stores/usePremiumStore";
+import { getPaywallGate, type PaywallPlacement } from "../../../services/paywallGate";
+import { resetToPaywall } from "../../../services/paywallNavigation";
 
 const MASCOT_SIZE = Math.min(Dimensions.get("window").width * 0.95, 380);
 
@@ -71,15 +75,29 @@ const FirstDayGuideScreen = () => {
     trackMixpanelEvent(analyticsEvents.firstDayGuideSlideViewed, { slide: 2 });
   };
 
-  const finishGuide = async () => {
-    trackMixpanelEvent(analyticsEvents.firstDayGuideCompleted);
+  // Slutet på onboardingen. Är den hårda paywallen på och användaren inte premium kommer paywallen här,
+  // både efter första scanningen och om guiden hoppas över.
+  const finishGuide = async (placement: PaywallPlacement) => {
+    trackMixpanelEvent(analyticsEvents.firstDayGuideCompleted, { placement });
     await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "done");
+    const premium = usePremiumStore.getState();
+    const gate = getPaywallGate({
+      config: useConfigStore.getState().config,
+      user: useUserStore.getState().user,
+      isPremium: premium.isPremium,
+      premiumLoaded: premium.loaded,
+    });
+    if (gate !== "allow") {
+      // "unknown" (status kunde inte läsas) hamnar också här: paywallen har Restore och Try again
+      resetToPaywall(navigation, placement);
+      return;
+    }
     navigation.replace("MainNavigator");
   };
 
   useEffect(() => {
     if (route.params?.mealLogged) {
-      finishGuide();
+      finishGuide("after_first_scan");
       return;
     }
     setReady(true);
@@ -112,7 +130,7 @@ const FirstDayGuideScreen = () => {
 
   const handleLookAround = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    finishGuide();
+    finishGuide("after_skip");
   };
 
   if (!ready) {

@@ -19,7 +19,7 @@ import useUserStore from "../stores/useUserStore";
  * Byt när flödet ändras stort, så går före/efter att jämföra med en fråga.
  * Se docs/tracking-plan.md.
  */
-export const FLOW_VERSION = "onb_v3_free_anon";
+export const FLOW_VERSION = "onb_v4_hard_paywall";
 
 const toMillis = (value: any): number | null => {
   if (!value) return null;
