@@ -1,9 +1,9 @@
 import React from "react";
-import { Dimensions, FlatList, Image, Text, View } from "react-native";
+import { Dimensions, FlatList, Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "../../constants/colors";
 import { spacing } from "../../constants/spacing";
-import { textStyles } from "../../constants/texts";
+import { textStyles, typography } from "../../constants/texts";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import * as haptics from "expo-haptics";
@@ -33,7 +33,7 @@ type AuthStackParamList = {
   Onboarding: undefined;
   Paywall: undefined;
   ProfileDetails: undefined;
-  Auth: undefined;
+  Auth: { autoStart?: boolean; mode?: "restore" } | undefined;
   MainStack: undefined;
 };
 
@@ -163,7 +163,8 @@ const OnboardingScreen: React.FC = () => {
       return;
     }
     trackMixpanelEvent(analyticsEvents.onboardingCompleted);
-    navigation.replace("ProfileDetails");
+    // Kontot skapas direkt; profilfrågorna kommer efter paywallen
+    navigation.replace("Auth", { autoStart: true });
   };
 
   const handleMomentumScrollEnd = React.useCallback(
@@ -233,6 +234,15 @@ const OnboardingScreen: React.FC = () => {
           title={sections[activeIndex].cta}
           onPress={handleContinue}
         />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => navigation.navigate("Auth", { mode: "restore" })}
+          style={{ height: 44, alignItems: "center", justifyContent: "center", marginTop: spacing.xs }}
+        >
+          <Text style={{ ...typography.cardTitle, color: colors.text.secondary }}>
+            Already have an account? Sign in
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );

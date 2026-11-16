@@ -13,7 +13,7 @@ const MIN_DAYS_BETWEEN_ASKS = 60;
 const MAX_ASKS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-export type StoreReviewTrigger = "meal_logged" | "steps_goal";
+export type StoreReviewTrigger = "meal_logged" | "steps_goal" | "day1_dashboard";
 
 /**
  * Ber om App Store-recension efter ett positivt ögonblick. Säker att anropa

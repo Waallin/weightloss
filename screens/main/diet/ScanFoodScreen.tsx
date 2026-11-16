@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Pressable,
   Linking,
+  useWindowDimensions,
   ScrollView,
   TouchableOpacity,
 } from "react-native";
@@ -108,6 +109,16 @@ function ScanFrameCorner({
   );
 }
 
+type SampleFood = { id: string; label: string; source: number };
+
+// Exempelfoton för den som inte har mat framme (första dagens guide)
+const SAMPLE_FOODS: SampleFood[] = [
+  { id: "pizza", label: "Pizza", source: require("../../../assets/samples/pizza.jpg") },
+  { id: "chocolate", label: "Chocolate", source: require("../../../assets/samples/chocolate.jpg") },
+  { id: "donut", label: "Donut", source: require("../../../assets/samples/donut.jpg") },
+  { id: "salad", label: "Salad", source: require("../../../assets/samples/salad.jpg") },
+];
+
 const SCANNING_COPY = [
   {
     title: "Let's see...",
@@ -141,6 +152,7 @@ async function uriToBase64(uri: string): Promise<string> {
 const ScanFoodScreen = () => {
   const cameraRef = useRef<CameraView>(null);
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
   const [permission, requestPermission] = useCameraPermissions();
   const [image, setImage] = useState<PickedImage | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -154,6 +166,8 @@ const ScanFoodScreen = () => {
   const { user } = useUserStore();
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "ScanFoodScreen">>();
+  // Från första dagens guide öppnas väljaren direkt
+  const [samplePickerOpen, setSamplePickerOpen] = useState(route.params?.autoSample === true);
   const { showToast } = useToastStore();
   useEffect(() => {
     if (image && !result) {
@@ -186,6 +200,16 @@ const ScanFoodScreen = () => {
       }
     })();
   }, []);
+
+  // Första gången man scannar visas iOS-frågan direkt, utan skärm emellan.
+  // Nekas den visas "Camera shy?"-skärmen med vägen till Inställningar.
+  const askedCameraRef = useRef(false);
+  useEffect(() => {
+    if (permission?.status !== "undetermined") return;
+    if (askedCameraRef.current || samplePickerOpen || mockCameraFeed) return;
+    askedCameraRef.current = true;
+    void handleRequestCamera();
+  }, [permission?.status, samplePickerOpen]);
 
   useEffect(() => {
     if (!scanning) {
@@ -237,6 +261,33 @@ const ScanFoodScreen = () => {
     } catch (error) {
       console.error(error);
       Alert.alert("Couldn't take photo", "Try taking a new one.");
+    } finally {
+      setTakingPhoto(false);
+    }
+  };
+
+  // Exempelfoto för den som inte har mat framme under första dagens guide.
+  // Går genom samma scanning som ett vanligt foto.
+  const handleSamplePhoto = async (food: SampleFood) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (takingPhoto || scanning) return;
+    setTakingPhoto(true);
+    try {
+      const uri = Image.resolveAssetSource(food.source).uri;
+      const base64 = await uriToBase64(uri);
+      const mimeType = mimeFromBase64(base64);
+      if (!mimeType) {
+        Alert.alert("Couldn't load the sample", "Try another one or take a photo.");
+        return;
+      }
+      trackMixpanelEvent(analyticsEvents.scanSampleUsed, { sample: food.id });
+      setSamplePickerOpen(false);
+      clearScanState();
+      setScanning(true);
+      setImage({ uri, base64, mimeType });
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Couldn't load the sample", "Try another one or take a photo.");
     } finally {
       setTakingPhoto(false);
     }
@@ -464,7 +515,8 @@ Return JSON only.
   );
 
   const renderCamera = () => {
-    if (!mockCameraFeed && !permission) {
+    // Svart bakgrund medan iOS-frågan visas, så "Camera shy?" inte blinkar förbi
+    if (!mockCameraFeed && (!permission || permission.status === "undetermined")) {
       return <View style={{ flex: 1, backgroundColor: "#000" }} />;
     }
 
@@ -522,6 +574,13 @@ Return JSON only.
               canAskAgain ? handleRequestCamera : () => Linking.openSettings()
             }
           />
+          {route.params?.fromFirstDayGuide ? (
+            renderSecondaryButton(
+              "No food nearby? Pick a sample photo",
+              "images-outline",
+              () => setSamplePickerOpen(true),
+            )
+          ) : null}
         </View>
       );
     }
@@ -664,6 +723,29 @@ Return JSON only.
               />
             </View>
           </Pressable>
+          {route.params?.fromFirstDayGuide ? (
+            <Pressable
+              onPress={() => setSamplePickerOpen(true)}
+              disabled={takingPhoto}
+              style={{
+                marginTop: spacing.md,
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 8,
+                paddingVertical: 12,
+                paddingHorizontal: 18,
+                borderRadius: 24,
+                backgroundColor: "rgba(255,255,255,0.16)",
+                borderWidth: 1,
+                borderColor: "rgba(255,255,255,0.3)",
+              }}
+            >
+              <Ionicons name="images-outline" size={18} color="#fff" />
+              <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: "#fff" }}>
+                No food nearby? Pick a sample photo
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
         {takingPhoto ? (
           <View
@@ -1097,8 +1179,107 @@ Return JSON only.
     );
   };
 
+  // Vit sekundärknapp med tunn kant och mjuk skugga (samma stil som i första dagens guide)
+  const renderSecondaryButton = (
+    label: string,
+    icon: React.ComponentProps<typeof Ionicons>["name"],
+    onPress: () => void,
+  ) => (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        marginTop: spacing.sm,
+        height: 54,
+        borderRadius: 14,
+        backgroundColor: colors.ui.componentBackground,
+        borderWidth: 1,
+        borderColor: colors.ui.cardBorder,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        shadowColor: colors.ui.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+    >
+      <Ionicons name={icon} size={20} color={colors.ui.primary} />
+      <Text style={{ ...typography.bodySemiBold, fontSize: 16, color: colors.text.primary }}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  // Två rutor per rad, med fast storlek så att stora fotofiler inte styr layouten
+  const sampleTile = Math.floor((windowWidth - spacing.md * 3) / 2);
+
+  const renderSamplePicker = () => (
+    <View
+      style={{
+        flex: 1,
+        paddingHorizontal: spacing.md,
+        paddingBottom: insets.bottom + spacing.md,
+      }}
+    >
+      <View style={{ alignItems: "center", gap: spacing.xs, marginTop: spacing.sm }}>
+        <Text style={{ ...typography.headline, color: colors.text.primary, textAlign: "center" }}>
+          Pick something to scan
+        </Text>
+        <Text style={{ ...textStyles.secondary, textAlign: "center", maxWidth: 280 }}>
+          We'll count the points, just like with your own meal.
+        </Text>
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: spacing.md,
+          marginTop: spacing.lg,
+        }}
+      >
+        {SAMPLE_FOODS.map((food) => (
+          <Pressable
+            key={food.id}
+            onPress={() => handleSamplePhoto(food)}
+            disabled={takingPhoto}
+            style={{ width: sampleTile, opacity: takingPhoto ? 0.6 : 1 }}
+          >
+            <Image
+              source={food.source}
+              style={{ width: sampleTile, height: sampleTile, borderRadius: 16 }}
+              resizeMode="cover"
+            />
+            <Text
+              style={{
+                ...typography.bodySemiBold,
+                fontSize: 16,
+                color: colors.text.primary,
+                textAlign: "center",
+                marginTop: spacing.xs,
+              }}
+            >
+              {food.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+      <View style={{ flex: 1 }} />
+      {renderSecondaryButton("Use the camera instead", "camera-outline", () =>
+        setSamplePickerOpen(false),
+      )}
+    </View>
+  );
+
+  const showSamplePicker = samplePickerOpen && !scanning && !image;
+
   const showDefaultHeader =
-    scanning || (image && !result) || (!image && !permission?.granted && !mockCameraFeed);
+    scanning ||
+    showSamplePicker ||
+    (image && !result) ||
+    (!image && !permission?.granted && !mockCameraFeed);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.ui.background }}>
@@ -1113,7 +1294,9 @@ Return JSON only.
           ? result
             ? renderResult()
             : renderNoResult()
-          : renderCamera()}
+          : showSamplePicker
+            ? renderSamplePicker()
+            : renderCamera()}
     </View>
   );
 };

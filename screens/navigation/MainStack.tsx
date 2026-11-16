@@ -14,8 +14,11 @@ import PaywallScreen from "../auth/PaywallScreen";
 import ScanFoodScreen from "../main/diet/ScanFoodScreen";
 import ManualFoodScreen from "../main/diet/ManualFoodScreen";
 import FirstDayGuideScreen from "../main/home/FirstDayGuideScreen";
+import AcquisitionSourceScreen from "../auth/AcquisitionSourceScreen";
+import FirstDayDashboardScreen from "../main/home/FirstDayDashboardScreen";
 import SettingsScreen from "../main/settings/SettingsScreen";
 import MoveGoalRewardScreen from "../main/home/MoveGoalRewardScreen";
+import ProfileDetailsScreen from "../auth/ProfileDetailsScreen";
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -23,6 +26,7 @@ export type MainStackInitialRoute =
   | "MainNavigator"
   | "Paywall"
   | "FirstDayGuide"
+  | "ProfileDetails"
   | "ScanFoodScreen";
 
 interface MainStackProps {
@@ -47,6 +51,16 @@ export const MainStack: React.FC<MainStackProps> = ({
         name="FirstDayGuide"
         component={FirstDayGuideScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="FirstDayDashboard"
+        component={FirstDayDashboardScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="AcquisitionSource"
+        component={AcquisitionSourceScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen
         name="DietListScreen"
@@ -116,6 +130,12 @@ export const MainStack: React.FC<MainStackProps> = ({
       <Stack.Screen
         name="Paywall"
         component={PaywallScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      {/* Resten av profilen efter paywallen (kön, längd, vikt, målvikt, källa) */}
+      <Stack.Screen
+        name="ProfileDetails"
+        component={ProfileDetailsScreen}
         options={{ headerShown: false, gestureEnabled: false }}
       />
     </Stack.Navigator>

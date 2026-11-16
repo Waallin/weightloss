@@ -17,7 +17,7 @@ import { logMetaEvent } from "../../services/metasdk";
 import { logTikTokEvent } from "../../services/tiktoksdk";
 import { updateDocument } from "../../services/firebase";
 import { customerHasPremium, PREMIUM_ENTITLEMENT } from "../../services/revenuecat";
-import { resetToMain } from "../../services/paywallNavigation";
+import { resetToMain, resetToProfileRest } from "../../services/paywallNavigation";
 import usePremiumStore from "../../stores/usePremiumStore";
 import useUserStore from "../../stores/useUserStore";
 import type { RootStackParamList } from "../navigation/types";
@@ -78,7 +78,9 @@ const PaywallScreen: React.FC = () => {
     if (leaving.current) return;
     leaving.current = true;
     setPremium(true);
-    resetToMain(navigation);
+    // Nya konton har bara svarat på åldern; resten av profilen tas efter paywallen
+    if (useUserStore.getState().user?.profilePending) resetToProfileRest(navigation);
+    else resetToMain(navigation);
   }, [navigation, setPremium]);
 
   // Premium kan bli aktivt utanför den här skärmen (kundinfo-lyssnaren). Då ska vi inte sitta kvar.

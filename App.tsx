@@ -33,7 +33,7 @@ import { scheduleActiveUserNotifications } from "./services/notifications";
 import { initializeMetaTracking } from "./services/metasdk";
 import { initializeTikTokTracking } from "./services/tiktoksdk";
 import { initRevenueCat, subscribeToPremium } from "./services/revenuecat";
-import { linkRevenueCatToAccount, syncPremium } from "./services/premiumSync";
+import { linkRevenueCatToAccount, syncPremium, withTimeout } from "./services/premiumSync";
 import { getPaywallGate } from "./services/paywallGate";
 import usePremiumStore from "./stores/usePremiumStore";
 import { FIRST_DAY_GUIDE_STEP_KEY } from "./screens/main/home/FirstDayGuideScreen";
@@ -93,13 +93,17 @@ function AppContent() {
   const steps = useTodaySteps();
   const {  setTodayDiet } = useTodayDietStore();
   const { setConfig } = useConfigStore();
-  const [authState, setAuthState] = useState("unauthenticated");
+  // "loading" tills checkInUser vet om det finns ett konto. Annars visas onboardingen
+  // en kort stund för inloggade användare, och hinner de trycka Start skapas ett nytt konto.
+  const [authState, setAuthState] = useState("loading");
   const { visibleConfetti, confettiNonce, setVisibleConfetti } =
     useConfettiStore();
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [resumeFirstDayGuide, setResumeFirstDayGuide] = useState(false);
   const [startOnPaywall, setStartOnPaywall] = useState(false);
+  // Nya konton har bara svarat på åldern; resten av profilen tas efter paywallen
+  const [profilePending, setProfilePending] = useState(false);
   const unsubscribePremium = useRef<(() => void) | null>(null);
   const isPremium = usePremiumStore((s) => s.isPremium);
   const premiumLoaded = usePremiumStore((s) => s.loaded);
@@ -117,7 +121,8 @@ function AppContent() {
       unsubscribePremium.current = subscribeToPremium((premium) =>
         usePremiumStore.getState().setPremium(premium),
       );
-      await syncPremium();
+      // Inloggade användare synkas i checkInUser; här får det inte fördröja starten
+      syncPremium().catch(() => {});
     } catch (error) {
       console.log("RevenueCat start failed:", error);
     }
@@ -127,7 +132,15 @@ function AppContent() {
     // Mixpanel måste vara initierat innan checkInUser skickar app_opened och super properties
     await initializeMixpanel();
     await startRevenueCat();
-    const authStatus = await checkInUser();
+    let authStatus;
+    try {
+      authStatus = await checkInUser();
+    } catch (error) {
+      // Får inte fastna på startskärmen; visa "försök igen" i stället
+      console.log("Startup check failed:", error);
+      setAuthState("offline");
+      return;
+    }
     if (authStatus === "blocked" || authStatus === "offline") return;
     const config = await handleConfig();
     await identifyUser();
@@ -267,23 +280,27 @@ function AppContent() {
     }
 
     // Ett nätverksfel får inte tolkas som att kontot saknas, då loggas användaren ut för gott
+    const dietRef = "users/" + user + "/days/" + getDateKey() + "/foodEntries";
     let userData;
+    let todayDiet;
     try {
-      userData = await fetchDocument("users", user);
+      [userData, todayDiet] = await Promise.all([
+        fetchDocument("users", user),
+        getDocuments(dietRef),
+      ]);
     } catch (error) {
       console.log("Could not read user document:", error);
       setAuthState("offline");
       return "offline";
     }
-    const dietRef = "users/" + user + "/days/" + getDateKey() + "/foodEntries";
-    const todayDiet = await getDocuments(dietRef);
 
     if (userData) {
     
-      await updateDocument("users", user, {
+      // Behöver inte vänta in skrivningen innan appen visas
+      updateDocument("users", user, {
         totalAppsOpen: increment(1),
         lastActiveAt: new Date(),
-      });
+      }).catch((error) => console.log("Could not update app opens:", error));
       setTodayDiet(todayDiet);
       setUser(userData);
       await refreshSuperProperties(userData);
@@ -293,11 +310,16 @@ function AppContent() {
       const guidePending =
         (await AsyncStorage.getItem(FIRST_DAY_GUIDE_STEP_KEY)) === "pending";
       setResumeFirstDayGuide(guidePending);
+      setProfilePending(userData?.profilePending === true);
 
       // Prenumeration och config måste vara kända innan vi bestämmer startskärm,
       // annars blinkar appen upp innan paywallen
-      await linkRevenueCatToAccount(user);
-      await handleConfig();
+      // Med tidsgräns: ett långsamt RevenueCat får inte hålla kvar startskärmen.
+      // Okänd prenumerationsstatus ger paywallen, och den släpper in när statusen kommer.
+      await Promise.all([
+        withTimeout(linkRevenueCatToAccount(user), 5000),
+        handleConfig(),
+      ]);
       const gate = getPaywallGate({
         config: useConfigStore.getState().config,
         user: userData,
@@ -317,8 +339,8 @@ function AppContent() {
     }
   };
 
-  // Visa splash screen tills auth är kollad
-  if (showSplash) {
+  // Visa splash screen tills auth är kollad (minst splashens egen tid)
+  if (showSplash || authState === "loading") {
     return <CustomSplashScreen onFinish={handleSplashFinish} />;
   }
 
@@ -344,7 +366,9 @@ function AppContent() {
                     ? "Paywall"
                     : resumeFirstDayGuide
                       ? "FirstDayGuide"
-                      : "MainNavigator"
+                      : profilePending
+                        ? "ProfileDetails"
+                        : "MainNavigator"
                 }
               />
             )}

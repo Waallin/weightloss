@@ -6,6 +6,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [Unreleased]
+
+## [1.3.0]
+
+### Changed
+- New onboarding order (`flow_version` `onb_v5_scan_first`): the whole profile form (age, gender, height, weight, goal weight, where you heard about Kudoo) now comes after the paywall. The anonymous account is created straight after the intro slides, then the day 1 guide (steps, scan a meal) and the paywall, then the profile questions and the plan summary. The under-18 block is therefore also after the paywall
+- Accounts created in the new order have `profilePending: true` until the profile is answered, with default values for age, gender, height and weight in the meantime. If the app is closed before that, the questions are shown on next start
+- "Already have an account? Sign in" moved to the intro slides (the Start screen no longer exists in the new order)
+
+### Removed
+- "Skip for now" on the day 1 guide. It sent most new users straight to the paywall without scanning
+
+### Added
+- Social proof on the account setup screen (the loading view after the intro slides): 4.9 rating, "Trusted by people like you", a testimonial card, and "Setting things up…" underneath. Shown for at least 4.5 s even if the account is created faster. Testimonial lives in `constants/socialProof.ts`
+- "Where did you hear about Kudoo?" moved from the last profile step to its own screen (`AcquisitionSourceScreen`) between the day 1 dashboard and the paywall, so non-buyers answer too. The profile is now five steps (the last button reads "Build my plan"); `profile_details_completed` no longer carries `acquisition_source`. Source ids moved to `constants/acquisition.ts`
+- Age question now has an "Under 18" option instead of the "I'm under 18" block link, so under-18 users continue into the app (age group `under-18`, birth year set to 16 years ago). For them the daily points budget is calculated at maintenance, with no calorie deficit (`calculatePoints`). The stop screen only remains for devices that were already blocked
+- Profile steps no longer require interaction: Continue is active on height and weight too (defaults 175 cm / 100 kg are accepted as they are), matching gender and goal weight
+- Day 1 dashboard (`FirstDayDashboardScreen`) between the first logged meal and the paywall: confirmation, the meal and its points, steps ring if step counting is on, and a "Start my journey" button that continues to the paywall. Confetti, a success haptic and the App Store review prompt (`day1_dashboard` trigger, after 2.8 s) on arrival. A note that height, weight and age come next so the points fit, and the meal points are labelled "estimate". Sent as `day1_dashboard_viewed` and `day1_dashboard_cta_tapped`. The guide-finish logic moved to `services/finishFirstDayGuide.ts`
+- Steps ring on the day 1 guide: after "Turn on step counting" the mascot is replaced in place by a ring showing today's steps toward 5,000, then Continue to the scan. Sent as `steps_ring_viewed` with `steps`
+- "No food nearby? Pick a sample photo" on the day 1 guide and its camera screen. Opens a picker with four photos (pizza, chocolate, donut, salad, stock photos from Pexels in `assets/samples/`) and runs the normal scan on the one you pick. Sent as `scan_sample_used` with `sample`
+- `phase` (`post_paywall`) on `profile_details_step_viewed`
+
+## [1.2.1]
+
+### Added
+- Last profile step asks "Where did you hear about Kudoo?" (TikTok, App Store search, Instagram, A friend, Other, or Skip). One tap moves on; the answer is saved on the account as `acquisitionSource` and sent to Mixpanel as `acquisition_source_answered` and the people property `acquisition_source`
+
+### Changed
+- The goal weight step now says "Continue"; the progress bar is spread over six steps
+
+### Fixed
+- Logged-in users no longer see the onboarding when they open the app. The splash screen now stays until the account check is done, instead of closing after a fixed 2 seconds, so they can't create a new empty account by tapping Start
+- Faster startup: RevenueCat no longer runs before the account check, its calls have time limits, and the user document and today's meals are read in parallel
+
 ## [1.2.0]
 
 ### Added

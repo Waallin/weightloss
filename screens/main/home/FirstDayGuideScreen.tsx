@@ -1,10 +1,9 @@
 import { Dimensions } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation, useRoute, type RouteProp } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as haptics from "expo-haptics";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../../constants/colors";
@@ -18,16 +17,15 @@ import useUserStore from "../../../stores/useUserStore";
 import { trackMixpanelEvent } from "../../../services/mixpanel";
 import { analyticsEvents } from "../../../constants/analytics";
 import useHealthConnected from "../../../hooks/useHealthConnected";
-import useConfigStore from "../../../stores/useConfigStore";
-import usePremiumStore from "../../../stores/usePremiumStore";
-import { getPaywallGate, type PaywallPlacement } from "../../../services/paywallGate";
-import { resetToPaywall } from "../../../services/paywallNavigation";
+import { AnimatedCircularProgress } from "react-native-circular-progress";
+import { STEP_GOAL, formatNumber } from "../../../utils/goals";
 
+const RING_SIZE = Math.min(Dimensions.get("window").width * 0.66, 260);
 const MASCOT_SIZE = Math.min(Dimensions.get("window").width * 0.95, 380);
 
 const currentYear = new Date().getFullYear();
 
-export const FIRST_DAY_GUIDE_STEP_KEY = "first_day_guide_step";
+export { FIRST_DAY_GUIDE_STEP_KEY } from "../../../services/finishFirstDayGuide";
 
 const cardStyle = {
   backgroundColor: colors.ui.white,
@@ -52,10 +50,12 @@ const FirstDayGuideScreen = () => {
   const { requestPermission } = useHealthKitPermissions();
   const [connecting, setConnecting] = useState(false);
   const [ready, setReady] = useState(false);
-  const [step, setStep] = useState<"steps" | "meal">("steps");
+  const [step, setStep] = useState<"steps" | "ring" | "meal">("steps");
+  const connectFlowRef = useRef(false);
 
   const handleConnect = async () => {
     if (connecting) return;
+    connectFlowRef.current = true;
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     setConnecting(true);
     trackMixpanelEvent(analyticsEvents.healthPermissionPrompted, { source: "first_day_guide" });
@@ -67,7 +67,8 @@ const FirstDayGuideScreen = () => {
       setConnecting(false);
     }
     markRequested();
-    goToMeal();
+    setStep("ring");
+    trackMixpanelEvent(analyticsEvents.stepsRingViewed, { steps: todaySteps });
   };
 
   const goToMeal = () => {
@@ -75,29 +76,10 @@ const FirstDayGuideScreen = () => {
     trackMixpanelEvent(analyticsEvents.firstDayGuideSlideViewed, { slide: 2 });
   };
 
-  // Slutet på onboardingen. Är den hårda paywallen på och användaren inte premium kommer paywallen här,
-  // både efter första scanningen och om guiden hoppas över.
-  const finishGuide = async (placement: PaywallPlacement) => {
-    trackMixpanelEvent(analyticsEvents.firstDayGuideCompleted, { placement });
-    await AsyncStorage.setItem(FIRST_DAY_GUIDE_STEP_KEY, "done");
-    const premium = usePremiumStore.getState();
-    const gate = getPaywallGate({
-      config: useConfigStore.getState().config,
-      user: useUserStore.getState().user,
-      isPremium: premium.isPremium,
-      premiumLoaded: premium.loaded,
-    });
-    if (gate !== "allow") {
-      // "unknown" (status kunde inte läsas) hamnar också här: paywallen har Restore och Try again
-      resetToPaywall(navigation, placement);
-      return;
-    }
-    navigation.replace("MainNavigator");
-  };
-
   useEffect(() => {
     if (route.params?.mealLogged) {
-      finishGuide("after_first_scan");
+      // Måltiden är loggad: visa dagens dashboard innan paywallen
+      navigation.replace("FirstDayDashboard");
       return;
     }
     setReady(true);
@@ -105,7 +87,7 @@ const FirstDayGuideScreen = () => {
 
   // Redan kopplat: hoppa direkt till måltidssteget
   useEffect(() => {
-    if (healthConnected && step === "steps") setStep("meal");
+    if (healthConnected && step === "steps" && !connectFlowRef.current) setStep("meal");
   }, [healthConnected]);
 
   useEffect(() => {
@@ -128,9 +110,10 @@ const FirstDayGuideScreen = () => {
     navigation.navigate("ScanFoodScreen", { fromFirstDayGuide: true });
   };
 
-  const handleLookAround = () => {
+  // Ingen "Skip": den som inte har mat framme väljer ett exempelfoto
+  const handleSample = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    finishGuide("after_skip");
+    navigation.navigate("ScanFoodScreen", { fromFirstDayGuide: true, autoSample: true });
   };
 
   if (!ready) {
@@ -143,6 +126,10 @@ const FirstDayGuideScreen = () => {
   }
 
   const onStepsStep = step === "steps";
+  const onRingStep = step === "ring";
+  const dotKey = onRingStep ? "steps" : step;
+  const stepsFill = Math.min(100, (todaySteps / STEP_GOAL) * 100);
+  const goalReached = todaySteps >= STEP_GOAL;
 
   const primaryButton = (label: string, icon: React.ComponentProps<typeof Ionicons>["name"], color: string, onPress: () => void) => (
     <TouchableOpacity
@@ -160,6 +147,33 @@ const FirstDayGuideScreen = () => {
     >
       <Ionicons name={icon} size={22} color={colors.ui.white} />
       <Text style={{ ...typography.button, fontSize: 18, color: colors.ui.white }}>{label}</Text>
+    </TouchableOpacity>
+  );
+
+  const secondaryButton = (label: string, icon: React.ComponentProps<typeof Ionicons>["name"], onPress: () => void) => (
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={onPress}
+      style={{
+        marginTop: spacing.sm,
+        height: 54,
+        borderRadius: 14,
+        backgroundColor: colors.ui.componentBackground,
+        borderWidth: 1,
+        borderColor: colors.ui.cardBorder,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 10,
+        shadowColor: colors.ui.shadow,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 12,
+        elevation: 2,
+      }}
+    >
+      <Ionicons name={icon} size={20} color={colors.ui.primary} />
+      <Text style={{ ...typography.cardTitle, color: colors.text.primary }}>{label}</Text>
     </TouchableOpacity>
   );
 
@@ -184,10 +198,10 @@ const FirstDayGuideScreen = () => {
             <View
               key={s}
               style={{
-                width: s === step ? 22 : 8,
+                width: s === dotKey ? 22 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: s === step ? colors.ui.primary : "#D8D8D6",
+                backgroundColor: s === dotKey ? colors.ui.primary : "#D8D8D6",
               }}
             />
           ))}
@@ -195,15 +209,45 @@ const FirstDayGuideScreen = () => {
 
         <View style={{ flex: 1, justifyContent: "center" }}>
         <View style={{ alignItems: "center" }}>
-          <Image
-            source={
-              onStepsStep
-                ? require("../../../assets/mascot/easier.png")
-                : require("../../../assets/mascot/camera.png")
-            }
-            resizeMode="contain"
-            style={{ width: MASCOT_SIZE, height: MASCOT_SIZE }}
-          />
+          {onRingStep ? (
+            <AnimatedCircularProgress
+              size={RING_SIZE}
+              width={18}
+              fill={stepsFill}
+              prefill={0}
+              tintColor={colors.goals.moveRing}
+              backgroundColor={colors.goals.ringTrack}
+              rotation={0}
+              lineCap="round"
+              duration={1000}
+            >
+              {() => (
+                <View style={{ alignItems: "center" }}>
+                  <Ionicons
+                    name={goalReached ? "checkmark" : "footsteps"}
+                    size={28}
+                    color={colors.goals.moveRing}
+                  />
+                  <Text style={{ ...typography.displayNumeric, fontSize: 46, lineHeight: 54, color: colors.text.primary }}>
+                    {formatNumber(todaySteps)}
+                  </Text>
+                  <Text style={{ ...typography.bodyMedium, color: colors.goals.muted }}>
+                    of {formatNumber(STEP_GOAL)} steps
+                  </Text>
+                </View>
+              )}
+            </AnimatedCircularProgress>
+          ) : (
+            <Image
+              source={
+                onStepsStep
+                  ? require("../../../assets/mascot/easier.png")
+                  : require("../../../assets/mascot/camera.png")
+              }
+              resizeMode="contain"
+              style={{ width: MASCOT_SIZE, height: MASCOT_SIZE }}
+            />
+          )}
         </View>
         <View style={{ alignItems: "center", marginTop: spacing.sm }}>
           <Text
@@ -215,7 +259,15 @@ const FirstDayGuideScreen = () => {
               textAlign: "center",
             }}
           >
-            {onStepsStep ? "Let your steps count" : "Try logging a meal"}
+            {onRingStep
+              ? goalReached
+                ? "You’ve hit your goal"
+                : todaySteps > 0
+                  ? "Nice, you’re on your way"
+                  : "Step counting is on"
+              : onStepsStep
+                ? "Let your steps count"
+                : "Try logging a meal"}
           </Text>
           <Text
             style={{
@@ -227,14 +279,22 @@ const FirstDayGuideScreen = () => {
               paddingHorizontal: spacing.md,
             }}
           >
-            {onStepsStep
+            {onRingStep
+              ? goalReached
+                ? `That’s ${formatNumber(STEP_GOAL)} steps today. Nothing to log, it counts automatically.`
+                : todaySteps > 0
+                  ? `${formatNumber(Math.max(0, STEP_GOAL - todaySteps))} steps to go for today’s goal. It counts automatically.`
+                  : `Your goal is ${formatNumber(STEP_GOAL)} steps a day. Take a walk and watch the ring fill.`
+              : onStepsStep
               ? "Connect Apple Health and your daily steps are tracked automatically. Nothing to log."
               : `You have ${points} points today. Snap a photo of what you’re eating and see how it works.`}
           </Text>
         </View>
         </View>
 
-        {onStepsStep ? (
+        {onRingStep ? (
+          primaryButton("Continue", "arrow-forward", colors.ui.primary, goToMeal)
+        ) : onStepsStep ? (
           <>
             {primaryButton("Turn on step counting", "footsteps-outline", colors.ui.primary, handleConnect)}
             {textLink("Not now", goToMeal, colors.goals.muted)}
@@ -242,7 +302,7 @@ const FirstDayGuideScreen = () => {
         ) : (
           <>
             {primaryButton("Scan a meal", "camera-outline", colors.ui.primary, handleScan)}
-            {textLink("Skip for now", handleLookAround, colors.goals.muted)}
+            {secondaryButton("No food nearby? Pick a sample photo", "images-outline", handleSample)}
           </>
         )}
       </View>

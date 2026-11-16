@@ -23,8 +23,10 @@ export const calculatePoints = (
     age: number,
     gender: string,
     steps: number,
-    deficit = 800,
+    requestedDeficit = 800,
 ) => {
+    // Under 18 räknas budgeten på underhåll, utan kaloriunderskott
+    const deficit = age < 18 ? 0 : requestedDeficit;
     const baseMaintenance = calculateBaseMaintenanceCalories(
         weight,
         height,

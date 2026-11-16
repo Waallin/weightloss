@@ -22,9 +22,16 @@ export type RootStackParamList = {
   AuthNavigator: undefined;
   DietListScreen: { initialTab?: "food" | "recipes" };
   ScanFoodScreen:
-    | { fromFirstDayGuide?: boolean; debugImagePath?: string; debugHold?: boolean }
+    | {
+        fromFirstDayGuide?: boolean;
+        autoSample?: boolean;
+        debugImagePath?: string;
+        debugHold?: boolean;
+      }
     | undefined;
   FirstDayGuide: { mealLogged?: boolean } | undefined;
+  FirstDayDashboard: undefined;
+  AcquisitionSource: undefined;
   AddDietScreen: undefined;
   ManualFoodScreen: { fromFirstDayGuide?: boolean } | undefined;
   SettingsScreen: undefined;
@@ -32,7 +39,8 @@ export type RootStackParamList = {
   ProfileScreen: undefined;
   PreferencesScreen: undefined;
   LogWeightScreen: undefined;
-  Auth: undefined;
+  Auth: { autoStart?: boolean; mode?: "restore" } | undefined;
+  ProfileDetails: undefined;
   ArticleScreen: {
     article?: {
       id: number;
@@ -49,7 +57,7 @@ export type AuthStackParamList = {
   Paywall: undefined;
   AuthScreen: undefined;
   ProfileDetails: undefined;
-  Auth: undefined;
+  Auth: { autoStart?: boolean; mode?: "restore" } | undefined;
   PermissionScreen: undefined;
   MainStack: undefined;
 };

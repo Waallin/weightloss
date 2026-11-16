@@ -1,4 +1,4 @@
-import { Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import React, { useEffect, useMemo, useState } from "react";
 import { globalStyles } from "../../constants/globalStyles";
@@ -17,7 +17,10 @@ import * as haptics from "expo-haptics";
 import useUserStore from "../../stores/useUserStore";
 import useUnitsStore from "../../stores/useUnitsStore";
 import { setMixpanelPeopleProperties, trackMixpanelEvent } from "../../services/mixpanel";
-import { goalFromWeights } from "../../services/tracking";
+import { goalFromWeights, refreshSuperProperties } from "../../services/tracking";
+import { updateDocument } from "../../services/firebase";
+import { resetToMain } from "../../services/paywallNavigation";
+import PlanSummary from "./components/PlanSummary";
 import { analyticsEvents } from "../../constants/analytics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import UnderageBlockedScreen, {
@@ -36,15 +39,18 @@ import {
 const currentYear = new Date().getFullYear();
 // Age is asked as a group; the stored birth year is the group's midpoint (used for the points calculation)
 // Endowed progress: the onboarding slides already count, so the first step starts at 25%
-const STEP_PROGRESS: Record<1 | 2 | 3 | 4 | 5, { progress: number; label: string }> = {
-  1: { progress: 0.25, label: "Great start, you’re already on your way" },
-  2: { progress: 0.4, label: "Nice, keep going" },
-  3: { progress: 0.55, label: "More than halfway" },
-  4: { progress: 0.7, label: "Almost there" },
-  5: { progress: 0.85, label: "Last question" },
+type Step = 1 | 2 | 3 | 4 | 5;
+const TOTAL_STEPS = 5;
+const STEP_PROGRESS: Record<Step, { progress: number; label: string }> = {
+  1: { progress: 0.3, label: "Great start, you’re already on your way" },
+  2: { progress: 0.45, label: "Nice, keep going" },
+  3: { progress: 0.6, label: "Almost halfway" },
+  4: { progress: 0.75, label: "Almost there" },
+  5: { progress: 0.9, label: "Last question" },
 };
 
 const AGE_GROUPS = [
+  { id: "under-18", label: "Under 18", birthYear: currentYear - 16 },
   { id: "18-29", label: "18–29", birthYear: currentYear - 24 },
   { id: "30-44", label: "30–44", birthYear: currentYear - 37 },
   { id: "45-59", label: "45–59", birthYear: currentYear - 52 },
@@ -83,11 +89,18 @@ const GOAL_WEIGHT_DEFAULT_LOSS_KG = 10;
 
 const ProfileDetailsScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  // Hela profilen tas efter paywallen (alla sex steg, ålder först)
+  const firstStep: Step = 1;
+  const storeUser = useUserStore.getState().user;
   const { setUser } = useUserStore();
+  // Användarobjektet har konto-id m.m. efter att kontot skapats, så uppdateringar måste slås ihop
+  const mergeUser = (patch: Record<string, unknown>) =>
+    setUser({ ...(useUserStore.getState().user ?? {}), ...patch });
+  const [planReady, setPlanReady] = useState(false);
   const { heightUnit, weightUnit, setHeightUnit, setWeightUnit } =
     useUnitsStore();
-  const [birthYear, setBirthYear] = useState<number>(currentYear - 25);
-  const [ageGroup, setAgeGroup] = useState<AgeGroupId | null>(null);
+  const [birthYear, setBirthYear] = useState<number>(storeUser?.birthYear ?? currentYear - 25);
+  const [ageGroup, setAgeGroup] = useState<AgeGroupId | null>((storeUser?.ageGroup as AgeGroupId) ?? null);
   const advancingRef = React.useRef(false);
   const lastStepAtRef = React.useRef<number | null>(null);
   const [startWeight, setStartWeight] = useState<number>(100);
@@ -96,7 +109,7 @@ const ProfileDetailsScreen = () => {
   const [genderChoice, setGenderChoice] = useState<GenderChoice>("Male");
   const gender: "Male" | "Female" =
     genderChoice === "Female" ? "Female" : "Male";
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
+  const [step, setStep] = useState<Step>(firstStep);
   const [ageBlocked, setAgeBlocked] = useState<boolean>(false);
   // A step can only be continued after the user has interacted with it (scrolling back to the default counts)
   const [touchedSteps, setTouchedSteps] = useState<Record<number, boolean>>({});
@@ -105,8 +118,10 @@ const ProfileDetailsScreen = () => {
     if (touchedSteps[5]) return;
     setGoalWeight(Math.max(GOAL_WEIGHT_MIN_KG, startWeight - GOAL_WEIGHT_DEFAULT_LOSS_KG));
   }, [startWeight, touchedSteps]);
-  // Gender and goal weight have sensible defaults and can be continued without interaction
-  const canContinue = step === 2 || step === 5 || touchedSteps[step];
+  // Every step has a sensible default and can be continued without interaction
+  const canContinue = true;
+  // Steps answered with one tap move on by themselves and have no Continue button
+  const autoAdvanceStep = step === 1 || step === 2;
   const markTouched = (forStep: number) =>
     setTouchedSteps((prev) => (prev[forStep] ? prev : { ...prev, [forStep]: true }));
 
@@ -137,11 +152,16 @@ const ProfileDetailsScreen = () => {
     trackMixpanelEvent(analyticsEvents.profileDetailsStepViewed, {
       step: stepName,
       step_index: step,
-      total_steps: 5,
+      total_steps: TOTAL_STEPS,
       ms_since_previous_step: lastStepAtRef.current ? now - lastStepAtRef.current : undefined,
+      phase: "post_paywall",
     });
     lastStepAtRef.current = now;
   }, [step, ageBlocked]);
+
+  useEffect(() => {
+    if (planReady) trackMixpanelEvent(analyticsEvents.planReadyViewed);
+  }, [planReady]);
 
   const renderHeader = () => {
     return (
@@ -153,7 +173,7 @@ const ProfileDetailsScreen = () => {
             justifyContent: "center",
           }}
         >
-          {step > 1 && (
+          {step > firstStep && (
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={handleBack}
@@ -187,7 +207,7 @@ const ProfileDetailsScreen = () => {
               textAlign: "center",
             }}
           >
-            Profile Details
+            Build your plan
           </Text>
         </View>
         <EndowedProgressBar
@@ -196,12 +216,6 @@ const ProfileDetailsScreen = () => {
         />
       </View>
     );
-  };
-
-  const handleUnderage = async () => {
-    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    await AsyncStorage.setItem(UNDERAGE_BLOCKED_KEY, "true");
-    setAgeBlocked(true);
   };
 
   const renderBirthdayStep = () => {
@@ -226,8 +240,9 @@ const ProfileDetailsScreen = () => {
                 haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
                 // Kort paus så valet hinner synas innan vi går vidare
                 setTimeout(() => {
-                  setUser({
+                  mergeUser({
                     birthYear: group.birthYear,
+                    ageGroup: group.id,
                     gender,
                     height,
                     startWeight,
@@ -240,15 +255,6 @@ const ProfileDetailsScreen = () => {
               }}
             />
           ))}
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={handleUnderage}
-            style={{ alignItems: "center", paddingVertical: spacing.sm }}
-          >
-            <Text style={{ ...typography.body, color: colors.text.secondary }}>
-              I’m under 18
-            </Text>
-          </TouchableOpacity>
         </View>
       </ProfileStepSection>
     );
@@ -276,7 +282,7 @@ const ProfileDetailsScreen = () => {
                 haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
                 // Kort paus så valet hinner synas innan vi går vidare
                 setTimeout(() => {
-                  setUser({
+                  mergeUser({
                     birthYear,
                     gender: option === "Female" ? "Female" : "Male",
                     height,
@@ -448,25 +454,44 @@ const ProfileDetailsScreen = () => {
     );
   };
 
-  const finishProfile = () => {
+  const finishProfile = async () => {
     // Grupper i stället för exakta värden: vikt och längd är hälsodata
     const { goal_type, weight_goal_band } = goalFromWeights(startWeight, goalWeight);
     trackMixpanelEvent(analyticsEvents.profileDetailsCompleted, {
-      age_group: ageGroup,
+      age_group: ageGroup ?? storeUser?.ageGroup ?? null,
       gender,
       goal_type,
       weight_goal_band,
     });
-    setMixpanelPeopleProperties({ age_group: ageGroup, gender, goal_type, weight_goal_band });
-
-    navigation.navigate("Auth");
+    setMixpanelPeopleProperties({
+      age_group: ageGroup ?? storeUser?.ageGroup ?? null,
+      gender,
+      goal_type,
+      weight_goal_band,
+    });
+    // Kontot skapades redan efter åldersfrågan. Här sparas resten av profilen på det.
+    const patch = {
+      birthYear,
+      gender,
+      height,
+      startWeight,
+      goalWeight,
+      currentWeight: startWeight,
+      profilePending: false,
+    };
+    mergeUser(patch);
+    const email = useUserStore.getState().user?.email;
+    if (email) {
+      try {
+        await updateDocument("users", email, patch);
+      } catch (error) {
+        console.log("Could not save profile:", error);
+      }
+    }
+    void refreshSuperProperties(useUserStore.getState().user);
+    setPlanReady(true);
   };
   const handleNext = async () => {
-    if (step === 1 && age < 18) {
-      await AsyncStorage.setItem(UNDERAGE_BLOCKED_KEY, "true");
-      setAgeBlocked(true);
-      return;
-    }
     const userObj = {
       birthYear,
       gender,
@@ -475,18 +500,18 @@ const ProfileDetailsScreen = () => {
       goalWeight,
       currentWeight: startWeight,
     };
-    setUser(userObj);
+    mergeUser(userObj);
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
-    if (step < 5) {
-      setStep((prev) => (prev + 1) as 1 | 2 | 3 | 4 | 5);
+    if (step < TOTAL_STEPS) {
+      setStep((prev) => (prev + 1) as Step);
     } else {
-      finishProfile();
+      await finishProfile();
     }
   };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep((prev) => (prev - 1) as 1 | 2 | 3 | 4 | 5);
+    if (step > firstStep) {
+      setStep((prev) => (prev - 1) as Step);
       return;
     }
     if (navigation.canGoBack()) navigation.goBack();
@@ -494,6 +519,23 @@ const ProfileDetailsScreen = () => {
 
   if (ageBlocked) {
     return <UnderageBlockedScreen />;
+  }
+
+  // Efter sista frågan: planen byggd på svaren, sedan hemskärmen
+  if (planReady) {
+    return (
+      <SafeAreaView style={globalStyles.container} edges={["bottom"]}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", paddingVertical: spacing.md }}
+        >
+          <PlanSummary />
+        </ScrollView>
+        <View style={{ paddingBottom: spacing.ctaButtonBottomPadding }}>
+          <PrimaryButtonComponent title="Let's go" onPress={() => resetToMain(navigation as any)} />
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -514,12 +556,12 @@ const ProfileDetailsScreen = () => {
         </View>
         <View style={{ paddingBottom: spacing.scrollViewBottomPadding }} />
       </View>
-      {step > 2 && (
+      {!autoAdvanceStep && (
         <View
           style={{ paddingBottom: spacing.sm, opacity: canContinue ? 1 : 0.4 }}
         >
           <PrimaryButtonComponent
-            title={step === 5 ? "See my plan" : "Continue"}
+            title={step === TOTAL_STEPS ? "Build my plan" : "Continue"}
             onPress={handleNext}
             disabled={!canContinue}
           />

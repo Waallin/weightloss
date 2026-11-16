@@ -24,6 +24,10 @@ export function resetToPaywall(navigation: ResettableNavigation, placement: Payw
   resetTo(navigation, "Paywall", { placement });
 }
 
+export function resetToProfileRest(navigation: ResettableNavigation) {
+  resetTo(navigation, "ProfileDetails");
+}
+
 export function resetToMain(navigation: ResettableNavigation) {
   resetTo(navigation, "MainNavigator");
 }
