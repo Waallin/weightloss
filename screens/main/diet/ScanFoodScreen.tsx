@@ -44,6 +44,7 @@ import GoBackHeaderComponent from "../../../components/GoBackHeaderComponent";
 import useToastStore from "../../../stores/useToastStore";
 import { Ionicons } from "@expo/vector-icons";
 import { ptsWord, slotForNow } from "../../../utils/goals";
+import { SAMPLE_FOOD_BASE64 } from "../../../constants/sampleFoodBase64";
 
 type Portion = "small" | "regular" | "large";
 
@@ -137,6 +138,22 @@ const SCANNING_COPY = [
     body: "Not judging. Much.",
   },
 ];
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("timeout")), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
 
 async function uriToBase64(uri: string): Promise<string> {
   const response = await fetch(uri);
@@ -244,7 +261,7 @@ const ScanFoodScreen = () => {
         return;
       }
 
-      const base64 = await uriToBase64(photo.uri);
+      const base64 = await withTimeout(uriToBase64(photo.uri), 8000);
       const mimeType = mimeFromBase64(base64);
       if (!mimeType) {
         Alert.alert("Invalid photo", "Take a JPEG, PNG, GIF, or WebP.");
@@ -273,9 +290,10 @@ const ScanFoodScreen = () => {
     if (takingPhoto || scanning) return;
     setTakingPhoto(true);
     try {
-      const uri = Image.resolveAssetSource(food.source).uri;
-      const base64 = await uriToBase64(uri);
-      const mimeType = mimeFromBase64(base64);
+      // Bundlade bilder går inte att läsa med fetch i release-builds, så base64 ligger i koden
+      const base64 = SAMPLE_FOOD_BASE64[food.id];
+      const mimeType = base64 ? mimeFromBase64(base64) : null;
+      const uri = `data:${mimeType};base64,${base64}`;
       if (!mimeType) {
         Alert.alert("Couldn't load the sample", "Try another one or take a photo.");
         return;
