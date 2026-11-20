@@ -1,6 +1,10 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Platform } from "react-native";
 import {
   TikTokBusiness,
+  TikTokContentEventContentsParameter,
+  TikTokContentEventName,
+  TikTokContentEventParameter,
   TikTokEventName,
 } from "react-native-tiktok-business-sdk";
 
@@ -66,6 +70,50 @@ export const logTikTokCustomEvent = async (
     await TikTokBusiness.trackCustomEvent(eventName, properties ?? {});
   } catch (error) {
     console.log("Error tracking TikTok custom event:", error);
+  }
+};
+
+/** Betalt köp (inte gratis provperiod) med värde och valuta, så att TikTok kan optimera mot betalande. */
+export const logTikTokPurchase = async (params: {
+  value?: number;
+  currency?: string;
+  productId?: string;
+}) => {
+  if (params.value == null || !params.currency) return;
+  try {
+    await TikTokBusiness.trackContentEvent(TikTokContentEventName.PURCHASE, {
+      [TikTokContentEventParameter.CURRENCY]: params.currency,
+      [TikTokContentEventParameter.VALUE]: String(params.value),
+      [TikTokContentEventParameter.CONTENT_TYPE]: "product",
+      [TikTokContentEventParameter.CONTENTS]: [
+        {
+          [TikTokContentEventContentsParameter.CONTENT_ID]: params.productId ?? "unknown",
+          [TikTokContentEventContentsParameter.PRICE]: params.value,
+          [TikTokContentEventContentsParameter.QUANTITY]: 1,
+        },
+      ],
+    });
+  } catch (error) {
+    console.log("Error tracking TikTok purchase:", error);
+  }
+};
+
+const CHECKOUT_SENT_KEY = "tiktok_checkout_sent";
+
+/** Användaren nådde betalväggen. Skickas en gång per installation, så att eventet inte blåser upp siffrorna. */
+export const logTikTokCheckoutOnce = async (params?: { productId?: string }) => {
+  try {
+    if ((await AsyncStorage.getItem(CHECKOUT_SENT_KEY)) === "true") return;
+    await AsyncStorage.setItem(CHECKOUT_SENT_KEY, "true");
+    await TikTokBusiness.trackContentEvent(TikTokContentEventName.CHECK_OUT, {
+      [TikTokContentEventParameter.CONTENT_TYPE]: "paywall",
+      [TikTokContentEventParameter.DESCRIPTION]: "paywall_viewed",
+      ...(params?.productId
+        ? { [TikTokContentEventParameter.CONTENT_ID]: params.productId }
+        : {}),
+    });
+  } catch (error) {
+    console.log("Error tracking TikTok checkout:", error);
   }
 };
 

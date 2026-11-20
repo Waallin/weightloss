@@ -15,7 +15,7 @@ import {
   type PaywallPlan,
 } from "./paywallProductAnalytics";
 import { handleReminderNotification } from "../../services/notifications";
-import { logTikTokEvent } from "../../services/tiktoksdk";
+import { logTikTokEvent, logTikTokPurchase } from "../../services/tiktoksdk";
 import { TikTokEventName } from "react-native-tiktok-business-sdk";
 function resetToApp(navigation: NavigationProp<ParamListBase>) {
   const routeNames = navigation.getState()?.routeNames ?? [];
@@ -118,6 +118,12 @@ export function usePaywallPurchaseFlow({
           await logMetaEvent("Subscribe", definedProps);
           if (result.isTrial) {
             await logTikTokEvent(TikTokEventName.START_TRIAL, undefined, definedProps);
+          } else {
+            await logTikTokPurchase({
+              value: productProps.price,
+              currency: productProps.currencyCode,
+              productId: result.productId ?? productProps.productIdentifier,
+            });
           }
 
           if (userEmail) {

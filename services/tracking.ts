@@ -152,10 +152,10 @@ export const trackMealLogged = async (params: {
 
 const STEPS_DETECTED_KEY = "steps_first_detected";
 
-export const trackStepsFirstDetected = async () => {
+export const trackStepsFirstDetected = async (steps?: number) => {
   if ((await AsyncStorage.getItem(STEPS_DETECTED_KEY)) === "true") return;
   await AsyncStorage.setItem(STEPS_DETECTED_KEY, "true");
-  trackMixpanelEvent(analyticsEvents.stepsFirstDetected);
+  trackMixpanelEvent(analyticsEvents.stepsFirstDetected, { steps });
   setMixpanelPeopleProperties({ steps_connected: true });
 };
 

@@ -91,6 +91,9 @@ function AppContent() {
   const { user, setUser } = useUserStore();
   const {  setTodayProgress } = useTodayProgressStore();
   const steps = useTodaySteps();
+  // HealthKit läser stegen asynkront, så checkInUser (som körs vid start) behöver senaste värdet via en ref
+  const stepsRef = useRef(steps);
+  stepsRef.current = steps;
   const {  setTodayDiet } = useTodayDietStore();
   const { setConfig } = useConfigStore();
   // "loading" tills checkInUser vet om det finns ett konto. Annars visas onboardingen
@@ -304,7 +307,15 @@ function AppContent() {
       setTodayDiet(todayDiet);
       setUser(userData);
       await refreshSuperProperties(userData);
-      trackMixpanelEvent(analyticsEvents.appOpened);
+      // Skickas utan att blockera starten. Vi väntar upp till 1,5 s på att HealthKit ger stegen,
+      // annars hade app_opened nästan alltid fått steps = 0 vid kallstart.
+      (async () => {
+        const deadline = Date.now() + 1500;
+        while (stepsRef.current <= 0 && Date.now() < deadline) {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+        trackMixpanelEvent(analyticsEvents.appOpened, { steps: stepsRef.current });
+      })();
       trackReturnIfNeeded(userData);
       // Bara konton som skapats efter att guiden infördes har "pending"; äldre konton hoppar över den
       const guidePending =

@@ -14,7 +14,7 @@ import { colors } from "../../constants/colors";
 import { analyticsEvents } from "../../constants/analytics";
 import { trackMixpanelEvent } from "../../services/mixpanel";
 import { logMetaEvent } from "../../services/metasdk";
-import { logTikTokEvent } from "../../services/tiktoksdk";
+import { logTikTokCheckoutOnce, logTikTokEvent, logTikTokPurchase } from "../../services/tiktoksdk";
 import { updateDocument } from "../../services/firebase";
 import { customerHasPremium, PREMIUM_ENTITLEMENT } from "../../services/revenuecat";
 import { resetToMain, resetToProfileRest } from "../../services/paywallNavigation";
@@ -72,6 +72,7 @@ const PaywallScreen: React.FC = () => {
       offering_id: offering?.identifier,
     });
     void logMetaEvent("ViewContent", { content_type: "paywall", variant: PAYWALL_VARIANT });
+    void logTikTokCheckoutOnce();
   }, [loadState, offering, placement]);
 
   const goIn = useCallback(() => {
@@ -104,13 +105,24 @@ const PaywallScreen: React.FC = () => {
 
       void trackMixpanelEvent(analyticsEvents.paywallPurchaseSucceeded, props);
       void logMetaEvent("Subscribe", props);
-      if (isTrial) void logTikTokEvent(TikTokEventName.START_TRIAL, undefined, props);
+      if (isTrial) {
+        void logTikTokEvent(TikTokEventName.START_TRIAL, undefined, props);
+      } else {
+        const pkg = offering?.availablePackages.find(
+          (p) => p.product.identifier === entitlement?.productIdentifier,
+        );
+        void logTikTokPurchase({
+          value: pkg?.product.price,
+          currency: pkg?.product.currencyCode,
+          productId: entitlement?.productIdentifier,
+        });
+      }
       if (user?.email) {
         updateDocument("users", user.email, { revenuecat: customerInfo });
       }
       goIn();
     },
-    [goIn, offering?.identifier, placement, user?.email],
+    [goIn, offering, placement, user?.email],
   );
 
   const handleRestoreCompleted = useCallback(

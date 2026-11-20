@@ -53,7 +53,7 @@ const MoveGoalRewardScreen = () => {
     updateTodayProgress(user.email as string, {
       "completion.steps": true,
     });
-    trackMixpanelEvent(analyticsEvents.stepsGoalCompleted);
+    trackMixpanelEvent(analyticsEvents.stepsGoalCompleted, { steps });
     void maybeAskForStoreReview("steps_goal", 3500);
   }, [todayProgress, user?.email]);
 

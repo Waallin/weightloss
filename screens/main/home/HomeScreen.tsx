@@ -65,7 +65,7 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (todaySteps > 0) trackStepsFirstDetected();
+    if (todaySteps > 0) trackStepsFirstDetected(todaySteps);
   }, [todaySteps > 0]);
 
   useEffect(() => {

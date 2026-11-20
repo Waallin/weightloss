@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2]
+
+### Added
+- `steps_first_detected` and `steps_goal_completed` now carry `steps` (the step count at that moment), so Mixpanel can show how many steps users have taken. `steps_ring_viewed` already did
+- `app_opened` now carries `steps` (today's step count when the app opens). On a cold start it waits up to 1.5 s for HealthKit to answer, so the event can arrive slightly later; users with no steps or no permission send `steps: 0`
+- TikTok now gets a `PURCHASE` event (value, currency and product id) for paid purchases without a free trial, from both the RevenueCat paywall and the custom purchase flow. Trial purchases still only send `StartTrial`, so a purchase is never counted twice. Nothing is sent if the price or currency is missing
+- TikTok now gets a `CHECK_OUT` event the first time a user reaches the paywall (once per install), so campaigns can optimise on paywall reach before there are enough purchases. Meta already got `ViewContent` at the same moment
+
 ## [1.3.0]
 
 ### Changed
