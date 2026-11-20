@@ -12,6 +12,7 @@ import RecipeDetailScreen from "../main/diet/RecipeDetailScreen";
 import { AuthNavigator } from "./AuthNavigator";
 import PaywallScreen from "../auth/PaywallScreen";
 import ScanFoodScreen from "../main/diet/ScanFoodScreen";
+import BarcodeScanScreen from "../main/diet/BarcodeScanScreen";
 import ManualFoodScreen from "../main/diet/ManualFoodScreen";
 import FirstDayGuideScreen from "../main/home/FirstDayGuideScreen";
 import AcquisitionSourceScreen from "../auth/AcquisitionSourceScreen";
@@ -80,6 +81,11 @@ export const MainStack: React.FC<MainStackProps> = ({
             ? { debugImagePath: debugScanImage, debugHold: debugScanHold }
             : undefined
         }
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BarcodeScanScreen"
+        component={BarcodeScanScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

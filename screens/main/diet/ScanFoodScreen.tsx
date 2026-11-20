@@ -706,7 +706,26 @@ Return JSON only.
               {slot}
             </Text>
           </View>
-          <View style={{ width: 44 }} />
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.replace("BarcodeScanScreen", {
+                source: "photo_scan",
+                fromFirstDayGuide: route.params?.fromFirstDayGuide,
+              });
+            }}
+            accessibilityLabel="Scan a barcode"
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: "rgba(255,255,255,0.14)",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="barcode-outline" size={22} color="#fff" />
+          </Pressable>
         </View>
         <View
           pointerEvents="box-none"

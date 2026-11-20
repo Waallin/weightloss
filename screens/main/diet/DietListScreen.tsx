@@ -126,6 +126,11 @@ const DietListScreen = () => {
     navigation.navigate("RecipeDetailScreen", { recipe });
   };
 
+  const handleNavigateToBarcodeScanScreen = () => {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("BarcodeScanScreen", { source: "diet_list" });
+  };
+
   const handleNavigateToScanFoodScreen = () => {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("ScanFoodScreen");
@@ -165,9 +170,31 @@ const DietListScreen = () => {
               color={colors.text.primary}
             />
           </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: spacing.sm }}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleNavigateToBarcodeScanScreen}
+            accessibilityLabel="Scan a barcode"
+            style={{
+              backgroundColor: colors.ui.componentBackground,
+              borderRadius: spacing.borderRadius,
+              ...globalStyles.shadow,
+              justifyContent: "center",
+              alignItems: "center",
+              width: 44,
+              height: 44,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="barcode-scan"
+              size={24}
+              color={colors.ui.primary}
+            />
+          </TouchableOpacity>
           <TouchableOpacity
             activeOpacity={0.8}
             onPress={handleNavigateToScanFoodScreen}
+            accessibilityLabel="Scan food with the camera"
             style={{
               backgroundColor: colors.ui.componentBackground,
               borderRadius: spacing.borderRadius,
@@ -184,6 +211,7 @@ const DietListScreen = () => {
               color={colors.ui.primary}
             />
           </TouchableOpacity>
+          </View>
         </View>
         <View
           style={{

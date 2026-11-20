@@ -113,7 +113,7 @@ export const identifyAdPlatforms = async (userId: string, email?: string) => {
   await identifyTikTokUser(userId, "", "", email ?? "");
 };
 
-export type MealMethod = "scan" | "manual" | "recipe" | "food";
+export type MealMethod = "scan" | "barcode" | "manual" | "recipe" | "food";
 
 /** Ett event för all matloggning. Första måltiden skickar också en milstolpe. */
 export const trackMealLogged = async (params: {
@@ -121,6 +121,8 @@ export const trackMealLogged = async (params: {
   points: number;
   slot?: string;
   title?: string;
+  /** Bara streckkod: vilken portion som valdes (serving/100g/pack/custom) */
+  portion?: string;
 }) => {
   const { user, setUser } = useUserStore.getState();
   const isFirst = !!user && user.firstMealAt == null && user.isAnonymous !== undefined;
@@ -130,6 +132,7 @@ export const trackMealLogged = async (params: {
     points: params.points,
     meal_slot: params.slot,
     is_first_meal: isFirst,
+    ...(params.portion ? { portion: params.portion } : {}),
   });
   incrementMixpanelPeople("meals_logged_total");
 

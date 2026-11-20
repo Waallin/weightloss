@@ -29,6 +29,9 @@ export type RootStackParamList = {
         debugHold?: boolean;
       }
     | undefined;
+  BarcodeScanScreen:
+    | { source?: "diet_list" | "photo_scan"; fromFirstDayGuide?: boolean }
+    | undefined;
   FirstDayGuide: { mealLogged?: boolean } | undefined;
   FirstDayDashboard: undefined;
   AcquisitionSource: undefined;

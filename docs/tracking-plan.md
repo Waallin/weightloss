@@ -29,14 +29,18 @@ Jämför flödena med `flow_version`. Obs: i v5 saknar konton som inte hunnit sv
 | `profile_details_completed` | Sista steget klart | `age_group`, `gender`, `goal_type`, `weight_goal_band` (`acquisition_source` skickas inte längre här från v5) |
 | `start_tapped` | Tryck på Start | - |
 | `user_registered` | Anonymt konto skapat | `anonymous` |
-| `meal_logged` | Alla loggade måltider | `method` (`scan`/`manual`/`recipe`/`food`), `points`, `meal_slot`, `is_first_meal` |
+| `meal_logged` | Alla loggade måltider | `method` (`scan`/`barcode`/`manual`/`recipe`/`food`), `points`, `meal_slot`, `is_first_meal`, `portion` (bara `barcode`: `serving`/`100g`/`pack`/`custom`) |
 | `first_meal_logged` | Första måltiden (nya konton) | `method`, `hours_since_signup` |
 | `scan_started` / `scan_succeeded` / `scan_failed` | Skanning | `duration_ms`, `points`, `reason` (`not_food`/`error`) |
+| `barcode_scan_started` | Streckkodsskannern öppnas (ikon i fotokameran eller i matlistan) | `source` (`photo_scan`/`diet_list`) |
+| `barcode_scan_succeeded` | Produkten hittades i Open Food Facts | `duration_ms` (från öppnad skanner), `input` (`camera`/`typed`), `points` (standardportion), `has_serving` |
+| `barcode_product_not_found` | Okänd kod eller produkt utan kcal | `reason` (`not_in_database`/`no_nutrition`), `barcode`, `input`, `duration_ms` |
+| `barcode_scan_failed` | Nätverksfel/timeout mot Open Food Facts | `reason` (`network`/`timeout`), `input`, `duration_ms` |
 | `steps_ring_viewed` | Ringen mot 5 000 steg visas direkt efter att stegräkning slagits på (guidens steg 1, ingen egen skärm) | `steps` (steg just då, kan vara 0 innan HealthKit svarat) |
 | `day1_dashboard_viewed` | Dashboarden efter första måltiden, före paywallen | `has_steps`, `steps`, `meal_points` |
 | `day1_dashboard_cta_tapped` | "Start my journey" trycks | - |
 | `scan_sample_used` | "Pick a sample photo" på första dagens guide (exempelfoto i stället för kamera) | `sample` (`pizza`/`chocolate`/`donut`/`salad`) |
-| `camera_permission_result` | Efter kamerafrågan | `result` |
+| `camera_permission_result` | Efter kamerafrågan | `result`, `context` (`barcode` när frågan kom från streckkodsskannern) |
 | `health_permission_prompted` | iOS-frågan för steg visas | `source` |
 | `steps_first_detected` | Första gången steg > 0 | - |
 | `notification_permission_result` | Efter notisfrågan | `result` |
