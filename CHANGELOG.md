@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.2]
 
 ### Added
+- Barcode scanner: scan a product's barcode (EAN-13, EAN-8, UPC-A, UPC-E) and log it as a meal. Opened from the barcode icon in the food camera and next to the camera icon in the food list. Products are looked up in Open Food Facts and points are calculated with the same formula as scanned meals, for the chosen amount (one serving, 100 g, the whole pack or your own grams). "Type the number" works when the camera can't read the code, and unknown products lead to the photo scanner or manual entry
+- Mixpanel: `barcode_scan_started`, `barcode_scan_succeeded`, `barcode_product_not_found`, `barcode_scan_failed`, and `meal_logged` with `method: "barcode"` and `portion`
 - `steps_first_detected` and `steps_goal_completed` now carry `steps` (the step count at that moment), so Mixpanel can show how many steps users have taken. `steps_ring_viewed` already did
 - `app_opened` now carries `steps` (today's step count when the app opens). On a cold start it waits up to 1.5 s for HealthKit to answer, so the event can arrive slightly later; users with no steps or no permission send `steps: 0`
 - TikTok now gets a `PURCHASE` event (value, currency and product id) for paid purchases without a free trial, from both the RevenueCat paywall and the custom purchase flow. Trial purchases still only send `StartTrial`, so a purchase is never counted twice. Nothing is sent if the price or currency is missing
