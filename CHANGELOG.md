@@ -8,10 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.3]
+
 ### Added
 - Correct a scan: under the meal name on the scan result, "Not quite? Tell Kudoo what it is" opens a text field where you describe what it really is (e.g. "it's garlic sauce, not béarnaise"). The same photo is analysed again with your note and the name, points and "left today" update in place; the portion choice stays. When the AI is unsure (confidence below 0.7) the line reads "Is this right?" instead. If the update fails, the original result stays
-- Dev builds (Metro / `expo run:ios`) never show the hard paywall. Set `EXPO_PUBLIC_DEV_PAYWALL=1` to test it in dev. Release builds are unchanged
 - Mixpanel: `scan_correction_opened`, `scan_corrected` (with the note, points before/after and confidence), `scan_correction_failed`, `confidence` on `scan_succeeded`, and `corrected` on `meal_logged` for scans
+
+### Changed
+- Dev builds (Metro / `expo run:ios`) never show the hard paywall. Set `EXPO_PUBLIC_DEV_PAYWALL=1` to test it in dev. Release builds are unchanged
 
 ## [1.3.2]
 
