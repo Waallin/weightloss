@@ -29,9 +29,12 @@ Jämför flödena med `flow_version`. Obs: i v5 saknar konton som inte hunnit sv
 | `profile_details_completed` | Sista steget klart | `age_group`, `gender`, `goal_type`, `weight_goal_band` (`acquisition_source` skickas inte längre här från v5) |
 | `start_tapped` | Tryck på Start | - |
 | `user_registered` | Anonymt konto skapat | `anonymous` |
-| `meal_logged` | Alla loggade måltider | `method` (`scan`/`barcode`/`manual`/`recipe`/`food`), `points`, `meal_slot`, `is_first_meal`, `portion` (bara `barcode`: `serving`/`100g`/`pack`/`custom`) |
+| `meal_logged` | Alla loggade måltider | `method` (`scan`/`barcode`/`manual`/`recipe`/`food`), `points`, `meal_slot`, `is_first_meal`, `portion` (bara `barcode`: `serving`/`100g`/`pack`/`custom`), `corrected` (bara `scan`: true om svaret rättades före loggning) |
 | `first_meal_logged` | Första måltiden (nya konton) | `method`, `hours_since_signup` |
-| `scan_started` / `scan_succeeded` / `scan_failed` | Skanning | `duration_ms`, `points`, `reason` (`not_food`/`error`) |
+| `scan_started` / `scan_succeeded` / `scan_failed` | Skanning | `duration_ms`, `points`, `confidence` (AI:ns säkerhet 0-1, bara `scan_succeeded`), `reason` (`not_food`/`error`) |
+| `scan_correction_opened` | "Tell Kudoo what it is" trycks på resultatkortet | `points`, `confidence`, `low_confidence` (confidence < 0,7, då visas "Is this right?"), `already_corrected` |
+| `scan_corrected` | AI:n har tittat igen med användarens beskrivning och svaret är uppdaterat | `text` (användarens beskrivning, max 200 tecken), `text_length`, `name_before`, `name_after`, `points_before`, `points_after`, `points_delta` (standardportion), `confidence_before`, `confidence_after`, `low_confidence`, `duration_ms` |
+| `scan_correction_failed` | Rättelsen gick inte igenom, det gamla svaret ligger kvar | `reason` (`not_food`/`error`), `duration_ms` |
 | `barcode_scan_started` | Streckkodsskannern öppnas (ikon i fotokameran eller i matlistan) | `source` (`photo_scan`/`diet_list`) |
 | `barcode_scan_succeeded` | Produkten hittades i Open Food Facts | `duration_ms` (från öppnad skanner), `input` (`camera`/`typed`), `points` (standardportion), `has_serving` |
 | `barcode_product_not_found` | Okänd kod eller produkt utan kcal | `reason` (`not_in_database`/`no_nutrition`), `barcode`, `input`, `duration_ms` |

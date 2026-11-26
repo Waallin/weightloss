@@ -60,8 +60,16 @@ export function isGrandfathered(user: any, config: any): boolean {
   return created < cutoff;
 }
 
+// Dev-byggen (expo run:ios / Metro) visar aldrig den hårda paywallen.
+// Sätt EXPO_PUBLIC_DEV_PAYWALL=1 i .env.local för att testa paywallen i dev.
+export function isDevPaywallBypassed(): boolean {
+  const isDev = typeof __DEV__ !== "undefined" && __DEV__;
+  return isDev && process.env.EXPO_PUBLIC_DEV_PAYWALL !== "1";
+}
+
 export function getPaywallGate(input: PaywallGateInput): PaywallGate {
   const { config, user, isPremium, premiumLoaded } = input;
+  if (isDevPaywallBypassed()) return "allow";
   if (!isHardPaywallEnabled(config)) return "allow";
   if (isPremium) return "allow";
   if (isGrandfathered(user, config)) return "allow";
