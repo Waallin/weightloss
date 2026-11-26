@@ -123,6 +123,8 @@ export const trackMealLogged = async (params: {
   title?: string;
   /** Bara streckkod: vilken portion som valdes (serving/100g/pack/custom) */
   portion?: string;
+  /** Bara scan: true om användaren rättade AI:ns svar innan loggning */
+  corrected?: boolean;
 }) => {
   const { user, setUser } = useUserStore.getState();
   const isFirst = !!user && user.firstMealAt == null && user.isAnonymous !== undefined;
@@ -133,6 +135,7 @@ export const trackMealLogged = async (params: {
     meal_slot: params.slot,
     is_first_meal: isFirst,
     ...(params.portion ? { portion: params.portion } : {}),
+    ...(params.method === "scan" ? { corrected: !!params.corrected } : {}),
   });
   incrementMixpanelPeople("meals_logged_total");
 

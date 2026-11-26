@@ -9,6 +9,9 @@ import {
   useWindowDimensions,
   ScrollView,
   TouchableOpacity,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { MotiView } from "moti";
@@ -53,6 +56,10 @@ const PORTIONS: { key: Portion; label: string; multiplier: number }[] = [
   { key: "regular", label: "Regular", multiplier: 1 },
   { key: "large", label: "Large", multiplier: 1.35 },
 ];
+
+// Under det här visas "Is this X?" i stället för den neutrala rättelselänken
+const LOW_CONFIDENCE = 0.7;
+const CORRECTION_MAX_LENGTH = 200;
 
 type PickedImage = {
   uri: string;
@@ -177,6 +184,12 @@ const ScanFoodScreen = () => {
   const [scanCopyIndex, setScanCopyIndex] = useState(0);
   const [result, setResult] = useState<any>(null);
   const [portion, setPortion] = useState<Portion>("regular");
+  // Rättelse: användaren beskriver vad det egentligen är och AI:n tittar igen
+  const [correctionOpen, setCorrectionOpen] = useState(false);
+  const [correctionDraft, setCorrectionDraft] = useState("");
+  const [correcting, setCorrecting] = useState(false);
+  const [correctionError, setCorrectionError] = useState<string | null>(null);
+  const [correctedWith, setCorrectedWith] = useState<string | null>(null);
   const [slot] = useState(slotForNow());
   const { todayProgress, setTodayProgress } = useTodayProgressStore();
   const { todayDiet, setTodayDiet } = useTodayDietStore();
@@ -245,6 +258,11 @@ const ScanFoodScreen = () => {
     setResult(null);
     setScanning(false);
     setPortion("regular");
+    setCorrectionOpen(false);
+    setCorrectionDraft("");
+    setCorrecting(false);
+    setCorrectionError(null);
+    setCorrectedWith(null);
   };
 
   const handleTakePhoto = async () => {
@@ -332,10 +350,125 @@ const ScanFoodScreen = () => {
     trackMixpanelEvent(analyticsEvents.scanStarted);
 
     try {
+      const food = await analyzeFood(apiKey, image);
+      if (!food?.isFood) {
+        setImage(null);
+        setResult(null);
+        trackMixpanelEvent(analyticsEvents.scanFailed, {
+          reason: "not_food",
+          duration_ms: Date.now() - scanStartedAt,
+        });
+        Alert.alert("No meal found", "Take a new photo and try again.");
+        return;
+      }
+
+      const obj = toResult(food);
+      setResult(obj);
+      trackMixpanelEvent(analyticsEvents.scanSucceeded, {
+        points: obj.points,
+        confidence: obj.confidence,
+        duration_ms: Date.now() - scanStartedAt,
+      });
+    } catch (error) {
+      console.error(error);
+      trackMixpanelEvent(analyticsEvents.scanFailed, {
+        reason: "error",
+        duration_ms: Date.now() - scanStartedAt,
+      });
+      setResult(null);
+    } finally {
+      setScanning(false);
+    }
+  };
+
+  const openCorrection = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCorrectionError(null);
+    setCorrectionDraft(correctedWith ?? "");
+    setCorrectionOpen(true);
+    trackMixpanelEvent(analyticsEvents.scanCorrectionOpened, {
+      points: result?.points,
+      confidence: result?.confidence,
+      low_confidence: isLowConfidence,
+      already_corrected: !!correctedWith,
+    });
+  };
+
+  const closeCorrection = () => {
+    if (correcting) return;
+    setCorrectionOpen(false);
+    setCorrectionError(null);
+  };
+
+  // Samma bild skickas igen tillsammans med användarens beskrivning.
+  // Misslyckas det ligger det gamla svaret kvar.
+  const handleCorrection = async () => {
+    const note = correctionDraft.trim().slice(0, CORRECTION_MAX_LENGTH);
+    const apiKey = process.env.EXPO_PUBLIC_OPENAI_API_KEY;
+    if (!note || correcting || !image?.base64 || !apiKey) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCorrecting(true);
+    setCorrectionError(null);
+    const startedAt = Date.now();
+    const before = result;
+
+    try {
+      const food = await analyzeFood(apiKey, image, note);
+      if (!food?.isFood) {
+        setCorrectionError("Couldn't make that work with the photo. Try describing it differently.");
+        trackMixpanelEvent(analyticsEvents.scanCorrectionFailed, {
+          reason: "not_food",
+          duration_ms: Date.now() - startedAt,
+        });
+        return;
+      }
+
+      const obj = toResult(food);
+      setResult(obj);
+      setCorrectedWith(note);
+      setCorrectionOpen(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      trackMixpanelEvent(analyticsEvents.scanCorrected, {
+        text: note,
+        text_length: note.length,
+        name_before: before?.name,
+        name_after: obj.name,
+        points_before: before?.points,
+        points_after: obj.points,
+        points_delta: Number(obj.points) - Number(before?.points),
+        confidence_before: before?.confidence,
+        confidence_after: obj.confidence,
+        low_confidence: isLowConfidence,
+        duration_ms: Date.now() - startedAt,
+      });
+    } catch (error) {
+      console.error(error);
+      setCorrectionError("Couldn't update right now. Check your connection and try again.");
+      trackMixpanelEvent(analyticsEvents.scanCorrectionFailed, {
+        reason: "error",
+        duration_ms: Date.now() - startedAt,
+      });
+    } finally {
+      setCorrecting(false);
+    }
+  };
+
+  const analyzeFood = async (apiKey: string, image: PickedImage, correction?: string) => {
       const client = new OpenAI({
         apiKey,
         dangerouslyAllowBrowser: true,
       });
+
+      const correctionPrompt = correction
+        ? `
+
+USER CORRECTION:
+The user looked at this photo and says: "${correction.replace(/"/g, "'")}"
+Trust the user over what you see. Use their description to identify the food, sauces, toppings and portion, then estimate the nutrition and points again for the whole visible meal.
+Use the user's description for the name if it names the food. The description should acknowledge what the user said in a casual way.
+The photo contains food, so isFood must be true.`
+        : "";
 
       const mime = image.mimeType ?? "image/jpeg";
       const response = await client.responses.create({
@@ -444,7 +577,7 @@ If the image does not contain food, return exactly:
 Do not include markdown.
 Do not include explanations outside the JSON.
 Return JSON only.
-                `.trim(),
+                `.trim() + correctionPrompt,
               },
               {
                 type: "input_image",
@@ -456,47 +589,27 @@ Return JSON only.
         ],
       });
 
-      const food = JSON.parse(response.output_text);
-      if (!food?.isFood) {
-        setImage(null);
-        setResult(null);
-        trackMixpanelEvent(analyticsEvents.scanFailed, {
-          reason: "not_food",
-          duration_ms: Date.now() - scanStartedAt,
-        });
-        Alert.alert("No meal found", "Take a new photo and try again.");
-        return;
-      }
-
-      const points = calculateFoodPoints({
-        calories: food.calories,
-        protein: food.protein,
-        fiber: food.fiber,
-        estimatedGrams: food.estimatedGrams,
-      });
-
-      const obj = {
-        points,
-        name: food?.name,
-        description: food?.description,
-      };
-
-      setResult(obj);
-      trackMixpanelEvent(analyticsEvents.scanSucceeded, {
-        points,
-        duration_ms: Date.now() - scanStartedAt,
-      });
-    } catch (error) {
-      console.error(error);
-      trackMixpanelEvent(analyticsEvents.scanFailed, {
-        reason: "error",
-        duration_ms: Date.now() - scanStartedAt,
-      });
-      setResult(null);
-    } finally {
-      setScanning(false);
-    }
+      return JSON.parse(response.output_text);
   };
+
+  const toResult = (food: any) => {
+    const points = calculateFoodPoints({
+      calories: food.calories,
+      protein: food.protein,
+      fiber: food.fiber,
+      estimatedGrams: food.estimatedGrams,
+    });
+    const confidence = Number(food?.confidence);
+    return {
+      points,
+      name: food?.name,
+      description: food?.description,
+      confidence: Number.isFinite(confidence) ? confidence : undefined,
+    };
+  };
+
+  const isLowConfidence =
+    typeof result?.confidence === "number" && result.confidence < LOW_CONFIDENCE;
 
   const handleRemovePhoto = () => {
     setImage(null);
@@ -978,7 +1091,7 @@ Return JSON only.
   };
 
   const handleAddToDiet = async () => {
-    
+    if (correcting) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const portionPoints = getPortionPoints();
@@ -1002,7 +1115,7 @@ Return JSON only.
 
     try {
       trackMixpanelEvent(analyticsEvents.dietScanAdded, { food: result?.name });
-      trackMealLogged({ method: "scan", points: Number(portionPoints), slot });
+      trackMealLogged({ method: "scan", points: Number(portionPoints), slot, corrected: !!correctedWith });
       setTodayDiet([...todayDiet, payload]);
       addToDiet(user?.email, payload);
       showToast(`${slot} added · ${portionPoints} ${ptsWord(Number(portionPoints))}`);
@@ -1019,6 +1132,127 @@ Return JSON only.
     }
   };
 
+  // Diskret rad under namnet. Vid låg säkerhet blir den en fråga.
+  const renderCorrection = () => {
+    if (correctionOpen) {
+      const canSend = correctionDraft.trim().length > 0 && !correcting;
+      return (
+        <View style={{ marginTop: 12, gap: 10 }}>
+          <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: colors.text.primary }}>
+            What is it really?
+          </Text>
+          <TextInput
+            value={correctionDraft}
+            onChangeText={setCorrectionDraft}
+            placeholder="e.g. it's garlic sauce, not béarnaise"
+            placeholderTextColor={colors.goals.muted}
+            autoFocus
+            multiline
+            maxLength={CORRECTION_MAX_LENGTH}
+            editable={!correcting}
+            returnKeyType="done"
+            blurOnSubmit
+            onSubmitEditing={() => canSend && handleCorrection()}
+            accessibilityLabel="Describe the food"
+            style={{
+              ...typography.body,
+              fontSize: 16,
+              lineHeight: 22,
+              color: colors.text.primary,
+              minHeight: 72,
+              maxHeight: 120,
+              paddingHorizontal: 14,
+              paddingTop: 12,
+              paddingBottom: 12,
+              borderRadius: 14,
+              backgroundColor: "#F2F2F4",
+              textAlignVertical: "top",
+            }}
+          />
+          {correctionError ? (
+            <Text style={{ ...typography.small, fontSize: 13, color: colors.goals.over }}>
+              {correctionError}
+            </Text>
+          ) : null}
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={closeCorrection}
+              disabled={correcting}
+              style={{
+                flex: 1,
+                height: 44,
+                borderRadius: 12,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: "#F2F2F4",
+              }}
+            >
+              <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: colors.goals.muted }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleCorrection}
+              disabled={!canSend}
+              accessibilityState={{ disabled: !canSend, busy: correcting }}
+              style={{
+                flex: 2,
+                height: 44,
+                borderRadius: 12,
+                flexDirection: "row",
+                gap: 8,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: colors.text.primary,
+                opacity: canSend || correcting ? 1 : 0.35,
+              }}
+            >
+              {correcting ? <ActivityIndicator size="small" color={colors.ui.white} /> : null}
+              <Text style={{ ...typography.bodySemiBold, fontSize: 15, color: colors.ui.white }}>
+                {correcting ? "Taking another look…" : "Update"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+
+    if (correctedWith) {
+      return (
+        <Pressable
+          onPress={openCorrection}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Updated with your note. Edit note"
+          style={{ marginTop: 6, flexDirection: "row", alignItems: "center", gap: 6 }}
+        >
+          <Ionicons name="checkmark-circle" size={16} color={colors.goals.eat} />
+          <Text style={{ ...typography.small, fontSize: 14, color: colors.goals.muted }}>
+            Updated with your note ·{" "}
+            <Text style={{ ...typography.bodySemiBold, fontSize: 14, color: colors.text.primary }}>Edit</Text>
+          </Text>
+        </Pressable>
+      );
+    }
+
+    return (
+      <Pressable
+        onPress={openCorrection}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="Not quite right? Tell Kudoo what it is"
+        style={{ marginTop: 6 }}
+      >
+        <Text style={{ ...typography.small, fontSize: 14, color: colors.goals.muted }}>
+          {isLowConfidence ? "Is this right? " : "Not quite? "}
+          <Text style={{ ...typography.bodySemiBold, fontSize: 14, color: colors.text.primary }}>
+            Tell Kudoo what it is
+          </Text>
+        </Text>
+      </Pressable>
+    );
+  };
+
   const renderResult = () => {
     const portionPoints = getPortionPoints();
     const points = Number(portionPoints);
@@ -1033,9 +1267,10 @@ Return JSON only.
       : `${headline}. ${result?.description ?? ""}`.trim();
 
     return (
-      <View style={{ flex: 1 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <ScrollView
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           contentContainerStyle={{
             paddingTop: spacing.md,
             paddingHorizontal: 20,
@@ -1087,9 +1322,12 @@ Return JSON only.
                   resizeMode="cover"
                 />
               ) : null}
-              <Text style={{ ...typography.cardTitle, fontSize: 17, lineHeight: 22, color: colors.text.primary }}>
-                {result?.name}
-              </Text>
+              <View>
+                <Text style={{ ...typography.cardTitle, fontSize: 17, lineHeight: 22, color: colors.text.primary }}>
+                  {result?.name}
+                </Text>
+                {renderCorrection()}
+              </View>
             </View>
 
             <View style={{ marginTop: 20, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: 12 }}>
@@ -1194,9 +1432,11 @@ Return JSON only.
           <TouchableOpacity
             activeOpacity={0.85}
             onPress={handleAddToDiet}
+            disabled={correcting}
             style={{
               height: 58,
               borderRadius: 14,
+              opacity: correcting ? 0.5 : 1,
               backgroundColor: colors.goals.eat,
               alignItems: "center",
               justifyContent: "center",
@@ -1212,7 +1452,7 @@ Return JSON only.
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     );
   };
 
